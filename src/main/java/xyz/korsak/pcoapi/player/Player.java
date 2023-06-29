@@ -1,29 +1,33 @@
 package xyz.korsak.pcoapi.player;
 
+import java.util.UUID;
+
 public class Player {
-    private Long id;
+    private String id;
     private String name;
 
+    private String token;
     private Long balance;
     public Player() {
     }
 
-    public Player(Long id, String name, Long balance) {
+    public Player(String id, String name, Long balance) {
         this.id = id;
         this.name = name;
         this.balance = balance;
     }
 
     public Player(String name, Long balance) {
+        this.id = UUID.randomUUID().toString();
         this.name = name;
         this.balance = balance;
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -43,6 +47,13 @@ public class Player {
         this.balance = balance;
     }
 
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
     @Override
     public String toString() {
         return "Player{" +
