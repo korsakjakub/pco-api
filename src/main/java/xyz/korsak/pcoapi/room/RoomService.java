@@ -1,13 +1,14 @@
 package xyz.korsak.pcoapi.room;
 
-import org.springframework.stereotype.Service;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.stereotype.Service;
+import xyz.korsak.pcoapi.exceptions.RoomAlreadyExistsException;
+import xyz.korsak.pcoapi.exceptions.RoomNotFoundException;
+import xyz.korsak.pcoapi.exceptions.UnauthorizedAccessException;
 import xyz.korsak.pcoapi.player.Player;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 public class RoomService {
@@ -18,8 +19,12 @@ public class RoomService {
     }
 
     public Room createRoom(String name) {
-        String id = UUID.randomUUID().toString();
-        String token = UUID.randomUUID().toString();
+        if (!roomRepository.existsWithName(name)) {
+            throw new RoomAlreadyExistsException("A room with the name '" + name + "' already exists.");
+        }
+
+        String id = generateToken();
+        String token = generateToken();
         Room room = new Room(id, name, token, new ArrayList<>());
         roomRepository.create(room);
         return room;
@@ -46,18 +51,17 @@ public class RoomService {
             roomRepository.create(room);
             return token;
         } else {
-            // Handle room not found error
-            return null;
+            throw new RoomNotFoundException("Room not found with ID: " + roomId);
         }
     }
 
     public List<Player> getPlayersInRoom(String roomId, String token) {
+
         Room room = roomRepository.findById(roomId);
-        if (room != null && room.getPlayers().stream().anyMatch(player -> player.getToken().equals(token))) {
+        if (room != null && room.getToken().equals(token)) {
             return room.getPlayers();
         } else {
-            // Handle room not found or unauthorized access error
-            return Collections.emptyList();
+            throw new UnauthorizedAccessException("Unauthorized access");
         }
     }
     private String generateToken() {

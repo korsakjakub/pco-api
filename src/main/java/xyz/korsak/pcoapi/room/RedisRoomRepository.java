@@ -33,4 +33,9 @@ public class RedisRoomRepository implements RoomRepository {
     public void delete(String id) {
         redisTemplate.delete(ROOM_KEY_PREFIX + id);
     }
+
+    @Override
+    public boolean existsWithName(String name) {
+        return redisTemplate.opsForHash().hasKey("rooms", name);
+    }
 }

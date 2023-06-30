@@ -31,19 +31,28 @@ public class RoomController {
         roomService.deleteRoom(id);
     }
 
-    @PostMapping(path = "/create", consumes = "application/json")
+    @PostMapping(path = "/create")
     @ResponseBody
     public Room createRoom(@RequestBody String name) {
         return roomService.createRoom(name);
     }
 
     @PostMapping("/{roomId}/players")
-    public void addPlayerToRoom(@PathVariable String roomId, @RequestBody Player player) {
-        roomService.addPlayerToRoom(roomId, player);
+    public String addPlayerToRoom(@PathVariable String roomId, @RequestBody Player player) {
+        return roomService.addPlayerToRoom(roomId, player);
     }
 
     @GetMapping("/{roomId}/players")
-    public List<Player> getPlayersInRoom(@PathVariable String roomId, @RequestParam String token) {
-        return roomService.getPlayersInRoom(roomId, token);
+    public List<Player> getPlayersInRoom(@PathVariable String roomId, @RequestHeader("Authorization") String authorizationHeader) {
+        String token = extractBearerToken(authorizationHeader);
+
+        return getPlayersInRoom(roomId, token);
+    }
+
+    private String extractBearerToken(String authorizationHeader) {
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            return authorizationHeader.substring(7);
+        }
+        throw new IllegalArgumentException("Invalid Authorization header format");
     }
 }
