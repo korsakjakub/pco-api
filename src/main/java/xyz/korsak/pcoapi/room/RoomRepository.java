@@ -5,5 +5,4 @@ public interface RoomRepository {
     Room findById(String id);
     Room findByToken(String token);
     void delete(String id);
-    boolean existsWithName(String name);
 }

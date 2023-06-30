@@ -1,8 +1,10 @@
 package xyz.korsak.pcoapi.room;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import xyz.korsak.pcoapi.player.Player;
+import xyz.korsak.pcoapi.exceptions.UnauthorizedAccessException;
 
 import java.util.List;
 
@@ -31,7 +33,7 @@ public class RoomController {
         roomService.deleteRoom(id);
     }
 
-    @PostMapping(path = "/create")
+    @PostMapping("/create")
     @ResponseBody
     public Room createRoom(@RequestBody String name) {
         return roomService.createRoom(name);
@@ -43,10 +45,17 @@ public class RoomController {
     }
 
     @GetMapping("/{roomId}/players")
-    public List<Player> getPlayersInRoom(@PathVariable String roomId, @RequestHeader("Authorization") String authorizationHeader) {
-        String token = extractBearerToken(authorizationHeader);
+    public List<Player> getPlayersInRoom(@PathVariable String roomId) {
+        return getPlayersInRoom(roomId);
+    }
 
-        return getPlayersInRoom(roomId, token);
+    @GetMapping("/{roomId}/players/{playerToken}")
+    public Player getPlayerInRoom(@PathVariable String roomId, @PathVariable String playerToken) {
+        try {
+            return roomService.getPlayerInRoom(roomId, playerToken);
+        } catch (UnauthorizedAccessException e) {
+            throw new UnauthorizedAccessException("Unauthorized access");
+        }
     }
 
     private String extractBearerToken(String authorizationHeader) {

@@ -6,20 +6,36 @@ import xyz.korsak.pcoapi.exceptions.UnauthorizedAccessException;
 import xyz.korsak.pcoapi.player.Player;
 
 import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 public class RoomServiceTest {
+
+    @Mock
+    private RoomRepository roomRepository;
+    private RoomService roomService;
+
+    @BeforeEach
+    public void setup() {
+        MockitoAnnotations.openMocks(this);
+        roomService = new RoomService(roomRepository);
+    }
+
     @Test
     void testCreateRoom() {
         RedisRoomRepository roomRepository = Mockito.mock(RedisRoomRepository.class);
 
         RoomService roomService = new RoomService(roomRepository);
-
-        when(roomRepository.existsWithName("Test Room")).thenReturn(true);
 
         Room room = roomService.createRoom("Test Room");
 
@@ -27,44 +43,125 @@ public class RoomServiceTest {
     }
 
     @Test
-    void testGetPlayersInRoom_Successful() {
+    public void testGetRoomById() {
+        // Arrange
         String roomId = "123";
-        String token = "valid-token";
+        Room expectedRoom = new Room(roomId, "Test Room", "456", new ArrayList<>());
+        Mockito.when(roomRepository.findById(roomId)).thenReturn(expectedRoom);
 
-        RedisRoomRepository roomRepository = Mockito.mock(RedisRoomRepository.class);
+        // Act
+        Room retrievedRoom = roomService.getRoomById(roomId);
 
-        RoomService roomService = new RoomService(roomRepository);
-
-        Room room = new Room();
-        room.setId(roomId);
-        room.setToken(token);
-        Player player1 = new Player("Player 1");
-        Player player2 = new Player("Player 2");
-        List<Player> players = Arrays.asList(player1, player2);
-        room.setPlayers(players);
-
-        when(roomRepository.findById(roomId)).thenReturn(room);
-
-        List<Player> result = roomService.getPlayersInRoom(roomId, token);
-
-        assertEquals(players, result);
-
-        verify(roomRepository, times(1)).findById(roomId);
+        // Assert
+        Assertions.assertEquals(expectedRoom, retrievedRoom);
+        Mockito.verify(roomRepository, Mockito.times(1)).findById(roomId);
     }
 
     @Test
-    void testGetPlayersInRoom_Unauthorized() {
+    public void testGetRoomByToken() {
+        // Arrange
+        String roomToken = "456";
+        Room expectedRoom = new Room("123", "Test Room", roomToken, new ArrayList<>());
+        Mockito.when(roomRepository.findByToken(roomToken)).thenReturn(expectedRoom);
+
+        // Act
+        Room retrievedRoom = roomService.getRoomByToken(roomToken);
+
+        // Assert
+        Assertions.assertEquals(expectedRoom, retrievedRoom);
+        Mockito.verify(roomRepository, Mockito.times(1)).findByToken(roomToken);
+    }
+
+    @Test
+    public void testAddPlayerToRoom() {
+        // Arrange
         String roomId = "123";
-        String token = "invalid-token";
+        Room room = new Room(roomId, "Test Room", "456", new ArrayList<>());
+        Player player = new Player("John Doe");
+        Mockito.when(roomRepository.findById(roomId)).thenReturn(room);
 
-        RedisRoomRepository roomRepository = Mockito.mock(RedisRoomRepository.class);
+        // Act
+        String addedToken = roomService.addPlayerToRoom(roomId, player);
 
-        RoomService roomService = new RoomService(roomRepository);
+        // Assert
+        Assertions.assertEquals(1, room.getPlayers().size());
+        Assertions.assertEquals(player, room.getPlayers().get(0));
+        Mockito.verify(roomRepository, Mockito.times(1)).findById(roomId);
+        Mockito.verify(roomRepository, Mockito.times(1)).create(room);
+    }
 
-        when(roomRepository.findById(roomId)).thenReturn(null);
+    @Test
+    public void testGetPlayersInRoom() {
+        // Arrange
+        String roomId = "123";
+        Room room = new Room(roomId, "Test Room", "456", new ArrayList<>());
+        List<Player> expectedPlayers = new ArrayList<>();
+        Player player1 = new Player("John Doe");
+        player1.setToken("abc");
+        Player player2 = new Player("Jane Smith");
+        player2.setToken("def");
+        expectedPlayers.add(player1);
+        expectedPlayers.add(player2);
+        room.setPlayers(expectedPlayers);
+        Mockito.when(roomRepository.findById(roomId)).thenReturn(room);
 
-        assertThrows(UnauthorizedAccessException.class, () -> roomService.getPlayersInRoom(roomId, token));
+        // Act
+        List<Player> retrievedPlayers = roomService.getPlayersInRoom(roomId);
 
-        verify(roomRepository, times(1)).findById(roomId);
+        // Assert
+        Assertions.assertEquals(expectedPlayers, retrievedPlayers);
+        Mockito.verify(roomRepository, Mockito.times(1)).findById(roomId);
+    }
+
+    @Test
+    public void testGetPlayerInRoom_WhenAuthorizedAccess() {
+        // Arrange
+        String roomId = "123";
+        String playerToken = "abc";
+        Room room = new Room(roomId, "Test Room", "456", new ArrayList<>());
+        List<Player> players = new ArrayList<>();
+        Player player = new Player("John Doe");
+        player.setToken(playerToken);
+        players.add(player);
+        room.setPlayers(players);
+        Mockito.when(roomRepository.findById(roomId)).thenReturn(room);
+
+        // Act
+        Player retrievedPlayer = roomService.getPlayerInRoom(roomId, playerToken);
+
+        // Assert
+        Assertions.assertEquals(player, retrievedPlayer);
+        Mockito.verify(roomRepository, Mockito.times(1)).findById(roomId);
+    }
+
+    @Test
+    public void testGetPlayerInRoom_WhenUnauthorizedAccess() {
+        // Arrange
+        String roomId = "123";
+        String playerToken = "xyz";
+        Room room = new Room(roomId, "Test Room", "456", new ArrayList<>());
+        List<Player> players = new ArrayList<>();
+        Player player = new Player("John Doe");
+        player.setToken("abc");
+        players.add(player);
+        room.setPlayers(players);
+        Mockito.when(roomRepository.findById(roomId)).thenReturn(room);
+
+        // Act and Assert
+        Assertions.assertThrows(UnauthorizedAccessException.class, () ->
+                roomService.getPlayerInRoom(roomId, playerToken));
+        Mockito.verify(roomRepository, Mockito.times(1)).findById(roomId);
+    }
+
+    @Test
+    public void testDeleteRoom() {
+        // Arrange
+        String roomId = "123";
+
+        // Act
+        roomService.deleteRoom(roomId);
+
+        // Assert
+        Mockito.verify(roomRepository, Mockito.times(1)).delete(roomId);
     }
 }

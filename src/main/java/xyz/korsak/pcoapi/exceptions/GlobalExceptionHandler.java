@@ -39,4 +39,14 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(errorObject, HttpStatus.CONFLICT);
     }
+
+    @ExceptionHandler(RedisUnavailableException.class)
+    public ResponseEntity<ErrorObject> handleRedisUnavailableException(RedisUnavailableException ex, WebRequest request) {
+        ErrorObject errorObject = new ErrorObject();
+        errorObject.setStatusCode(HttpStatus.I_AM_A_TEAPOT.value());
+        errorObject.setMessage(ex.getMessage());
+        errorObject.setTimestamp(new Date());
+
+        return new ResponseEntity<>(errorObject, HttpStatus.I_AM_A_TEAPOT);
+    }
 }

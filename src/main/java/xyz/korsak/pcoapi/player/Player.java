@@ -5,12 +5,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.UUID;
 
 public class Player {
+
     private String id;
     private String name;
-
-    @JsonIgnore
     private String token;
     private Long balance;
+
     public Player() {
     }
 

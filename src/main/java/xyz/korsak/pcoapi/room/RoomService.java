@@ -9,6 +9,7 @@ import xyz.korsak.pcoapi.player.Player;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class RoomService {
@@ -19,10 +20,6 @@ public class RoomService {
     }
 
     public Room createRoom(String name) {
-        if (!roomRepository.existsWithName(name)) {
-            throw new RoomAlreadyExistsException("A room with the name '" + name + "' already exists.");
-        }
-
         String id = generateToken();
         String token = generateToken();
         Room room = new Room(id, name, token, new ArrayList<>());
@@ -55,15 +52,34 @@ public class RoomService {
         }
     }
 
-    public List<Player> getPlayersInRoom(String roomId, String token) {
-
+    public List<Player> getPlayersInRoom(String roomId) {
+        System.out.println(roomId);
         Room room = roomRepository.findById(roomId);
-        if (room != null && room.getToken().equals(token)) {
-            return room.getPlayers();
+        System.out.println(room);
+        return room.getPlayers();
+    }
+
+    public Player getPlayerInRoom(String roomId, String playerToken) throws UnauthorizedAccessException {
+        Room room = roomRepository.findById(roomId);
+        
+        if (room != null) {
+            List<Player> players = room.getPlayers();
+            
+            // Find the player based on their token
+            Optional<Player> player = players.stream()
+                    .filter(p -> p.getToken().equals(playerToken))
+                    .findFirst();
+            
+            if (player.isPresent()) {
+                return player.get();
+            } else {
+                throw new UnauthorizedAccessException("Unauthorized access");
+            }
         } else {
             throw new UnauthorizedAccessException("Unauthorized access");
         }
     }
+
     private String generateToken() {
         return RandomStringUtils.randomAlphanumeric(10);
     }
