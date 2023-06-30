@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := all
-.PHONY: build run docker clean
+.PHONY: build run test docker clean
 
 all: build
 
@@ -8,6 +8,9 @@ build:
 
 run:
 	@mvn spring-boot:run
+
+test:
+	@mvn test
 
 docker:
 	@mvn spring-boot:build-image
