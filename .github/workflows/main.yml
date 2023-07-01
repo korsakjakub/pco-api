@@ -46,7 +46,10 @@ jobs:
           distribution: 'corretto'
           java-version: '20'
           cache: 'maven'
-      - run: make docker
+      - uses: buildpacks/github-actions/setup-pack@v5.0.0
+      - run: |
+          pack build --builder paketobuildpacks/builder --buildpack paketo-buildpacks/native-image ${{ env.IMAGE_NAME }}:graalvmtest
+          docker image ls
 
   release-container-image:
     name: Release the container image
