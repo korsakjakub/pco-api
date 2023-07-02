@@ -21,11 +21,10 @@ public class RedisRoomRepository implements RoomRepository {
       try {
         redisTemplate.opsForValue().set(ROOM_KEY_PREFIX + room.getId(), room);
         redisTemplate.opsForValue().set(ROOM_KEY_PREFIX + room.getToken(), room);
-      } catch (RedisConnectionFailureException ex) {
+      } catch (RedisConnectionFailureException | RedisSystemException ex) {
         throw new RedisUnavailableException("Redis is not available");
-    } catch (RedisSystemException ex) {
-      throw new RedisUnavailableException("Redis is not available");
-    }}
+    }
+    }
 
     @Override
     public Room findById(String id) {

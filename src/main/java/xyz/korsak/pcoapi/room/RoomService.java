@@ -2,7 +2,6 @@ package xyz.korsak.pcoapi.room;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Service;
-import xyz.korsak.pcoapi.exceptions.RoomAlreadyExistsException;
 import xyz.korsak.pcoapi.exceptions.RoomNotFoundException;
 import xyz.korsak.pcoapi.exceptions.UnauthorizedAccessException;
 import xyz.korsak.pcoapi.player.Player;
@@ -20,9 +19,9 @@ public class RoomService {
     }
 
     public Room createRoom(String name) {
-        String id = generateToken();
-        String token = generateToken();
-        Room room = new Room(id, name, token, new ArrayList<>());
+        String id = generateRandomString();
+        String token = generateRandomString();
+        Room room = new Room(id, name, new ArrayList<>(), token);
         roomRepository.create(room);
         return room;
     }
@@ -35,39 +34,44 @@ public class RoomService {
         return roomRepository.findByToken(token);
     }
 
-    public void deleteRoom(String id) {
-        roomRepository.delete(id);
-    }
-
-    public String addPlayerToRoom(String roomId, Player player) {
-        Room room = roomRepository.findById(roomId);
-        if (room != null) {
-            String token = generateToken();
-            player.setToken(token);
-            room.getPlayers().add(player);
-            roomRepository.create(room);
-            return token;
+    public void deleteRoom(String id, String roomToken) {
+        Room room = roomRepository.findById(id);
+        if (room.getToken().equals(roomToken)) {
+            roomRepository.delete(id);
         } else {
-            throw new RoomNotFoundException("Room not found with ID: " + roomId);
+            throw new UnauthorizedAccessException("Unauthorized access");
         }
     }
 
-    public List<Player> getPlayersInRoom(String roomId) {
-        System.out.println(roomId);
+    public Player addPlayerToRoom(String roomId, String name) {
         Room room = roomRepository.findById(roomId);
+        if (room == null) {
+            throw new RoomNotFoundException("Room not found with ID: " + roomId);
+        }
+        String token = generateRandomString();
+        String id = generateRandomString();
+        Long balance = 0L;
+        Player player = new Player(id, name, balance, token);
+        System.out.println(player);
+        room.getPlayers().add(player);
         System.out.println(room);
-        return room.getPlayers();
+        roomRepository.create(room);
+        return player;
     }
 
-    public Player getPlayerInRoom(String roomId, String playerToken) throws UnauthorizedAccessException {
+    public RoomGetPlayersInRoomResponse getPlayersInRoom(String roomId) {
+        Room room = roomRepository.findById(roomId);
+        return new RoomGetPlayersInRoomResponse(room.getPlayers());
+    }
+
+    public Player getPlayerInRoom(String roomId, String playerId, String playerToken) throws UnauthorizedAccessException {
         Room room = roomRepository.findById(roomId);
         
         if (room != null) {
             List<Player> players = room.getPlayers();
             
-            // Find the player based on their token
             Optional<Player> player = players.stream()
-                    .filter(p -> p.getToken().equals(playerToken))
+                    .filter(p -> p.getToken().equals(playerToken) && p.getId().equals(playerId))
                     .findFirst();
             
             if (player.isPresent()) {
@@ -80,7 +84,29 @@ public class RoomService {
         }
     }
 
-    private String generateToken() {
+    public void deletePlayerInRoom(String roomId, String playerId, String token) throws UnauthorizedAccessException {
+        Room room = roomRepository.findById(roomId);
+
+        if (room != null) {
+            List<Player> players = room.getPlayers();
+
+            Optional<Player> player = players.stream()
+                    .filter(p -> (p.getToken().equals(token) || room.getToken().equals(token)) && p.getId().equals(playerId))
+                    .findFirst();
+
+            if (player.isPresent()) {
+                players.remove(player.get());
+                roomRepository.create(room);
+            } else {
+                throw new UnauthorizedAccessException("Unauthorized access");
+            }
+        } else {
+            throw new UnauthorizedAccessException("Unauthorized access");
+        }
+
+    }
+
+    private String generateRandomString() {
         return RandomStringUtils.randomAlphanumeric(10);
     }
 }

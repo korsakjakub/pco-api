@@ -1,12 +1,11 @@
 package xyz.korsak.pcoapi.room;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import xyz.korsak.pcoapi.player.Player;
 import xyz.korsak.pcoapi.exceptions.UnauthorizedAccessException;
-
-import java.util.List;
+import xyz.korsak.pcoapi.player.Player;
 
 @RestController
 @RequestMapping(path = "api/v1/room")
@@ -29,33 +28,51 @@ public class RoomController {
     }
 
     @DeleteMapping("/{id}")
-    public void deleteRoom(@PathVariable String id) {
-        roomService.deleteRoom(id);
+    public void deleteRoom(@PathVariable String id, @RequestHeader("Authorization") String authorizationHeader) {
+        String roomToken = extractBearerToken(authorizationHeader);
+        roomService.deleteRoom(id, roomToken);
     }
 
     @PostMapping("/create")
-    @ResponseBody
-    public Room createRoom(@RequestBody String name) {
-        return roomService.createRoom(name);
+    public ResponseEntity<Room> createRoom(@RequestBody String name) {
+        Room r = roomService.createRoom(name);
+        if (r != null) {
+            return ResponseEntity.status(HttpStatus.CREATED).body(r);
+        } else {
+            return ResponseEntity.unprocessableEntity().build();
+        }
     }
 
     @PostMapping("/{roomId}/players")
-    public String addPlayerToRoom(@PathVariable String roomId, @RequestBody Player player) {
-        return roomService.addPlayerToRoom(roomId, player);
+    public ResponseEntity<Player> addPlayerToRoom(@PathVariable String roomId, @RequestBody String name) {
+        Player r = roomService.addPlayerToRoom(roomId, name);
+        return ResponseEntity.ok(r);
     }
 
     @GetMapping("/{roomId}/players")
-    public List<Player> getPlayersInRoom(@PathVariable String roomId) {
-        return getPlayersInRoom(roomId);
+    public ResponseEntity<RoomGetPlayersInRoomResponse> getPlayersInRoom(@PathVariable String roomId) {
+        RoomGetPlayersInRoomResponse players = roomService.getPlayersInRoom(roomId);
+        return ResponseEntity.ok(players);
     }
 
-    @GetMapping("/{roomId}/players/{playerToken}")
-    public Player getPlayerInRoom(@PathVariable String roomId, @PathVariable String playerToken) {
-        try {
-            return roomService.getPlayerInRoom(roomId, playerToken);
-        } catch (UnauthorizedAccessException e) {
+    @GetMapping("/{roomId}/players/{playerId}")
+    public ResponseEntity<Player> getPlayerInRoom(@PathVariable String roomId, @PathVariable String playerId, @RequestHeader("Authorization") String authorizationHeader) {
+        String playerToken = extractBearerToken(authorizationHeader);
+        Player player = roomService.getPlayerInRoom(roomId, playerId, playerToken);
+        if (player == null) {
             throw new UnauthorizedAccessException("Unauthorized access");
         }
+        return ResponseEntity.ok(player);
+    }
+
+    @DeleteMapping("/{roomId}/players/{playerId}")
+    public ResponseEntity<String> deletePlayerInRoom(@PathVariable String roomId, @PathVariable String playerId, @RequestHeader("Authorization") String authorizationHeader) {
+        String playerToken = extractBearerToken(authorizationHeader);
+        Player player = roomService.getPlayerInRoom(roomId, playerId, playerToken);
+        if (player == null) {
+            throw new UnauthorizedAccessException("Unauthorized access");
+        }
+        return ResponseEntity.ok("Deleted the player with Id: " + playerId);
     }
 
     private String extractBearerToken(String authorizationHeader) {
