@@ -96,6 +96,7 @@ public class RoomService {
 
             if (player.isPresent()) {
                 players.remove(player.get());
+                room.setPlayers(players);
                 roomRepository.create(room);
             } else {
                 throw new UnauthorizedAccessException("Unauthorized access");

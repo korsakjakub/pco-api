@@ -1,48 +1,35 @@
 package xyz.korsak.pcoapi;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import redis.embedded.RedisServer;
 import xyz.korsak.pcoapi.player.Player;
 import xyz.korsak.pcoapi.room.Room;
 import xyz.korsak.pcoapi.room.RoomGetPlayersInRoomResponse;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
+@ExtendWith(SpringExtension.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 public class RoomIntegrationTest {
     @Autowired
     private MockMvc mockMvc;
 
-    private static RedisServer redisServer;
-
-    @BeforeEach
-    public void setup() {
-        redisServer = RedisServer.builder().port(6380).build();
-        redisServer.start();
-    }
-
-    @AfterEach
-    public void tearDown() {
-        redisServer.stop();
-    }
-
     @Test
     public void testRoomCreationAndPlayerAddition() throws Exception {
         MvcResult createResult = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/room/create")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("My Room"))
+                        .content("{\"name\": \"My Room\"}"))
                 .andExpect(status().isCreated())
                 .andReturn();
 
@@ -55,7 +42,7 @@ public class RoomIntegrationTest {
 
         MvcResult player1Result = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/room/" + r.getId() + "/players")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content("Player 1"))
+                .content("{\"name\": \"Player 1\"}"))
                 .andExpect(status().isOk())
                 .andReturn();
         Player playerCreated = new ObjectMapper().readValue(player1Result.getResponse().getContentAsString(), Player.class);
@@ -66,7 +53,7 @@ public class RoomIntegrationTest {
 
         MvcResult player2Result = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/room/" + r.getId() + "/players")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("Player 2"))
+                        .content("{\"name\": \"Player 2\"}"))
                 .andExpect(status().isOk())
                 .andReturn();
         Player player2Created = new ObjectMapper().readValue(player2Result.getResponse().getContentAsString(), Player.class);

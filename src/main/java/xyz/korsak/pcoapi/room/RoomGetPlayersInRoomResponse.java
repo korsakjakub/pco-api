@@ -1,10 +1,10 @@
 package xyz.korsak.pcoapi.room;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import xyz.korsak.pcoapi.player.Player;
+import xyz.korsak.pcoapi.player.PlayerResponseWithoutToken;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,12 +13,12 @@ import java.util.List;
 @Getter
 @NoArgsConstructor
 public class RoomGetPlayersInRoomResponse {
-    private List<Player> players;
+    private List<PlayerResponseWithoutToken> players;
 
     public RoomGetPlayersInRoomResponse(List<Player> pwt) {
-        this.players = new ArrayList<>(pwt);
-        for (Player p : this.players) {
-            p.setToken(null);
+        this.players = new ArrayList<>();
+        for (Player p : pwt) {
+            this.players.add(new PlayerResponseWithoutToken(p.getId(), p.getName(), p.getBalance()));
         }
     }
 }

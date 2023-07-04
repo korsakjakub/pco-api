@@ -108,7 +108,10 @@ public class RoomServiceTest {
         RoomGetPlayersInRoomResponse retrievedPlayers = roomService.getPlayersInRoom(roomId);
 
         // Assert
-        Assertions.assertEquals(expectedPlayers, retrievedPlayers.getPlayers());
+        Assertions.assertEquals(expectedPlayers.get(0).getName(), retrievedPlayers.getPlayers().get(0).getName());
+        Assertions.assertEquals(expectedPlayers.get(1).getName(), retrievedPlayers.getPlayers().get(1).getName());
+        Assertions.assertEquals(expectedPlayers.get(0).getId(), retrievedPlayers.getPlayers().get(0).getId());
+        Assertions.assertEquals(expectedPlayers.get(1).getId(), retrievedPlayers.getPlayers().get(1).getId());
         verify(roomRepository, Mockito.times(1)).findById(roomId);
     }
 

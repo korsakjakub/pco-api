@@ -17,11 +17,6 @@ public class RoomController {
         this.roomService = roomService;
     }
 
-    @GetMapping(value = "/{id}")
-    public Room getRoomById(@PathVariable String id) {
-        return roomService.getRoomById(id);
-    }
-
     @GetMapping("/token/{token}")
     public Room getRoomByToken(@PathVariable String token) {
         return roomService.getRoomByToken(token);
@@ -34,8 +29,8 @@ public class RoomController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<Room> createRoom(@RequestBody String name) {
-        Room r = roomService.createRoom(name);
+    public ResponseEntity<Room> createRoom(@RequestBody NameRequest name) {
+        Room r = roomService.createRoom(name.getName());
         if (r != null) {
             return ResponseEntity.status(HttpStatus.CREATED).body(r);
         } else {
@@ -44,8 +39,8 @@ public class RoomController {
     }
 
     @PostMapping("/{roomId}/players")
-    public ResponseEntity<Player> addPlayerToRoom(@PathVariable String roomId, @RequestBody String name) {
-        Player r = roomService.addPlayerToRoom(roomId, name);
+    public ResponseEntity<Player> addPlayerToRoom(@PathVariable String roomId, @RequestBody NameRequest name) {
+        Player r = roomService.addPlayerToRoom(roomId, name.getName());
         return ResponseEntity.ok(r);
     }
 
@@ -68,8 +63,9 @@ public class RoomController {
     @DeleteMapping("/{roomId}/players/{playerId}")
     public ResponseEntity<String> deletePlayerInRoom(@PathVariable String roomId, @PathVariable String playerId, @RequestHeader("Authorization") String authorizationHeader) {
         String playerToken = extractBearerToken(authorizationHeader);
-        Player player = roomService.getPlayerInRoom(roomId, playerId, playerToken);
-        if (player == null) {
+        try {
+            roomService.deletePlayerInRoom(roomId, playerId, playerToken);
+        } catch(UnauthorizedAccessException ex) {
             throw new UnauthorizedAccessException("Unauthorized access");
         }
         return ResponseEntity.ok("Deleted the player with Id: " + playerId);
