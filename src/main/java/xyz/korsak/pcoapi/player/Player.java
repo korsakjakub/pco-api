@@ -1,20 +1,23 @@
 package xyz.korsak.pcoapi.player;
 
+import lombok.*;
+
 import java.util.UUID;
 
+@NoArgsConstructor
+@AllArgsConstructor
+@Setter
+@Getter
+@ToString
 public class Player {
+
     private String id;
     private String name;
-
-    private String token;
     private Long balance;
-    public Player() {
-    }
+    private String token;
 
-    public Player(String id, String name, Long balance) {
-        this.id = id;
+    public Player(String name) {
         this.name = name;
-        this.balance = balance;
     }
 
     public Player(String name, Long balance) {
@@ -23,43 +26,9 @@ public class Player {
         this.balance = balance;
     }
 
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
+    public Player(String id, String name, Long balance) {
         this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
         this.name = name;
-    }
-
-    public Long getBalance() {
-        return balance;
-    }
-
-    public void setBalance(Long balance) {
         this.balance = balance;
-    }
-
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
-    }
-    @Override
-    public String toString() {
-        return "Player{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", balance=" + balance +
-                '}';
     }
 }

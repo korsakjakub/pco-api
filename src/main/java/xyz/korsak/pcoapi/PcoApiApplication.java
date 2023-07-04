@@ -2,10 +2,12 @@ package xyz.korsak.pcoapi;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.web.bind.annotation.RestController;
 
 @SpringBootApplication
 @RestController
+@PropertySource("classpath:application-${spring.profiles.active}.properties")
 public class PcoApiApplication {
 
 	public static void main(String[] args) {
