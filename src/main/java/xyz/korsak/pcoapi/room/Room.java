@@ -18,6 +18,7 @@ public class Room {
     private List<Player> players;
     private String token;
     private Game game;
+    private String queueId;
 
     public Room(List<Player> players) {
         this.players = players;

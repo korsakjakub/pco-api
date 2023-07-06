@@ -1,4 +1,4 @@
-package xyz.korsak.pcoapi.room;
+package xyz.korsak.pcoapi.requests;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

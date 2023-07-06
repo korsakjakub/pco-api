@@ -1,4 +1,4 @@
-package xyz.korsak.pcoapi.player;
+package xyz.korsak.pcoapi.responses;
 
 import lombok.*;
 

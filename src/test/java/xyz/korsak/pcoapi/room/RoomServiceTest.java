@@ -8,6 +8,7 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import xyz.korsak.pcoapi.exceptions.UnauthorizedAccessException;
 import xyz.korsak.pcoapi.player.Player;
+import xyz.korsak.pcoapi.responses.GetPlayersResponse;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,21 +74,26 @@ public class RoomServiceTest {
         // Arrange
         String roomId = "123";
         Room room = new Room(roomId, "Test Room", new ArrayList<>(), "456");
-        String name = "John Doe";
+        String playerName = "John Doe";
+        String playerId = "789";
+        String playerToken = "xyz";
+        Player player = new Player(playerId, playerName, playerToken);
+        String roomToken = "456";
         when(roomRepository.findById(roomId)).thenReturn(room);
 
         // Act
-        Player addedPlayer = roomService.addPlayerToRoom(roomId, name);
+        Player addedPlayer = roomService.addPlayerToRoom(roomId, player, roomToken);
 
         // Assert
         Assertions.assertNotNull(addedPlayer);
         Assertions.assertNotNull(addedPlayer.getToken());
-        Assertions.assertEquals(addedPlayer.getName(), name);
+        Assertions.assertEquals(addedPlayer.getName(), playerName);
         Assertions.assertEquals(1, room.getPlayers().size());
-        Assertions.assertEquals(name, room.getPlayers().get(0).getName());
+        Assertions.assertEquals(playerName, room.getPlayers().get(0).getName());
         verify(roomRepository, Mockito.times(1)).findById(roomId);
         verify(roomRepository, Mockito.times(1)).create(room);
     }
+
 
     @Test
     public void testGetPlayersInRoom() {
@@ -105,7 +111,7 @@ public class RoomServiceTest {
         when(roomRepository.findById(roomId)).thenReturn(room);
 
         // Act
-        RoomGetPlayersInRoomResponse retrievedPlayers = roomService.getPlayersInRoom(roomId);
+        GetPlayersResponse retrievedPlayers = roomService.getPlayersInRoom(roomId);
 
         // Assert
         Assertions.assertEquals(expectedPlayers.get(0).getName(), retrievedPlayers.getPlayers().get(0).getName());
