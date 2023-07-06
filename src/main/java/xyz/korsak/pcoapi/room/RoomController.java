@@ -72,18 +72,6 @@ public class RoomController extends BaseController {
         return ResponseEntity.ok(players);
     }
 
-    @GetMapping("/{roomId}/players/{playerId}")
-    public ResponseEntity<Player> getPlayerInRoom(@PathVariable String roomId,
-                                                  @PathVariable String playerId,
-                                                  @RequestHeader("Authorization") String authorizationHeader) {
-        String playerToken = extractBearerToken(authorizationHeader);
-        Player player = roomService.getPlayerInRoom(roomId, playerId, playerToken);
-        if (player == null) {
-            throw new UnauthorizedAccessException();
-        }
-        return ResponseEntity.ok(player);
-    }
-
     @DeleteMapping("/{roomId}/players/{playerId}")
     public ResponseEntity<String> deletePlayerInRoom(@PathVariable String roomId,
                                                      @PathVariable String playerId,
