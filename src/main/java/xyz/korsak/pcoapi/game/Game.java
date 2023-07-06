@@ -13,4 +13,5 @@ import xyz.korsak.pcoapi.rules.Rules;
 public class Game {
     private Rules rules;
     private GameState state;
+    private Long StakedChips;
 }

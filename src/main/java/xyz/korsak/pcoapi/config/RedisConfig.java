@@ -10,6 +10,7 @@ import org.springframework.data.redis.connection.lettuce.LettuceClientConfigurat
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import xyz.korsak.pcoapi.queue.Queue;
 import xyz.korsak.pcoapi.room.Room;
 
 @Configuration
@@ -28,8 +29,16 @@ public class RedisConfig {
     private boolean useSsl;
 
     @Bean
-    public RedisTemplate<String, Room> redisTemplate(RedisConnectionFactory connectionFactory) {
+    public RedisTemplate<String, Room> redisRoomTemplate(RedisConnectionFactory connectionFactory) {
         RedisTemplate<String, Room> template = new RedisTemplate<>();
+        template.setConnectionFactory(connectionFactory);
+        template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
+        return template;
+    }
+
+    @Bean
+    public RedisTemplate<String, Queue> redisQueueTemplate(RedisConnectionFactory connectionFactory) {
+        RedisTemplate<String, Queue> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
         template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
         return template;

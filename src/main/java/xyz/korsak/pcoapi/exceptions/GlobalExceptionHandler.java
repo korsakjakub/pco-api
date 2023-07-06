@@ -10,8 +10,8 @@ import java.util.Date;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
-    @ExceptionHandler(RoomNotFoundException.class)
-    public ResponseEntity<ErrorObject> handleRoomNotFoundException(RoomNotFoundException ex, WebRequest request) {
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<ErrorObject> handleRoomNotFoundException(NotFoundException ex, WebRequest request) {
         ErrorObject errorObject = new ErrorObject();
         errorObject.setStatusCode(HttpStatus.NOT_FOUND.value());
         errorObject.setMessage(ex.getMessage());

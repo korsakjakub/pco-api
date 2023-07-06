@@ -1,7 +1,8 @@
 package xyz.korsak.pcoapi.exceptions;
 
 public class UnauthorizedAccessException extends RuntimeException {
-    public UnauthorizedAccessException(String message) {
-        super(message);
+    private static final String DEFAULT_MESSAGE = "Unauthorized access";
+    public UnauthorizedAccessException() {
+        super(DEFAULT_MESSAGE);
     }
 }

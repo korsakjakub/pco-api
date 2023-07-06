@@ -31,4 +31,10 @@ public class Player {
         this.name = name;
         this.balance = balance;
     }
+
+    public Player(String id, String name, String token) {
+        this.id = id;
+        this.name = name;
+        this.token = token;
+    }
 }
