@@ -42,6 +42,8 @@ public class RedisQueueRepository implements QueueRepository {
         if (queue == null) {
             throw new NotFoundException("No queue with ID: " + queueId);
         }
-        return queue.removePlayer(playerId);
+        Player removedPlayer = queue.removePlayer(playerId);
+        create(queue);
+        return removedPlayer;
     }
 }
