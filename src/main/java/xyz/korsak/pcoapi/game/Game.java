@@ -14,4 +14,5 @@ public class Game {
     private Rules rules;
     private GameState state;
     private Long StakedChips;
+    private int currentTurnIndex;
 }

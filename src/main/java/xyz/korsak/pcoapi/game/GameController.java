@@ -1,14 +1,33 @@
 package xyz.korsak.pcoapi.game;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import xyz.korsak.pcoapi.exceptions.NotFoundException;
+import xyz.korsak.pcoapi.room.Room;
+import xyz.korsak.pcoapi.room.RoomService;
 import xyz.korsak.pcoapi.rules.RulesDTO;
 
 @RestController
 @RequestMapping("/api/v1/game")
 public class GameController {
+    private final RoomService roomService;
+
+    @Autowired
+    public GameController(RoomService roomService) {
+        this.roomService = roomService;
+    }
     @PostMapping("/start")
     public ResponseEntity<String> startGame(@RequestHeader("Authorization") String authorization, @RequestParam("roomId") String roomId) {
+        Room room = roomService.getRoomById(roomId);
+        if (room == null) {
+            throw new NotFoundException("Room not found with ID: " + roomId);
+        }
+        Game game = room.getGame();
+        game.setState(GameState.IN_PROGRESS);
+        game.setCurrentTurnIndex(0);
+
+        roomService.updateRoom(room);
         return ResponseEntity.ok("Game started successfully");
     }
 
