@@ -90,7 +90,7 @@ public class RoomServiceTest {
         Assertions.assertEquals(addedPlayer.getName(), playerName);
         Assertions.assertEquals(1, room.getPlayers().size());
         Assertions.assertEquals(playerName, room.getPlayers().get(0).getName());
-        verify(roomRepository, Mockito.times(1)).findById(roomId);
+        verify(roomRepository, Mockito.times(2)).findById(roomId);
         verify(roomRepository, Mockito.times(1)).create(room);
     }
 
