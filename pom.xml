@@ -44,12 +44,6 @@
             <artifactId>lombok</artifactId>
             <version>1.18.28</version>
         </dependency>
-		<dependency>
-			<groupId>it.ozimov</groupId>
-			<artifactId>embedded-redis</artifactId>
-			<version>0.7.2</version>
-			<scope>test</scope>
-		</dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
