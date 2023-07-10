@@ -2,19 +2,21 @@ package xyz.korsak.pcoapi.room;
 
 import org.springframework.stereotype.Service;
 import xyz.korsak.pcoapi.BaseService;
+import xyz.korsak.pcoapi.authorization.Authorization;
 import xyz.korsak.pcoapi.exceptions.UnauthorizedAccessException;
 import xyz.korsak.pcoapi.player.Player;
 import xyz.korsak.pcoapi.responses.GetPlayersResponse;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class RoomService extends BaseService {
     private final RoomRepository roomRepository;
+    private final Authorization auth;
 
-    public RoomService(RoomRepository roomRepository) {
+    public RoomService(Authorization authorization, RoomRepository roomRepository) {
+        this.auth = authorization;
         this.roomRepository = roomRepository;
     }
 
@@ -35,7 +37,7 @@ public class RoomService extends BaseService {
     }
 
     public void deleteRoom(String id, String roomToken) {
-        if (authorizeRoomOwner(id, roomToken)) {
+        if (auth.authorizeRoomOwner(id, roomToken)) {
             roomRepository.delete(id);
         } else {
             throw new UnauthorizedAccessException();
@@ -43,10 +45,7 @@ public class RoomService extends BaseService {
     }
 
     public Player addPlayerToRoom(String roomId, Player player, String roomToken) {
-        if (!authorizeRoomOwner(roomId, roomToken)) {
-            throw new UnauthorizedAccessException();
-        }
-        Room room = roomRepository.findById(roomId);
+        Room room = auth.getRoomByIdWithOwnerAuthorization(roomId, roomToken);
         room.getPlayers().add(player);
         roomRepository.create(room);
         return player;
@@ -58,7 +57,8 @@ public class RoomService extends BaseService {
     }
 
     public Player getPlayerInRoom(String roomId, String playerId, String playerToken) throws UnauthorizedAccessException {
-        return getPlayerWithAuthorization(roomId, playerId, playerToken);
+        Player player = auth.getPlayerWithAuthorization(roomId, playerId, playerToken);
+        return player;
     }
 
     public void deletePlayerInRoom(String roomId, String playerId, String token) throws UnauthorizedAccessException {
@@ -66,40 +66,13 @@ public class RoomService extends BaseService {
         if (room == null) {
             throw new UnauthorizedAccessException();
         }
-        Player player = getPlayerWithAuthorization(roomId, playerId, token);
+        Player player = auth.getPlayerWithAuthorization(roomId, playerId, token);
         List<Player> players = room.getPlayers();
         players.remove(player);
         roomRepository.create(room);
-
     }
 
     public void updateRoom(Room room) {
         roomRepository.create(room);
-    }
-
-    protected boolean authorizeRoomOwner(String roomId, String roomToken) throws UnauthorizedAccessException {
-        Room room = roomRepository.findById(roomId);
-        return room != null && room.getToken().equals(roomToken);
-    }
-
-    /*
-    token can be either roomToken or playerToken. The point is that both room owner and player should be able to access
-    player related info
-     */
-    protected Player getPlayerWithAuthorization(String roomId, String playerId, String token) {
-        Room room = roomRepository.findById(roomId);
-        if (room == null) {
-            throw new UnauthorizedAccessException();
-        }
-        List<Player> players = room.getPlayers();
-
-        Optional<Player> player = players.stream()
-                .filter(p -> (p.getToken().equals(token) || room.getToken().equals(token)) && p.getId().equals(playerId))
-                .findFirst();
-
-        if (player.isEmpty()) {
-            throw new UnauthorizedAccessException();
-        }
-        return player.get();
     }
 }

@@ -10,5 +10,5 @@ import lombok.*;
 public class PlayerResponseWithoutToken {
     private String id;
     private String name;
-    private Long balance;
+    private Long chips;
 }

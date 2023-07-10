@@ -17,7 +17,7 @@ public class GetPlayersResponse {
     public GetPlayersResponse(List<Player> pwt) {
         this.players = new ArrayList<>();
         for (Player p : pwt) {
-            this.players.add(new PlayerResponseWithoutToken(p.getId(), p.getName(), p.getBalance()));
+            this.players.add(new PlayerResponseWithoutToken(p.getId(), p.getName(), p.getChips()));
         }
     }
 }
