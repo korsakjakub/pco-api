@@ -86,6 +86,7 @@ public class GameService {
     public void call(String roomId, String playerId, String playerToken) {
         performAction(roomId, playerId, playerToken, (room, game, turnIndex, player) -> {
             player.setChips(player.getChips() - game.getCurrentBetSize());
+            player.addToStake(game.getCurrentBetSize());
             game.addToStake(game.getCurrentBetSize());
         });
     }
@@ -102,6 +103,7 @@ public class GameService {
             }
 
             player.setChips(newPlayerBalance);
+            player.addToStake(betSize);
             game.addToStake(betSize);
             game.setCurrentBetSize(betSize);
         });
@@ -121,8 +123,8 @@ public class GameService {
                 throw new GameException("Current bet size is zero");
             }
 
-            if (betSize - game.getCurrentBetSize() < 0L) {
-                throw new GameException("The raised bet is lower than the current bet size");
+            if (betSize - game.getCurrentBetSize() < 0L || betSize < 2L *game.getRules().getBigBlind()) {
+                throw new GameException("The bet size is too low");
             }
 
             long newPlayerBalance = player.getChips() - betSize;
@@ -133,6 +135,7 @@ public class GameService {
 
             player.setChips(newPlayerBalance);
             game.addToStake(betSize);
+            player.addToStake(betSize);
             game.setCurrentBetSize(betSize);
         });
     }

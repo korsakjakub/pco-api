@@ -38,4 +38,8 @@ public class Player {
         this.name = name;
         this.token = token;
     }
+
+    public void addToStake(Long bet) {
+        this.stakedChips += bet;
+    }
 }
