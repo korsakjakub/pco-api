@@ -1,4 +1,4 @@
-package xyz.korsak.pcoapi.rules;
+package xyz.korsak.pcoapi.requests;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,9 +9,7 @@ import lombok.Setter;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public abstract class Rules {
-    private int startingChips;
-    private int ante;
-    private int smallBlind;
-    private int bigBlind;
+public class IdChipsRequest {
+    private String id;
+    private Long chips;
 }

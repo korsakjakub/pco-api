@@ -41,5 +41,4 @@ public class PlayerController extends BaseController {
         }
         return ResponseEntity.ok(player);
     }
-
 }

@@ -68,6 +68,19 @@ public class RoomController extends BaseController {
         return ResponseEntity.status(HttpStatus.OK).body(player);
     }
 
+    @PostMapping("/{roomId}/players")
+    public ResponseEntity<Player> createPlayerInRoom(@PathVariable String roomId,
+                                                     @RequestBody NameRequest name,
+                                                     @RequestHeader("Authorization") String authorizationHeader) {
+        String roomToken = extractBearerToken(authorizationHeader);
+        Room room = roomService.getRoomById(roomId);
+        if (room == null || !room.getToken().equals(roomToken)) {
+            throw new UnauthorizedAccessException();
+        }
+        Player player = roomService.createPlayerInRoom(roomId, roomToken, name.getName());
+        return ResponseEntity.status(HttpStatus.OK).body(player);
+                                                     }
+
     @GetMapping("/{roomId}/players")
     public ResponseEntity<GetPlayersResponse> getPlayersInRoom(@PathVariable String roomId) {
         GetPlayersResponse players = roomService.getPlayersInRoom(roomId);

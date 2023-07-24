@@ -1,4 +1,4 @@
-package xyz.korsak.pcoapi.rules;
+package xyz.korsak.pcoapi.requests;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -7,8 +7,8 @@ import lombok.Setter;
 
 @Setter
 @Getter
-@NoArgsConstructor
 @AllArgsConstructor
-public class RulesDTO {
-    private int startingChips;
+@NoArgsConstructor
+public class IdRequest {
+    private String id;
 }
