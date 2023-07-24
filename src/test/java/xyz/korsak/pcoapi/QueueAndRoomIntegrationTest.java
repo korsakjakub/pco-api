@@ -14,6 +14,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import xyz.korsak.pcoapi.player.Player;
+import xyz.korsak.pcoapi.responses.IdTokenResponse;
 import xyz.korsak.pcoapi.room.Room;
 import xyz.korsak.pcoapi.responses.GetPlayersResponse;
 
@@ -29,25 +30,23 @@ public class QueueAndRoomIntegrationTest {
     @Test
     public void testRoomCreationAndPlayerAddition() throws Exception {
 
-        Room r = createRoom("My Room");
+        IdTokenResponse r = createRoom("My Room");
 
-        Assertions.assertEquals(r.getName(), "My Room");
         Assertions.assertNotNull(r.getId());
-        Assertions.assertNotNull(r.getQueueId());
         Assertions.assertNotNull(r.getToken());
 
-        Player playerCreated = createPlayer(r.getQueueId(), "Player 1");
+        Room room = getRoom(r.getToken());
 
-        Assertions.assertEquals(playerCreated.getName(), "Player 1");
-        Assertions.assertNotNull(playerCreated.getId());
-        Assertions.assertNotNull(playerCreated.getToken());
+        IdTokenResponse idTokenPlayer1 = createPlayer(room.getQueueId(), "Player 1");
 
-        Player player2Created = createPlayer(r.getQueueId(), "Player 2");
-        Assertions.assertEquals(player2Created.getName(), "Player 2");
-        Assertions.assertNotNull(player2Created.getId());
-        Assertions.assertNotNull(player2Created.getToken());
+        Assertions.assertNotNull(idTokenPlayer1.getId());
+        Assertions.assertNotNull(idTokenPlayer1.getToken());
 
-        GetPlayersResponse updatedQueueResponse = getPlayersInQueue(r.getQueueId());
+        IdTokenResponse idTokenPlayer2 = createPlayer(room.getQueueId(), "Player 2");
+        Assertions.assertNotNull(idTokenPlayer2.getId());
+        Assertions.assertNotNull(idTokenPlayer2.getToken());
+
+        GetPlayersResponse updatedQueueResponse = getPlayersInQueue(room.getQueueId());
 
         Assertions.assertNotNull(updatedQueueResponse);
         Assertions.assertEquals(updatedQueueResponse.getPlayers().size(), 2);
@@ -57,23 +56,22 @@ public class QueueAndRoomIntegrationTest {
         Assertions.assertNotNull(updatedRoomResponse);
         Assertions.assertEquals(updatedRoomResponse.getPlayers().size(), 0);
 
-        Player movePlayerToRoomResponse = movePlayerToRoom(r.getId(), playerCreated.getId(), r.getToken());
+        Player movePlayerToRoomResponse = movePlayerToRoom(r.getId(), idTokenPlayer1.getId(), r.getToken());
 
         Assertions.assertNotNull(movePlayerToRoomResponse);
-        Assertions.assertEquals(movePlayerToRoomResponse.getName(), playerCreated.getName());
-        Assertions.assertEquals(movePlayerToRoomResponse.getId(), playerCreated.getId());
+        Assertions.assertEquals(movePlayerToRoomResponse.getId(), idTokenPlayer1.getId());
 
         GetPlayersResponse updatedRoomResponse2 = getPlayersInRoom(r.getId());
 
         Assertions.assertNotNull(updatedRoomResponse2);
         Assertions.assertEquals(updatedRoomResponse2.getPlayers().size(), 1);
 
-        GetPlayersResponse updatedQueueResponse2 = getPlayersInQueue(r.getQueueId());
+        GetPlayersResponse updatedQueueResponse2 = getPlayersInQueue(room.getQueueId());
         Assertions.assertNotNull(updatedQueueResponse2);
         Assertions.assertEquals(updatedQueueResponse2.getPlayers().size(), 1);
 
     }
-    private Room createRoom(String name) throws Exception {
+    private IdTokenResponse createRoom(String name) throws Exception {
         MvcResult createResult = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/room/create")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\": \""+ name + "\"}"))
@@ -81,16 +79,27 @@ public class QueueAndRoomIntegrationTest {
                 .andReturn();
 
         String json = createResult.getResponse().getContentAsString();
+        return new ObjectMapper().readValue(json, IdTokenResponse.class);
+    }
+
+    private Room getRoom(String token) throws Exception {
+        MvcResult createResult = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/room/token/" + token)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String json = createResult.getResponse().getContentAsString();
         return new ObjectMapper().readValue(json, Room.class);
     }
 
-    private Player createPlayer(String queueId, String name) throws Exception {
+
+    private IdTokenResponse createPlayer(String queueId, String name) throws Exception {
         MvcResult player1Result = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/player/create?queueId=" + queueId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\": \"" + name + "\"}"))
                 .andExpect(status().isOk())
                 .andReturn();
-        return new ObjectMapper().readValue(player1Result.getResponse().getContentAsString(), Player.class);
+        return new ObjectMapper().readValue(player1Result.getResponse().getContentAsString(), IdTokenResponse.class);
     }
 
 

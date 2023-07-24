@@ -7,10 +7,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import xyz.korsak.pcoapi.responses.GetPlayersResponse;
+import xyz.korsak.pcoapi.BaseController;
 
 @RestController
 @RequestMapping(path = "api/v1/queue")
-public class QueueController {
+public class QueueController extends BaseController {
     QueueService queueService;
 
     @Autowired
