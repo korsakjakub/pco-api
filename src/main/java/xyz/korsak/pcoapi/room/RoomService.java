@@ -51,6 +51,16 @@ public class RoomService extends BaseService {
         return player;
     }
 
+    public Player createPlayerInRoom(String roomId, String roomToken, String playerName) {
+        Room room = auth.getRoomByIdWithOwnerAuthorization(roomId, roomToken);
+        String token = generateRandomString();
+        String id = generateRandomString();
+        Player player = new Player(id, playerName, token);
+        room.getPlayers().add(player);
+        roomRepository.create(room);
+        return player;
+    }
+
     public GetPlayersResponse getPlayersInRoom(String roomId) {
         Room room = roomRepository.findById(roomId);
         return new GetPlayersResponse(room.getPlayers());
