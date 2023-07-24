@@ -11,6 +11,7 @@ import xyz.korsak.pcoapi.queue.Queue;
 import xyz.korsak.pcoapi.queue.QueueService;
 import xyz.korsak.pcoapi.requests.NameRequest;
 import xyz.korsak.pcoapi.responses.GetPlayersResponse;
+import xyz.korsak.pcoapi.responses.IdTokenResponse;
 
 @RestController
 @RequestMapping(path = "api/v1/room")
@@ -37,14 +38,15 @@ public class RoomController extends BaseController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<Room> createRoom(@RequestBody NameRequest name) {
-        Room r = roomService.createRoom(name.getName());
-        if (r == null) {
+    public ResponseEntity<IdTokenResponse> createRoom(@RequestBody NameRequest name) {
+        Room room = roomService.createRoom(name.getName());
+        if (room == null) {
             return ResponseEntity.unprocessableEntity().build();
         }
-        Queue queue = queueService.createQueue(r.getId());
-        r.setQueueId(queue.getId());
-        roomService.updateRoom(r);
+        Queue queue = queueService.createQueue(room.getId());
+        room.setQueueId(queue.getId());
+        roomService.updateRoom(room);
+        IdTokenResponse r = new IdTokenResponse(room.getId(), room.getToken());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(r);
     }

@@ -8,6 +8,7 @@ import xyz.korsak.pcoapi.queue.Queue;
 import xyz.korsak.pcoapi.queue.QueueService;
 import xyz.korsak.pcoapi.requests.NameRequest;
 import xyz.korsak.pcoapi.responses.GetPlayersResponse;
+import xyz.korsak.pcoapi.responses.IdTokenResponse;
 
 import java.util.ArrayList;
 
@@ -59,7 +60,8 @@ class RoomControllerTest {
     void createRoom_ReturnsRoom_WhenValidRequest() {
         // Arrange
         NameRequest nameRequest = new NameRequest("Test Room");
-        Room expectedRoom = new Room("123", "Test Room", new ArrayList<>(), "456");
+        IdTokenResponse expectedResponse = new IdTokenResponse("123", "456");
+        Room expectedRoom = new Room("123", "asd", new ArrayList<>(), "456");
         Queue expectedQueue = new Queue("123", "123123");
 
         RoomService roomService = mock(RoomService.class);
@@ -70,7 +72,7 @@ class RoomControllerTest {
         RoomController roomController = new RoomController(roomService, queueService);
 
         // Act
-        ResponseEntity<Room> response = roomController.createRoom(nameRequest);
+        ResponseEntity<IdTokenResponse> response = roomController.createRoom(nameRequest);
 
         // Assert
         verify(roomService, times(1)).createRoom(eq(nameRequest.getName()));
@@ -78,7 +80,8 @@ class RoomControllerTest {
         verify(roomService, times(1)).updateRoom(eq(expectedRoom));
         verifyNoMoreInteractions(roomService, queueService);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        assertEquals(expectedRoom, response.getBody());
+        assertEquals(expectedResponse.getId(), response.getBody().getId());
+        assertEquals(expectedResponse.getToken(), response.getBody().getToken());
     }
 
     @Test
