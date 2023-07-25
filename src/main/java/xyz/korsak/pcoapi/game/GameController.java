@@ -1,6 +1,5 @@
 package xyz.korsak.pcoapi.game;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import xyz.korsak.pcoapi.BaseController;
@@ -18,7 +17,6 @@ public class GameController extends BaseController {
     private final GameService gameService;
     private final RoomService roomService;
 
-    @Autowired
     public GameController(GameService gameService, RoomService roomService) {
         this.gameService = gameService;
         this.roomService = roomService;

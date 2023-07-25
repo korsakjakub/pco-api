@@ -1,6 +1,5 @@
 package xyz.korsak.pcoapi.player;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import xyz.korsak.pcoapi.BaseController;
@@ -16,7 +15,6 @@ public class PlayerController extends BaseController {
     private final QueueService queueService;
     private final RoomService roomService;
 
-    @Autowired
     public PlayerController(QueueService queueService, RoomService roomService) {
         this.queueService = queueService;
         this.roomService = roomService;
