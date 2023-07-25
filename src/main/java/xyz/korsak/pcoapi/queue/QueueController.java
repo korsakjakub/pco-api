@@ -24,4 +24,9 @@ public class QueueController extends BaseController {
         GetPlayersResponse players = queueService.getPlayersInQueue(queueId);
         return ResponseEntity.ok(players);
     }
+
+    @GetMapping("/{queueId}/roomid")
+    public ResponseEntity<String> getRoomId(@PathVariable String queueId) {
+        return ResponseEntity.ok(queueService.getRoomId(queueId));
+    }
 }

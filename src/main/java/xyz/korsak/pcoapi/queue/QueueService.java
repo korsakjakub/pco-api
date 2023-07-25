@@ -26,7 +26,7 @@ public class QueueService extends BaseService {
     public Player addPlayerToQueue(String queueId, String name) {
         Queue queue = queueRepository.findById(queueId);
         if (queue == null) {
-            throw new NotFoundException("Queue not found with ID: " + queueId);
+            throw new NotFoundException(queueId);
         }
 
         String token = generateRandomString();
@@ -39,10 +39,21 @@ public class QueueService extends BaseService {
 
     public GetPlayersResponse getPlayersInQueue(String queueId) {
         Queue queue = queueRepository.findById(queueId);
+        if (queue == null) {
+            throw new NotFoundException(queueId);
+        }
         return new GetPlayersResponse(queue.getPlayers());
     }
 
     public Player removePlayerFromQueue(String queueId, String playerId) {
         return queueRepository.removePlayer(queueId, playerId);
+    }
+
+    public String getRoomId(String queueId) {
+        Queue queue = queueRepository.findById(queueId);
+        if (queue == null) {
+            throw new NotFoundException(queueId);
+        }
+        return queue.getRoomId();
     }
 }
