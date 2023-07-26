@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import xyz.korsak.pcoapi.responses.GetPlayersResponse;
+import xyz.korsak.pcoapi.responses.IdResponse;
 import xyz.korsak.pcoapi.BaseController;
 
 @RestController
@@ -24,7 +25,8 @@ public class QueueController extends BaseController {
     }
 
     @GetMapping("/{queueId}/roomid")
-    public ResponseEntity<String> getRoomId(@PathVariable String queueId) {
-        return ResponseEntity.ok(queueService.getRoomId(queueId));
+    public ResponseEntity<IdResponse> getRoomId(@PathVariable String queueId) {
+        IdResponse roomId = queueService.getRoomId(queueId);
+        return ResponseEntity.ok(roomId);
     }
 }

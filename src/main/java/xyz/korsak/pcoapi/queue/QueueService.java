@@ -5,6 +5,7 @@ import xyz.korsak.pcoapi.BaseService;
 import xyz.korsak.pcoapi.exceptions.NotFoundException;
 import xyz.korsak.pcoapi.player.Player;
 import xyz.korsak.pcoapi.responses.GetPlayersResponse;
+import xyz.korsak.pcoapi.responses.IdResponse;
 
 import java.util.ArrayList;
 
@@ -49,11 +50,11 @@ public class QueueService extends BaseService {
         return queueRepository.removePlayer(queueId, playerId);
     }
 
-    public String getRoomId(String queueId) {
+    public IdResponse getRoomId(String queueId) {
         Queue queue = queueRepository.findById(queueId);
         if (queue == null) {
             throw new NotFoundException(queueId);
         }
-        return queue.getRoomId();
+        return new IdResponse(queue.getRoomId());
     }
 }
