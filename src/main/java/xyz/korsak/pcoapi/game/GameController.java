@@ -38,6 +38,28 @@ public class GameController extends BaseController {
         return ResponseEntity.ok("Game started successfully");
     }
 
+    @GetMapping("/state")
+    public ResponseEntity<String> getState(@RequestParam("roomId") String roomId) {
+        Room room = roomService.getRoomById(roomId);
+        if (room == null) {
+            throw new NotFoundException("Room not found with ID: " + roomId);
+        }
+        Game game = room.getGame();
+
+        return ResponseEntity.ok(game.getState().toString());
+    }
+
+    @GetMapping("/stage")
+    public ResponseEntity<String> getStage(@RequestParam("roomId") String roomId) {
+        Room room = roomService.getRoomById(roomId);
+        if (room == null) {
+            throw new NotFoundException("Room not found with ID: " + roomId);
+        }
+        Game game = room.getGame();
+
+        return ResponseEntity.ok(game.getStage().toString());
+    }
+
     @GetMapping("/current-player")
     public ResponseEntity<Player> getCurrentPlayer(@RequestParam("roomId") String roomId) {
         Room room = roomService.getRoomById(roomId);
