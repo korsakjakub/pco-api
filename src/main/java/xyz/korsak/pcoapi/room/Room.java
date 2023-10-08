@@ -29,5 +29,6 @@ public class Room {
         this.name = name;
         this.players = players;
         this.token = token;
+        this.game = new Game();
     }
 }

@@ -2,13 +2,11 @@ package xyz.korsak.pcoapi.game;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import xyz.korsak.pcoapi.rules.PokerRules;
 
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
 public class Game {
     private PokerRules rules;
@@ -23,6 +21,16 @@ public class Game {
 
     public void addToStake(Long bet) {
         stakedChips += bet;
+    }
+
+    public Game() {
+        this.state = GameState.WAITING;
+        this.stage = GameStage.PRE_FLOP;
+        this.stakedChips = 0L;
+        this.currentBetSize = 0L;
+        this.dealerIndex = 0;
+        this.smallBlindIndex = 1;
+        this.bigBlindIndex = 2;
     }
 
     public Game(GameState gameState, int currentTurnIndex) {

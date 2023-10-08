@@ -25,18 +25,22 @@ public class Player {
         this.id = UUID.randomUUID().toString();
         this.name = name;
         this.chips = chips;
+        this.stakedChips = 0L;
     }
 
     public Player(String id, String name, Long chips) {
         this.id = id;
         this.name = name;
         this.chips = chips;
+        this.stakedChips = 0L;
     }
 
     public Player(String id, String name, String token) {
         this.id = id;
         this.name = name;
         this.token = token;
+        this.chips = 0L;
+        this.stakedChips = 0L;
     }
 
     public void addToStake(Long bet) {

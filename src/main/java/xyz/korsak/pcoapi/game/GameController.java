@@ -45,6 +45,9 @@ public class GameController extends BaseController {
             throw new NotFoundException("Room not found with ID: " + roomId);
         }
         Game game = room.getGame();
+        if (game == null) {
+            throw new NotFoundException("There is no game for room with ID: " + roomId);
+        }
         Player currentPlayer = gameService.getCurrentPlayer(room, game.getCurrentTurnIndex());
 
         return ResponseEntity.ok(currentPlayer);
