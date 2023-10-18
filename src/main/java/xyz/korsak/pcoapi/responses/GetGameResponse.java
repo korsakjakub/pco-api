@@ -30,11 +30,7 @@ public class GetGameResponse {
         this.currentBetSize = g.getCurrentBetSize();
         this.currentTurnPlayerId = p.get(g.getCurrentTurnIndex()).getId();
         this.dealerPlayerId = p.get(g.getDealerIndex()).getId();
-        if (p.size() >= g.getSmallBlindIndex()) {
-            this.smallBlindPlayerId = p.get(g.getSmallBlindIndex()).getId();
-        }
-        if (p.size() >= g.getBigBlindIndex()) {
-            this.bigBlindPlayerId = p.get(g.getBigBlindIndex()).getId();
-        }
+        this.smallBlindPlayerId = p.get(g.getSmallBlindIndex() % p.size()).getId();
+        this.bigBlindPlayerId = p.get(g.getBigBlindIndex() % p.size()).getId();
     }
 }
