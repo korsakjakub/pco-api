@@ -60,6 +60,16 @@ public class GameController extends BaseController {
         return ResponseEntity.ok(r);
     }
 
+    @GetMapping("/rules")
+    public ResponseEntity<PokerRules> getRules(@RequestParam("roomId") String roomId) {
+        Room room = roomService.getRoomById(roomId);
+        if (room == null) {
+            throw new NotFoundException("Room not found with ID: " + roomId);
+        }
+        Game game = room.getGame();
+        return ResponseEntity.ok(game.getRules());
+    }
+
     @GetMapping("/state")
     public ResponseEntity<IdResponse> getState(@RequestParam("roomId") String roomId) {
         Room room = roomService.getRoomById(roomId);

@@ -24,6 +24,7 @@ public class Game {
     }
 
     public Game() {
+        this.rules = new PokerRules();
         this.state = GameState.WAITING;
         this.stage = GameStage.PRE_FLOP;
         this.stakedChips = 0L;
@@ -34,6 +35,7 @@ public class Game {
     }
 
     public Game(GameState gameState, int currentTurnIndex) {
+        this.rules = new PokerRules();
         this.state = gameState;
         this.stage = GameStage.PRE_FLOP;
         this.currentTurnIndex = currentTurnIndex;
