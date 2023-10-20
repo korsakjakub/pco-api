@@ -58,6 +58,7 @@ public class RoomController extends BaseController {
         if (room == null || !room.getToken().equals(roomToken)) {
             throw new UnauthorizedAccessException();
         }
+
         Player player = queueService.removePlayerFromQueue(room.getQueueId(), playerId);
         if (player == null) {
             throw new UnauthorizedAccessException();

@@ -12,14 +12,14 @@ public class Game {
     private PokerRules rules;
     private GameState state;
     private GameStage stage;
-    private Long stakedChips;
-    private Long currentBetSize;
+    private int stakedChips;
+    private int currentBetSize;
     private int currentTurnIndex;
     private int dealerIndex;
     private int smallBlindIndex;
     private int bigBlindIndex;
 
-    public void addToStake(Long bet) {
+    public void addToStake(int bet) {
         stakedChips += bet;
     }
 
@@ -27,8 +27,8 @@ public class Game {
         this.rules = new PokerRules();
         this.state = GameState.WAITING;
         this.stage = GameStage.PRE_FLOP;
-        this.stakedChips = 0L;
-        this.currentBetSize = 0L;
+        this.stakedChips = 0;
+        this.currentBetSize = 0;
         this.dealerIndex = 0;
         this.smallBlindIndex = 1;
         this.bigBlindIndex = 2;
@@ -39,8 +39,8 @@ public class Game {
         this.state = gameState;
         this.stage = GameStage.PRE_FLOP;
         this.currentTurnIndex = currentTurnIndex;
-        this.stakedChips = 0L;
-        this.currentBetSize = 0L;
+        this.stakedChips = 0;
+        this.currentBetSize = 0;
         this.dealerIndex = 0;
         this.smallBlindIndex = 1;
         this.bigBlindIndex = 2;

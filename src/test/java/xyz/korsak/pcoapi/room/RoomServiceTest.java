@@ -134,7 +134,7 @@ public class RoomServiceTest {
 
         // Create a sample room with players
         List<Player> players = new ArrayList<>();
-        Player player = new Player(playerId, "Player 1", 100L, 0L, playerToken);
+        Player player = new Player(playerId, "Player 1", 100, 0, playerToken);
         players.add(player);
         Room room = new Room(roomId, "Test Room", players, roomToken);
 
@@ -178,7 +178,7 @@ public class RoomServiceTest {
 
         // Create a sample room with players
         List<Player> players = new ArrayList<>();
-        players.add(new Player("player2", "Player 2", 100L, 0L, "token2"));
+        players.add(new Player("player2", "Player 2", 100, 0, "token2"));
         Room room = new Room(roomId, "Test Room", players, roomToken);
 
         // Mock the roomRepository.findById() method
@@ -214,7 +214,7 @@ public class RoomServiceTest {
         String token = "token";
 
         Room room = new Room(roomId, "Room", new ArrayList<>(), "roomToken");
-        Player player = new Player(playerId, "Player", 100L, 0L, token);
+        Player player = new Player(playerId, "Player", 100, 0, token);
         room.getPlayers().add(player);
 
         when(roomRepository.findById(roomId)).thenReturn(room);
@@ -268,7 +268,7 @@ public class RoomServiceTest {
         String token = "invalidToken";
 
         Room room = new Room(roomId, "Room", new ArrayList<>(), "roomToken");
-        Player player = new Player(playerId, "Player", 100L, 0L, "playerToken");
+        Player player = new Player(playerId, "Player", 100, 0, "playerToken");
         room.getPlayers().add(player);
 
         when(roomRepository.findById(roomId)).thenReturn(room);

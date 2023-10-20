@@ -3,7 +3,14 @@ package xyz.korsak.pcoapi.game;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import xyz.korsak.pcoapi.BaseController;
 import xyz.korsak.pcoapi.exceptions.NotFoundException;
 import xyz.korsak.pcoapi.player.Player;
@@ -14,6 +21,7 @@ import xyz.korsak.pcoapi.responses.IdResponse;
 import xyz.korsak.pcoapi.room.Room;
 import xyz.korsak.pcoapi.room.RoomService;
 import xyz.korsak.pcoapi.rules.PokerRules;
+
 
 @RestController
 @RequestMapping("/api/v1/game")
@@ -40,7 +48,7 @@ public class GameController extends BaseController {
             @RequestBody PokerRules rules) {
         String roomToken = extractBearerToken(authorization);
         gameService.setRules(roomId, roomToken, rules);
-        return ResponseEntity.ok("Game started successfully");
+        return ResponseEntity.ok("Rules set successfully");
     }
 
     @GetMapping("")

@@ -37,11 +37,11 @@ class GameServiceTest {
         // Arrange
         Room room = new Room();
         List<Player> players = new ArrayList<>();
-        players.add(new Player("player1", 100L));
-        players.add(new Player("player2", 200L));
+        players.add(new Player("player1", 100));
+        players.add(new Player("player2", 200));
         room.setPlayers(players);
         room.setGame(new Game());
-        room.getGame().setCurrentBetSize(50L);
+        room.getGame().setCurrentBetSize(50);
 
         // Act
         Player currentPlayer = gameService.getCurrentPlayer(room, 0);
@@ -56,11 +56,11 @@ class GameServiceTest {
         // Arrange
         Room room = new Room();
         List<Player> players = new ArrayList<>();
-        players.add(new Player("player1", 100L));
-        players.add(new Player("player2", 200L));
+        players.add(new Player("player1", 100));
+        players.add(new Player("player2", 200));
         room.setPlayers(players);
         room.setGame(new Game());
-        room.getGame().setCurrentBetSize(50L);
+        room.getGame().setCurrentBetSize(50);
 
         // Act and Assert
         assertThrows(IllegalStateException.class, () -> gameService.getCurrentPlayer(room, 2));
@@ -71,11 +71,11 @@ class GameServiceTest {
         // Arrange
         Room room = new Room();
         List<Player> players = new ArrayList<>();
-        players.add(new Player("player1", 100L));
-        players.add(new Player("player2", 200L));
+        players.add(new Player("player1", 100));
+        players.add(new Player("player2", 200));
         room.setPlayers(players);
         room.setGame(new Game());
-        room.getGame().setCurrentBetSize(150L);
+        room.getGame().setCurrentBetSize(150);
 
         // Act and Assert
         assertThrows(GameException.class, () -> gameService.getCurrentPlayer(room, 0));

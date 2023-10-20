@@ -10,6 +10,6 @@ import lombok.*;
 public class PlayerResponseWithoutToken {
     private String id;
     private String name;
-    private Long chips;
-    private Long stakedChips;
+    private int chips;
+    private int stakedChips;
 }

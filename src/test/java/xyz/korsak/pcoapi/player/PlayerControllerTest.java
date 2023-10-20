@@ -19,7 +19,7 @@ public class PlayerControllerTest {
         String roomId = "123";
         String playerId = "456";
         String authorizationHeader = "Bearer <player-token>";
-        Player expectedPlayer = new Player("456", 0L);
+        Player expectedPlayer = new Player("456", 0);
 
         RoomService roomService = mock(RoomService.class);
         QueueService queueService = mock(QueueService.class);

@@ -16,8 +16,8 @@ import java.util.List;
 public class GetGameResponse {
     private GameState state;
     private GameStage stage;
-    private Long stakedChips;
-    private Long currentBetSize;
+    private int stakedChips;
+    private int currentBetSize;
     private String currentTurnPlayerId;
     private String dealerPlayerId;
     private String smallBlindPlayerId;
