@@ -89,7 +89,7 @@ class RoomControllerTest {
         String playerId = "456";
         String authorizationHeader = "Bearer <room-token>";
         Room room = new Room("123", "Test Room", new ArrayList<>(), "<room-token>");
-        Player player = new Player("456", 0L);
+        Player player = new Player("456", 0);
 
         RoomService roomService = mock(RoomService.class);
         QueueService queueService = mock(QueueService.class);

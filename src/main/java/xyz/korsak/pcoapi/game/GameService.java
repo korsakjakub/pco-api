@@ -91,13 +91,13 @@ public class GameService {
         });
     }
 
-    public void bet(String roomId, String playerId, String playerToken, Long betSize) {
+    public void bet(String roomId, String playerId, String playerToken, int betSize) {
         performAction(roomId, playerId, playerToken, (room, game, turnIndex, player) -> {
-            if (game.getCurrentBetSize() != 0L) {
+            if (game.getCurrentBetSize() != 0) {
                 throw new GameException("Current bet size is nonzero");
             }
 
-            long newPlayerBalance = player.getChips() - betSize;
+            int newPlayerBalance = player.getChips() - betSize;
             if (newPlayerBalance < 0) {
                 throw new GameException("Insufficient amount of chips for the player with ID: " + playerId);
             }
@@ -111,23 +111,23 @@ public class GameService {
 
     public void check(String roomId, String playerId, String playerToken) {
         performAction(roomId, playerId, playerToken, (room, game, turnIndex, player) -> {
-            if (game.getCurrentBetSize() != 0L) {
+            if (game.getCurrentBetSize() != 0) {
                 throw new GameException("Current bet size is nonzero");
             }
         });
     }
 
-    public void raise(String roomId, String playerId, String playerToken, Long betSize) {
+    public void raise(String roomId, String playerId, String playerToken, int betSize) {
         performAction(roomId, playerId, playerToken, (room, game, turnIndex, player) -> {
-            if (game.getCurrentBetSize() == 0L) {
+            if (game.getCurrentBetSize() == 0) {
                 throw new GameException("Current bet size is zero");
             }
 
-            if (betSize - game.getCurrentBetSize() < 0L || betSize < 2L *game.getRules().getBigBlind()) {
+            if (betSize - game.getCurrentBetSize() < 0 || betSize < 2 *game.getRules().getBigBlind()) {
                 throw new GameException("The bet size is too low");
             }
 
-            long newPlayerBalance = player.getChips() - betSize;
+            int newPlayerBalance = player.getChips() - betSize;
 
             if (newPlayerBalance < 0) {
                 throw new GameException("Insufficient amount of chips for the player with ID: " + playerId);

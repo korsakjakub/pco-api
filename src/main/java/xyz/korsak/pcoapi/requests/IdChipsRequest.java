@@ -11,5 +11,5 @@ import lombok.Setter;
 @NoArgsConstructor
 public class IdChipsRequest {
     private String id;
-    private Long chips;
+    private int chips;
 }
