@@ -1,6 +1,7 @@
 package xyz.korsak.pcoapi.game;
 
 import org.springframework.stereotype.Service;
+
 import xyz.korsak.pcoapi.authorization.Authorization;
 import xyz.korsak.pcoapi.exceptions.GameException;
 import xyz.korsak.pcoapi.exceptions.NotFoundException;
@@ -9,6 +10,7 @@ import xyz.korsak.pcoapi.player.Player;
 import xyz.korsak.pcoapi.room.Room;
 import xyz.korsak.pcoapi.room.RoomRepository;
 import xyz.korsak.pcoapi.rules.PokerRules;
+
 
 @Service
 public class GameService {
@@ -28,6 +30,10 @@ public class GameService {
             throw new NotFoundException("Room not found with ID: " + roomId);
         }
         room.setGame(new Game(GameState.IN_PROGRESS, 0));
+
+        room.getPlayers().forEach(player -> {
+            player.setChips(room.getGame().getRules().getStartingChips());
+        });
         roomRepository.create(room);
     }
 
