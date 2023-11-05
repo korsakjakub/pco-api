@@ -9,6 +9,7 @@ import org.mockito.MockitoAnnotations;
 import xyz.korsak.pcoapi.authorization.Authorization;
 import xyz.korsak.pcoapi.exceptions.UnauthorizedAccessException;
 import xyz.korsak.pcoapi.player.Player;
+import xyz.korsak.pcoapi.player.PlayerBuilder;
 import xyz.korsak.pcoapi.responses.GetPlayersResponse;
 
 import java.util.ArrayList;
@@ -80,7 +81,7 @@ public class RoomServiceTest {
         String playerName = "John Doe";
         String playerId = "789";
         String playerToken = "xyz";
-        Player player = new Player(playerId, playerName, playerToken);
+        Player player = new PlayerBuilder(playerId, playerName, playerToken).build();
         String roomToken = "456";
         when(roomRepository.findById(roomId)).thenReturn(room);
         when(authorization.getRoomByIdWithOwnerAuthorization(roomId, roomToken)).thenReturn(room);
@@ -104,10 +105,8 @@ public class RoomServiceTest {
         String roomId = "123";
         Room room = new Room(roomId, "Test Room", new ArrayList<>(), "456");
         List<Player> expectedPlayers = new ArrayList<>();
-        Player player1 = new Player("John Doe");
-        player1.setToken("abc");
-        Player player2 = new Player("Jane Smith");
-        player2.setToken("def");
+        Player player1 = new PlayerBuilder("John Doe").token("abc").build();
+        Player player2 = new PlayerBuilder("Jane Smith").token("def").build();
         expectedPlayers.add(player1);
         expectedPlayers.add(player2);
         room.setPlayers(expectedPlayers);
@@ -134,7 +133,7 @@ public class RoomServiceTest {
 
         // Create a sample room with players
         List<Player> players = new ArrayList<>();
-        Player player = new Player(playerId, "Player 1", 100, 0, playerToken);
+        Player player = new PlayerBuilder(playerId, "Player 1", 100, 0, playerToken).build();
         players.add(player);
         Room room = new Room(roomId, "Test Room", players, roomToken);
 
@@ -178,7 +177,7 @@ public class RoomServiceTest {
 
         // Create a sample room with players
         List<Player> players = new ArrayList<>();
-        players.add(new Player("player2", "Player 2", 100, 0, "token2"));
+        players.add(new PlayerBuilder("player2", "Player 2", 100, 0, "token2").build());
         Room room = new Room(roomId, "Test Room", players, roomToken);
 
         // Mock the roomRepository.findById() method
@@ -214,7 +213,7 @@ public class RoomServiceTest {
         String token = "token";
 
         Room room = new Room(roomId, "Room", new ArrayList<>(), "roomToken");
-        Player player = new Player(playerId, "Player", 100, 0, token);
+        Player player = new PlayerBuilder(playerId, "Player", 100, 0, token).build();
         room.getPlayers().add(player);
 
         when(roomRepository.findById(roomId)).thenReturn(room);
@@ -268,7 +267,7 @@ public class RoomServiceTest {
         String token = "invalidToken";
 
         Room room = new Room(roomId, "Room", new ArrayList<>(), "roomToken");
-        Player player = new Player(playerId, "Player", 100, 0, "playerToken");
+        Player player = new PlayerBuilder(playerId, "Player", 100, 0, "playerToken").build();
         room.getPlayers().add(player);
 
         when(roomRepository.findById(roomId)).thenReturn(room);

@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import xyz.korsak.pcoapi.BaseService;
 import xyz.korsak.pcoapi.exceptions.NotFoundException;
 import xyz.korsak.pcoapi.player.Player;
+import xyz.korsak.pcoapi.player.PlayerBuilder;
 import xyz.korsak.pcoapi.responses.GetPlayersResponse;
 import xyz.korsak.pcoapi.responses.IdResponse;
 
@@ -32,7 +33,7 @@ public class QueueService extends BaseService {
 
         String token = generateRandomString();
         String id = generateRandomString();
-        Player player = new Player(id, name, token);
+        Player player = new PlayerBuilder(id, name, token).build();
         queue.getPlayers().add(player);
         queueRepository.create(queue);
         return player;

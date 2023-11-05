@@ -7,6 +7,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import xyz.korsak.pcoapi.player.Player;
+import xyz.korsak.pcoapi.player.PlayerBuilder;
 import xyz.korsak.pcoapi.responses.GetPlayersResponse;
 
 import java.util.ArrayList;
@@ -58,8 +59,8 @@ public class QueueServiceTest {
         String queueId = "456";
         Queue queue = new Queue("123", queueId);
         List<Player> expectedPlayers = new ArrayList<>();
-        expectedPlayers.add(new Player("player1"));
-        expectedPlayers.add(new Player("player2"));
+        expectedPlayers.add(new PlayerBuilder("player1").build());
+        expectedPlayers.add(new PlayerBuilder("player2").build());
         queue.setPlayers(expectedPlayers);
         when(queueRepository.findById(queueId)).thenReturn(queue);
 
@@ -76,10 +77,10 @@ public class QueueServiceTest {
         String queueId = "456";
         String playerId = "player1";
         Queue queue = new Queue("123", queueId);
-        Player playerToRemove = new Player(playerId);
+        Player playerToRemove = new PlayerBuilder(playerId).build();
         List<Player> players = new ArrayList<>();
         players.add(playerToRemove);
-        players.add(new Player("player2"));
+        players.add(new PlayerBuilder("player2").build());
         queue.setPlayers(players);
         when(queueRepository.findById(queueId)).thenReturn(queue);
         when(queueRepository.removePlayer(queueId, playerId)).thenReturn(playerToRemove);

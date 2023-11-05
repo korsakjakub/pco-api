@@ -1,14 +1,13 @@
 package xyz.korsak.pcoapi.player;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
 import lombok.*;
 
-import java.util.UUID;
-
-@NoArgsConstructor
-@AllArgsConstructor
-@Setter
-@Getter
 @ToString
+@Getter
+@Setter
+@JsonDeserialize(builder = PlayerBuilder.class)
 public class Player {
 
     private String id;
@@ -16,31 +15,15 @@ public class Player {
     private int chips;
     private int stakedChips;
     private String token;
+    private PlayerActions actions;
 
-    public Player(String name) {
-        this.name = name;
-    }
-
-    public Player(String name, int chips) {
-        this.id = UUID.randomUUID().toString();
-        this.name = name;
-        this.chips = chips;
-        this.stakedChips = 0;
-    }
-
-    public Player(String id, String name, int chips) {
-        this.id = id;
-        this.name = name;
-        this.chips = chips;
-        this.stakedChips = 0;
-    }
-
-    public Player(String id, String name, String token) {
-        this.id = id;
-        this.name = name;
-        this.token = token;
-        this.chips = 0;
-        this.stakedChips = 0;
+    public Player(PlayerBuilder pb) {
+        this.id = pb.getId();
+        this.name = pb.getName();
+        this.chips = pb.getChips();
+        this.stakedChips = pb.getStakedChips();
+        this.token = pb.getToken();
+        this.actions = pb.getActions();
     }
 
     public void addToStake(int bet) {

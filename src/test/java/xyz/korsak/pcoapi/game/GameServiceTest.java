@@ -8,6 +8,7 @@ import xyz.korsak.pcoapi.authorization.Authorization;
 import xyz.korsak.pcoapi.exceptions.GameException;
 import xyz.korsak.pcoapi.exceptions.UnauthorizedAccessException;
 import xyz.korsak.pcoapi.player.Player;
+import xyz.korsak.pcoapi.player.PlayerBuilder;
 import xyz.korsak.pcoapi.room.Room;
 import xyz.korsak.pcoapi.room.RoomRepository;
 
@@ -37,8 +38,8 @@ class GameServiceTest {
         // Arrange
         Room room = new Room();
         List<Player> players = new ArrayList<>();
-        players.add(new Player("player1", 100));
-        players.add(new Player("player2", 200));
+        players.add(new PlayerBuilder("player1", 100).build());
+        players.add(new PlayerBuilder("player2", 200).build());
         room.setPlayers(players);
         room.setGame(new Game());
         room.getGame().setCurrentBetSize(50);
@@ -56,8 +57,8 @@ class GameServiceTest {
         // Arrange
         Room room = new Room();
         List<Player> players = new ArrayList<>();
-        players.add(new Player("player1", 100));
-        players.add(new Player("player2", 200));
+        players.add(new PlayerBuilder("player1", 100).build());
+        players.add(new PlayerBuilder("player2", 200).build());
         room.setPlayers(players);
         room.setGame(new Game());
         room.getGame().setCurrentBetSize(50);
@@ -71,8 +72,8 @@ class GameServiceTest {
         // Arrange
         Room room = new Room();
         List<Player> players = new ArrayList<>();
-        players.add(new Player("player1", 100));
-        players.add(new Player("player2", 200));
+        players.add(new PlayerBuilder("player1", 100).build());
+        players.add(new PlayerBuilder("player2", 200).build());
         room.setPlayers(players);
         room.setGame(new Game());
         room.getGame().setCurrentBetSize(150);
