@@ -74,4 +74,4 @@ jobs:
           username: ${{ secrets.ARTIFACTORY_USERNAME }}
           password: ${{ secrets.ARTIFACTORY_PASSWORD }}
       - name: Build and push the image with jib
-        run: mvn compile jib:build -Dimage=${{ env.IMAGE_NAME }}:${{ steps.short-sha.outputs.sha }} -Dmaven.test.skip
+        run: mvn compile jib:build -Dimage=${{ env.IMAGE_NAME }}:${{ steps.short-sha.outputs.sha }} -Dmaven.test.skip -B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn --no-transfer-progress
