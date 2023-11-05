@@ -3,6 +3,7 @@ package xyz.korsak.pcoapi.responses;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import xyz.korsak.pcoapi.game.Game;
 import xyz.korsak.pcoapi.game.GameStage;
 import xyz.korsak.pcoapi.game.GameState;
@@ -12,6 +13,7 @@ import java.util.List;
 
 @Setter
 @Getter
+@ToString
 @NoArgsConstructor
 public class GetGameResponse {
     private GameState state;

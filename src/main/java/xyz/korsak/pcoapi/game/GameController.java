@@ -36,19 +36,19 @@ public class GameController extends BaseController {
 
     @PostMapping("/start")
     public ResponseEntity<String> startGame(@RequestParam("roomId") String roomId,
-            @RequestHeader("Authorization") String authorization) {
+                                            @RequestHeader("Authorization") String authorization) {
         String roomToken = extractBearerToken(authorization);
         gameService.start(roomId, roomToken);
-        return ResponseEntity.ok("Game started successfully");
+        return logResponse(ResponseEntity.ok("Game started successfully"));
     }
 
     @PostMapping("/rules")
     public ResponseEntity<String> setRules(@RequestHeader("Authorization") String authorization,
-            @RequestParam("roomId") String roomId,
-            @RequestBody PokerRules rules) {
+                                           @RequestParam("roomId") String roomId,
+                                           @RequestBody PokerRules rules) {
         String roomToken = extractBearerToken(authorization);
         gameService.setRules(roomId, roomToken, rules);
-        return ResponseEntity.ok("Rules set successfully");
+        return logResponse(ResponseEntity.ok("Rules set successfully"));
     }
 
     @GetMapping("")
@@ -65,7 +65,7 @@ public class GameController extends BaseController {
         }
 
         GetGameResponse r = new GetGameResponse(game, room.getPlayers());
-        return ResponseEntity.ok(r);
+        return logResponse(ResponseEntity.ok(r));
     }
 
     @GetMapping("/rules")
@@ -75,7 +75,7 @@ public class GameController extends BaseController {
             throw new NotFoundException("Room not found with ID: " + roomId);
         }
         Game game = room.getGame();
-        return ResponseEntity.ok(game.getRules());
+        return logResponse(ResponseEntity.ok(game.getRules()));
     }
 
     @GetMapping("/state")
@@ -86,7 +86,7 @@ public class GameController extends BaseController {
         }
         Game game = room.getGame();
         IdResponse r = new IdResponse(game.getState().toString());
-        return ResponseEntity.ok(r);
+        return logResponse(ResponseEntity.ok(r));
     }
 
     @GetMapping("/stage")
@@ -97,7 +97,7 @@ public class GameController extends BaseController {
         }
         Game game = room.getGame();
 
-        return ResponseEntity.ok(game.getStage().toString());
+        return logResponse(ResponseEntity.ok(game.getStage().toString()));
     }
 
     @GetMapping("/current-player")
@@ -112,39 +112,39 @@ public class GameController extends BaseController {
         }
         Player currentPlayer = gameService.getCurrentPlayer(room, game.getCurrentTurnIndex());
         IdResponse r = new IdResponse(currentPlayer.getId());
-        return ResponseEntity.ok(r);
+        return logResponse(ResponseEntity.ok(r));
     }
 
     @PostMapping("/bet")
     public ResponseEntity<String> bet(@RequestParam String roomId,
-            @RequestBody IdChipsRequest request,
-            @RequestHeader("Authorization") String authorizationHeader) {
+                                      @RequestBody IdChipsRequest request,
+                                      @RequestHeader("Authorization") String authorizationHeader) {
         gameService.bet(roomId, request.getId(), extractBearerToken(authorizationHeader), request.getChips());
-        return ResponseEntity.ok("Bet");
+        return logResponse(ResponseEntity.ok("Bet"));
     }
 
     @PostMapping("/raise")
     public ResponseEntity<String> raise(@RequestParam String roomId,
-            @RequestBody IdChipsRequest request,
-            @RequestHeader("Authorization") String authorizationHeader) {
+                                        @RequestBody IdChipsRequest request,
+                                        @RequestHeader("Authorization") String authorizationHeader) {
         gameService.raise(roomId, request.getId(), extractBearerToken(authorizationHeader), request.getChips());
-        return ResponseEntity.ok("Raised");
+        return logResponse(ResponseEntity.ok("Raised"));
     }
 
     @PostMapping("/call")
     public ResponseEntity<String> call(@RequestParam String roomId,
-            @RequestBody IdRequest request,
-            @RequestHeader("Authorization") String authorizationHeader) {
+                                       @RequestBody IdRequest request,
+                                       @RequestHeader("Authorization") String authorizationHeader) {
         gameService.call(roomId, request.getId(), extractBearerToken(authorizationHeader));
-        return ResponseEntity.ok("Called");
+        return logResponse(ResponseEntity.ok("Called"));
     }
 
     @PostMapping("/check")
     public ResponseEntity<String> check(@RequestParam String roomId,
-            @RequestBody IdRequest request,
-            @RequestHeader("Authorization") String authorizationHeader) {
+                                        @RequestBody IdRequest request,
+                                        @RequestHeader("Authorization") String authorizationHeader) {
         gameService.check(roomId, request.getId(), extractBearerToken(authorizationHeader));
-        return ResponseEntity.ok("Checked");
+        return logResponse(ResponseEntity.ok("Checked"));
     }
 
 }

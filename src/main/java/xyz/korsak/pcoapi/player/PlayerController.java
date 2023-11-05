@@ -25,7 +25,7 @@ public class PlayerController extends BaseController {
                                                         @RequestBody NameRequest name) {
         Player player = queueService.addPlayerToQueue(queueId, name.getName());
         IdTokenResponse r = new IdTokenResponse(player.getId(), player.getToken());
-        return ResponseEntity.ok(r);
+        return logResponse(ResponseEntity.ok(r));
     }
 
     @GetMapping("/{playerId}")
@@ -37,6 +37,6 @@ public class PlayerController extends BaseController {
         if (player == null) {
             throw new UnauthorizedAccessException();
         }
-        return ResponseEntity.ok(player);
+        return logResponse(ResponseEntity.ok(player));
     }
 }

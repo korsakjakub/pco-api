@@ -21,12 +21,12 @@ public class QueueController extends BaseController {
     @GetMapping("/{queueId}/players")
     public ResponseEntity<GetPlayersResponse> getPlayersInQueue(@PathVariable String queueId) {
         GetPlayersResponse players = queueService.getPlayersInQueue(queueId);
-        return ResponseEntity.ok(players);
+        return logResponse(ResponseEntity.ok(players));
     }
 
     @GetMapping("/{queueId}/roomid")
     public ResponseEntity<IdResponse> getRoomId(@PathVariable String queueId) {
         IdResponse roomId = queueService.getRoomId(queueId);
-        return ResponseEntity.ok(roomId);
+        return logResponse(ResponseEntity.ok(roomId));
     }
 }

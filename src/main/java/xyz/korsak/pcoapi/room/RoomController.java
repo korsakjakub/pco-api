@@ -1,5 +1,6 @@
 package xyz.korsak.pcoapi.room;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +13,7 @@ import xyz.korsak.pcoapi.requests.NameRequest;
 import xyz.korsak.pcoapi.responses.GetPlayersResponse;
 import xyz.korsak.pcoapi.responses.RoomCreatedResponse;
 
+@Slf4j
 @RestController
 @RequestMapping(path = "api/v1/room")
 public class RoomController extends BaseController {
@@ -46,7 +48,7 @@ public class RoomController extends BaseController {
         roomService.updateRoom(room);
         RoomCreatedResponse r = new RoomCreatedResponse(room.getId(), room.getName(), queue.getId(), room.getToken());
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(r);
+        return logResponse(ResponseEntity.status(HttpStatus.CREATED).body(r));
     }
 
     @PostMapping("/{roomId}/players/{playerId}")
@@ -64,7 +66,7 @@ public class RoomController extends BaseController {
             throw new UnauthorizedAccessException();
         }
         roomService.addPlayerToRoom(roomId, player, roomToken);
-        return ResponseEntity.status(HttpStatus.OK).body(player);
+        return logResponse(ResponseEntity.status(HttpStatus.OK).body(player));
     }
 
     @PostMapping("/{roomId}/players")
@@ -77,13 +79,13 @@ public class RoomController extends BaseController {
             throw new UnauthorizedAccessException();
         }
         Player player = roomService.createPlayerInRoom(roomId, roomToken, name.getName());
-        return ResponseEntity.status(HttpStatus.OK).body(player);
-                                                     }
+        return logResponse(ResponseEntity.status(HttpStatus.OK).body(player));
+    }
 
     @GetMapping("/{roomId}/players")
     public ResponseEntity<GetPlayersResponse> getPlayersInRoom(@PathVariable String roomId) {
         GetPlayersResponse players = roomService.getPlayersInRoom(roomId);
-        return ResponseEntity.ok(players);
+        return logResponse(ResponseEntity.ok(players));
     }
 
     @DeleteMapping("/{roomId}/players/{playerId}")
@@ -93,9 +95,9 @@ public class RoomController extends BaseController {
         String playerToken = extractBearerToken(authorizationHeader);
         try {
             roomService.deletePlayerInRoom(roomId, playerId, playerToken);
-        } catch(UnauthorizedAccessException ex) {
+        } catch (UnauthorizedAccessException ex) {
             throw new UnauthorizedAccessException();
         }
-        return ResponseEntity.ok("Deleted the player with Id: " + playerId);
+        return logResponse(ResponseEntity.ok("Deleted the player with Id: " + playerId));
     }
 }

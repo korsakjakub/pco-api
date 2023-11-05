@@ -3,6 +3,7 @@ package xyz.korsak.pcoapi.responses;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import xyz.korsak.pcoapi.player.Player;
 
 import java.util.ArrayList;
@@ -10,6 +11,7 @@ import java.util.List;
 
 @Setter
 @Getter
+@ToString
 @NoArgsConstructor
 public class GetPlayersResponse {
     private List<PlayerResponseWithoutToken> players;

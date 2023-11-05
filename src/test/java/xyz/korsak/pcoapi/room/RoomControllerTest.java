@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import xyz.korsak.pcoapi.player.Player;
+import xyz.korsak.pcoapi.player.PlayerBuilder;
 import xyz.korsak.pcoapi.queue.Queue;
 import xyz.korsak.pcoapi.queue.QueueService;
 import xyz.korsak.pcoapi.requests.NameRequest;
@@ -89,7 +90,7 @@ class RoomControllerTest {
         String playerId = "456";
         String authorizationHeader = "Bearer <room-token>";
         Room room = new Room("123", "Test Room", new ArrayList<>(), "<room-token>");
-        Player player = new Player("456", 0);
+        Player player = new PlayerBuilder("456", 0).build();
 
         RoomService roomService = mock(RoomService.class);
         QueueService queueService = mock(QueueService.class);
