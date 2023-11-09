@@ -19,7 +19,7 @@ public class QueueService extends BaseService {
     }
 
     public Queue createQueue(String roomId) {
-        String id = generateRandomString();
+        String id = generateRandomString("qid");
         Queue queue = new Queue(roomId, id, new ArrayList<>());
         queueRepository.create(queue);
         return queue;
@@ -31,8 +31,8 @@ public class QueueService extends BaseService {
             throw new NotFoundException(queueId);
         }
 
-        String token = generateRandomString();
-        String id = generateRandomString();
+        String token = generateRandomString("ptk");
+        String id = generateRandomString("pid");
         Player player = new PlayerBuilder(id, name, token).build();
         queue.getPlayers().add(player);
         queueRepository.create(queue);

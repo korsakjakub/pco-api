@@ -10,6 +10,8 @@ import org.springframework.data.redis.connection.lettuce.LettuceClientConfigurat
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
+
 import xyz.korsak.pcoapi.queue.Queue;
 import xyz.korsak.pcoapi.room.Room;
 
@@ -32,6 +34,9 @@ public class RedisConfig {
     public RedisTemplate<String, Room> redisRoomTemplate(RedisConnectionFactory connectionFactory) {
         RedisTemplate<String, Room> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
+        template.setHashKeySerializer(new StringRedisSerializer());
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
         template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
         return template;
     }
@@ -40,6 +45,9 @@ public class RedisConfig {
     public RedisTemplate<String, Queue> redisQueueTemplate(RedisConnectionFactory connectionFactory) {
         RedisTemplate<String, Queue> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
+        template.setHashKeySerializer(new StringRedisSerializer());
+        template.setKeySerializer(new StringRedisSerializer());
+        template.setHashValueSerializer(new GenericJackson2JsonRedisSerializer());
         template.setValueSerializer(new GenericJackson2JsonRedisSerializer());
         return template;
     }

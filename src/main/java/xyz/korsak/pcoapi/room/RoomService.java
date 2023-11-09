@@ -22,8 +22,8 @@ public class RoomService extends BaseService {
     }
 
     public Room createRoom(String name) {
-        String id = generateRandomString();
-        String token = generateRandomString();
+        String id = generateRandomString("rid");
+        String token = generateRandomString("rtk");
         Room room = new Room(id, name, new ArrayList<>(), token);
         roomRepository.create(room);
         return room;
@@ -54,8 +54,8 @@ public class RoomService extends BaseService {
 
     public Player createPlayerInRoom(String roomId, String roomToken, String playerName) {
         Room room = auth.getRoomByIdWithOwnerAuthorization(roomId, roomToken);
-        String token = generateRandomString();
-        String id = generateRandomString();
+        String token = generateRandomString("ptk");
+        String id = generateRandomString("pid");
         Player player = new PlayerBuilder(id, playerName, token).build();
         room.getPlayers().add(player);
         roomRepository.create(room);
@@ -67,7 +67,8 @@ public class RoomService extends BaseService {
         return new GetPlayersResponse(room.getPlayers());
     }
 
-    public Player getPlayerInRoom(String roomId, String playerId, String playerToken) throws UnauthorizedAccessException {
+    public Player getPlayerInRoom(String roomId, String playerId, String playerToken)
+            throws UnauthorizedAccessException {
         Player player = auth.getPlayerWithAuthorization(roomId, playerId, playerToken);
         return player;
     }
