@@ -16,7 +16,7 @@ public class BaseController {
 
     protected <T> ResponseEntity<T> logResponse(ResponseEntity<T> responseEntity) {
         if (responseEntity != null) {
-            log.info("rb: {}", responseEntity.getBody());
+            log.debug("rb: {}", responseEntity.getBody());
         }
         return responseEntity;
     }

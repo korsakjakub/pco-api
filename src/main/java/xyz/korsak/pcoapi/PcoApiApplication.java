@@ -12,12 +12,12 @@ import org.springframework.web.filter.CommonsRequestLoggingFilter;
 @PropertySource("classpath:application-${spring.profiles.active}.properties")
 public class PcoApiApplication {
     @Bean
-    public CommonsRequestLoggingFilter filter() {
+    public CommonsRequestLoggingFilter requestLoggingFilter() {
         CommonsRequestLoggingFilter loggingFilter = new CommonsRequestLoggingFilter();
         loggingFilter.setIncludeClientInfo(true);
         loggingFilter.setIncludeQueryString(true);
         loggingFilter.setIncludePayload(true);
-        loggingFilter.setIncludeHeaders(false);
+        loggingFilter.setMaxPayloadLength(64000);
         return loggingFilter;
     }
 
