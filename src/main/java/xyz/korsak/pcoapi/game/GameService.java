@@ -56,6 +56,20 @@ public class GameService {
         return player;
     }
 
+    public Room getRoomWithCurrentPlayerToken(String roomId, String playerToken) {
+        Room room = roomRepository.findById(roomId);
+        Game game = room.getGame();
+        String playerId = getCurrentPlayer(room, game.getCurrentTurnIndex()).getId();
+
+        if (!auth.authorizePlayer(roomId, playerId, playerToken)) {
+            throw new UnauthorizedAccessException();
+        }
+        if (game.getState() != GameState.IN_PROGRESS || game.getCurrentTurnIndex() < 0) {
+            throw new GameException("Invalid game state");
+        }
+        return room;
+    }
+
     public Room getRoomWithAuthorization(String roomId, String playerId, String playerToken) {
         if (!auth.authorizePlayer(roomId, playerId, playerToken)) {
             throw new UnauthorizedAccessException();
@@ -75,37 +89,37 @@ public class GameService {
         void execute(Room room, Game game, int turnIndex, Player player);
     }
 
-    private void performAction(String roomId, String playerId, String playerToken, Action action) {
-        Room room = getRoomWithAuthorization(roomId, playerId, playerToken);
+    private void performAction(String roomId, String playerToken, Action action) {
+        Room room = getRoomWithCurrentPlayerToken(roomId, playerToken);
         Game game = room.getGame();
         int turnIndex = game.getCurrentTurnIndex();
         Player player = getCurrentPlayer(room, turnIndex);
 
         action.execute(room, game, turnIndex, player);
 
-        game.setCurrentTurnIndex(turnIndex + 1);
+        game.setCurrentTurnIndex((turnIndex + 1) % room.getPlayers().size());
 
         room.setGame(game);
         roomRepository.create(room);
     }
 
-    public void call(String roomId, String playerId, String playerToken) {
-        performAction(roomId, playerId, playerToken, (room, game, turnIndex, player) -> {
+    public void call(String roomId, String playerToken) {
+        performAction(roomId, playerToken, (room, game, turnIndex, player) -> {
             player.setChips(player.getChips() - game.getCurrentBetSize());
             player.addToStake(game.getCurrentBetSize());
             game.addToStake(game.getCurrentBetSize());
         });
     }
 
-    public void bet(String roomId, String playerId, String playerToken, int betSize) {
-        performAction(roomId, playerId, playerToken, (room, game, turnIndex, player) -> {
+    public void bet(String roomId, String playerToken, int betSize) {
+        performAction(roomId, playerToken, (room, game, turnIndex, player) -> {
             if (game.getCurrentBetSize() != 0) {
                 throw new GameException("Current bet size is nonzero");
             }
 
             int newPlayerBalance = player.getChips() - betSize;
             if (newPlayerBalance < 0) {
-                throw new GameException("Insufficient amount of chips for the player with ID: " + playerId);
+                throw new GameException("Insufficient amount of chips for the player with ID: " + player.getId());
             }
 
             player.setChips(newPlayerBalance);
@@ -115,16 +129,16 @@ public class GameService {
         });
     }
 
-    public void check(String roomId, String playerId, String playerToken) {
-        performAction(roomId, playerId, playerToken, (room, game, turnIndex, player) -> {
+    public void check(String roomId, String playerToken) {
+        performAction(roomId, playerToken, (room, game, turnIndex, player) -> {
             if (game.getCurrentBetSize() != 0) {
                 throw new GameException("Current bet size is nonzero");
             }
         });
     }
 
-    public void raise(String roomId, String playerId, String playerToken, int betSize) {
-        performAction(roomId, playerId, playerToken, (room, game, turnIndex, player) -> {
+    public void raise(String roomId, String playerToken, int betSize) {
+        performAction(roomId, playerToken, (room, game, turnIndex, player) -> {
             if (game.getCurrentBetSize() == 0) {
                 throw new GameException("Current bet size is zero");
             }
@@ -136,7 +150,7 @@ public class GameService {
             int newPlayerBalance = player.getChips() - betSize;
 
             if (newPlayerBalance < 0) {
-                throw new GameException("Insufficient amount of chips for the player with ID: " + playerId);
+                throw new GameException("Insufficient amount of chips for the player with ID: " + player.getId());
             }
 
             player.setChips(newPlayerBalance);

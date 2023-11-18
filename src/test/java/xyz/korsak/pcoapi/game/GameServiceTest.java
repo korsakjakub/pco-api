@@ -11,8 +11,11 @@ import xyz.korsak.pcoapi.player.Player;
 import xyz.korsak.pcoapi.player.PlayerBuilder;
 import xyz.korsak.pcoapi.room.Room;
 import xyz.korsak.pcoapi.room.RoomRepository;
+import xyz.korsak.pcoapi.rules.PokerRules;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -133,4 +136,55 @@ class GameServiceTest {
         assertThrows(GameException.class, () ->
                 gameService.getRoomWithAuthorization(roomId, playerId, playerToken));
     }
+
+    @Test
+    void start_ValidAuthorization_CreatesGameInProgress() {
+        // Arrange
+        String roomId = "roomId";
+        String roomToken = "roomToken";
+        Room room = new Room();
+        room.setPlayers(Collections.singletonList(new PlayerBuilder("player1", 100).build()));
+        when(auth.authorizeRoomOwner(roomId, roomToken)).thenReturn(true);
+        when(roomRepository.findById(roomId)).thenReturn(room);
+
+        // Act
+        gameService.start(roomId, roomToken);
+
+        // Assert
+        assertEquals(GameState.IN_PROGRESS, room.getGame().getState());
+        // Add more assertions if needed
+    }
+
+    @Test
+    void start_InvalidAuthorization_ThrowsUnauthorizedAccessException() {
+        // Arrange
+        String roomId = "roomId";
+        String roomToken = "roomToken";
+        when(auth.authorizeRoomOwner(roomId, roomToken)).thenReturn(false);
+
+        // Act and Assert
+        assertThrows(UnauthorizedAccessException.class, () -> gameService.start(roomId, roomToken));
+    }
+
+    @Test
+    void setRules_ValidAuthorization_SetsRules() {
+        // Arrange
+        String roomId = "roomId";
+        String roomToken = "roomToken";
+        PokerRules pokerRules = new PokerRules();
+
+        // Create a Room using the alternative constructor
+        Room room = new Room(roomId, "RoomName", Arrays.asList(new PlayerBuilder().build(), new PlayerBuilder().build()), roomToken);
+
+        when(auth.authorizeRoomOwner(roomId, roomToken)).thenReturn(true);
+        when(roomRepository.findById(roomId)).thenReturn(room);
+
+        // Act
+        gameService.setRules(roomId, roomToken, pokerRules);
+
+        // Assert
+        assertEquals(pokerRules, room.getGame().getRules());
+        // Add more assertions if needed
+    }
+
 }

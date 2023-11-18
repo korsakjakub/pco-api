@@ -9,7 +9,6 @@ import lombok.Setter;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class IdChipsRequest {
-    private String id;
+public class ChipsRequest {
     private int chips;
 }

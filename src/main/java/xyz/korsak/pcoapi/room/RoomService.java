@@ -64,6 +64,9 @@ public class RoomService extends BaseService {
 
     public GetPlayersResponse getPlayersInRoom(String roomId) {
         Room room = roomRepository.findById(roomId);
+        if (room == null) {
+            throw new UnauthorizedAccessException();
+        }
         return new GetPlayersResponse(room.getPlayers());
     }
 
