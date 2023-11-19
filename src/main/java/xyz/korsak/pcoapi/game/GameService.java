@@ -1,15 +1,22 @@
 package xyz.korsak.pcoapi.game;
 
 import org.springframework.stereotype.Service;
-
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import xyz.korsak.pcoapi.authorization.Authorization;
 import xyz.korsak.pcoapi.exceptions.GameException;
 import xyz.korsak.pcoapi.exceptions.NotFoundException;
 import xyz.korsak.pcoapi.exceptions.UnauthorizedAccessException;
 import xyz.korsak.pcoapi.player.Player;
+import xyz.korsak.pcoapi.responses.GetGameResponse;
+import xyz.korsak.pcoapi.responses.GetPlayersResponse;
+import xyz.korsak.pcoapi.responses.StreamResponse;
 import xyz.korsak.pcoapi.room.Room;
 import xyz.korsak.pcoapi.room.RoomRepository;
 import xyz.korsak.pcoapi.rules.PokerRules;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 
 @Service
@@ -19,6 +26,21 @@ public class GameService {
     public GameService(Authorization authorization, RoomRepository roomRepository) {
         this.auth = authorization;
         this.roomRepository = roomRepository;
+    }
+
+    public GetGameResponse getGameResponse(String roomId) {
+        Room room = roomRepository.findById(roomId);
+        if (room == null) {
+            throw new NotFoundException("Room not found with ID: " + roomId);
+        }
+        Game game = room.getGame();
+        List<Player> p = room.getPlayers();
+
+        if (p.isEmpty()) {
+            throw new NotFoundException("No players found");
+        }
+
+        return new GetGameResponse(game, room.getPlayers());
     }
 
     public void start(String roomId, String roomToken) {

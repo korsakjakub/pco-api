@@ -3,10 +3,13 @@ package xyz.korsak.pcoapi.player;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import xyz.korsak.pcoapi.BaseController;
+import xyz.korsak.pcoapi.exceptions.NotFoundException;
 import xyz.korsak.pcoapi.exceptions.UnauthorizedAccessException;
+import xyz.korsak.pcoapi.game.Game;
 import xyz.korsak.pcoapi.queue.QueueService;
 import xyz.korsak.pcoapi.requests.NameRequest;
 import xyz.korsak.pcoapi.responses.IdTokenResponse;
+import xyz.korsak.pcoapi.room.Room;
 import xyz.korsak.pcoapi.room.RoomService;
 
 @RestController
@@ -39,4 +42,17 @@ public class PlayerController extends BaseController {
         }
         return logResponse(ResponseEntity.ok(player));
     }
+
+//    @GetMapping("/{playerId}/actions")
+//    public ResponseEntity<PlayerActions> getActions(@RequestParam String roomId,
+//                                                    @PathVariable String playerId) {
+//        Room room = roomService.getRoomById(roomId);
+//        if (room == null) {
+//            throw new NotFoundException(roomId);
+//        }
+//        Game game = room.getGame();
+//
+//        PlayerActions actions =
+//        return logResponse(ResponseEntity.ok());
+//    }
 }

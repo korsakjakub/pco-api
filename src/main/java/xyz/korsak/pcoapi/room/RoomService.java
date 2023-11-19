@@ -72,8 +72,7 @@ public class RoomService extends BaseService {
 
     public Player getPlayerInRoom(String roomId, String playerId, String playerToken)
             throws UnauthorizedAccessException {
-        Player player = auth.getPlayerWithAuthorization(roomId, playerId, playerToken);
-        return player;
+        return auth.getPlayerWithAuthorization(roomId, playerId, playerToken);
     }
 
     public void deletePlayerInRoom(String roomId, String playerId, String token) throws UnauthorizedAccessException {
