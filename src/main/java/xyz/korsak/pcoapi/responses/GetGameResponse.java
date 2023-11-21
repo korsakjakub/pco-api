@@ -4,7 +4,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import lombok.extern.slf4j.Slf4j;
 import xyz.korsak.pcoapi.game.Game;
 import xyz.korsak.pcoapi.game.GameStage;
 import xyz.korsak.pcoapi.game.GameState;
@@ -16,7 +15,6 @@ import java.util.List;
 @Getter
 @ToString
 @NoArgsConstructor
-@Slf4j
 public class GetGameResponse {
     private GameState state;
     private GameStage stage;

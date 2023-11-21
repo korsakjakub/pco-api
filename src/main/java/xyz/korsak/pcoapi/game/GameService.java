@@ -7,9 +7,8 @@ import xyz.korsak.pcoapi.exceptions.GameException;
 import xyz.korsak.pcoapi.exceptions.NotFoundException;
 import xyz.korsak.pcoapi.exceptions.UnauthorizedAccessException;
 import xyz.korsak.pcoapi.player.Player;
+import xyz.korsak.pcoapi.player.PlayerActions;
 import xyz.korsak.pcoapi.responses.GetGameResponse;
-import xyz.korsak.pcoapi.responses.GetPlayersResponse;
-import xyz.korsak.pcoapi.responses.StreamResponse;
 import xyz.korsak.pcoapi.room.Room;
 import xyz.korsak.pcoapi.room.RoomRepository;
 import xyz.korsak.pcoapi.rules.PokerRules;
@@ -23,9 +22,34 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class GameService {
     private final Authorization auth;
     private final RoomRepository roomRepository;
+
+    private final List<SseEmitter> emitters = new CopyOnWriteArrayList<>();
+
     public GameService(Authorization authorization, RoomRepository roomRepository) {
         this.auth = authorization;
         this.roomRepository = roomRepository;
+    }
+
+    private void notifySubscribers(String roomId) {
+        GetGameResponse r = getGameResponse(roomId);
+        emitters.forEach(emitter -> {
+            try {
+                emitter.send(r);
+            } catch(IOException e) {
+                emitter.complete();
+                emitters.remove(emitter);
+            }
+        });
+    }
+
+    public SseEmitter streamGame(String roomId) {
+        SseEmitter emitter = new SseEmitter();
+        emitters.add(emitter);
+        emitter.onTimeout(() -> emitters.remove(emitter));
+        emitter.onCompletion(() -> emitters.remove(emitter));
+
+        notifySubscribers(roomId);
+        return emitter;
     }
 
     public GetGameResponse getGameResponse(String roomId) {
@@ -53,10 +77,9 @@ public class GameService {
         }
         room.setGame(new Game(GameState.IN_PROGRESS, 0));
 
-        room.getPlayers().forEach(player -> {
-            player.setChips(room.getGame().getRules().getStartingChips());
-        });
+        room.getPlayers().forEach(player -> player.setChips(room.getGame().getRules().getStartingChips()));
         roomRepository.create(room);
+        notifySubscribers(roomId);
     }
 
     public void setRules(String roomId, String roomToken, PokerRules rules) {
@@ -66,6 +89,8 @@ public class GameService {
         Room room = roomRepository.findById(roomId);
         Game game = room.getGame();
         game.setRules(rules);
+        roomRepository.create(room);
+        notifySubscribers(roomId);
     }
     public Player getCurrentPlayer(Room room, int currentTurnIndex) {
         if (currentTurnIndex < 0 || currentTurnIndex >= room.getPlayers().size()) {
@@ -120,9 +145,11 @@ public class GameService {
         action.execute(room, game, turnIndex, player);
 
         game.setCurrentTurnIndex((turnIndex + 1) % room.getPlayers().size());
-
         room.setGame(game);
+
+        room.getPlayers().forEach(p -> p.setActions(PlayerActions.createActionsBasedOnBet(game.getCurrentBetSize(), p.getStakedChips())));
         roomRepository.create(room);
+        notifySubscribers(roomId);
     }
 
     public void call(String roomId, String playerToken) {

@@ -1,28 +1,36 @@
 package xyz.korsak.pcoapi.player;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
-import lombok.NoArgsConstructor;
+public class PlayerActions {
 
-@NoArgsConstructor
-public class PlayerActions extends ArrayList<String> {
-    public PlayerActions(String... actions) {
-        this.addAll(Arrays.asList(actions));
+    private final List<String> actions;
+
+    private PlayerActions() {
+        this.actions = createDefaultActions();
+
+    }
+    private PlayerActions(List<String> actions) {
+        this.actions = actions;
     }
 
-    public PlayerActions getInitialActions() {
-        return new PlayerActions("Fold", "Check", "Bet");
+    public static List<String> createDefaultActions() {
+        return Arrays.asList("Fold", "Check", "Bet");
     }
 
-//    public PlayerActions(int gameStake, int playerStake) {
-//        if (gameStake == playerStake) {
-//            return getInitialActions();
-//        }
-//        if (gameStake > playerStake) {
-//            return new PlayerActions("Fold", "Call", "Raise");
-//        }
-//        return null;
-//    }
+    public static List<String> createActionsBasedOnBet(int betSize, int playerStake) {
+        if (betSize == playerStake) {
+            return Arrays.asList("Fold", "Check", "Bet");
+        } else if (betSize > playerStake) {
+            return Arrays.asList("Fold", "Call", "Raise");
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
+    public List<String> getActions() {
+        return Collections.unmodifiableList(actions);
+    }
 }
-

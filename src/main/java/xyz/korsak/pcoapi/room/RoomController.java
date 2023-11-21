@@ -1,6 +1,5 @@
 package xyz.korsak.pcoapi.room;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,7 +12,6 @@ import xyz.korsak.pcoapi.requests.NameRequest;
 import xyz.korsak.pcoapi.responses.GetPlayersResponse;
 import xyz.korsak.pcoapi.responses.RoomCreatedResponse;
 
-@Slf4j
 @RestController
 @RequestMapping(path = "api/v1/room")
 public class RoomController extends BaseController {

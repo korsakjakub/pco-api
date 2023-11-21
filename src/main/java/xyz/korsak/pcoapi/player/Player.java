@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import lombok.*;
 
+import java.util.List;
+
 @ToString
 @Getter
 @Setter
@@ -15,7 +17,7 @@ public class Player {
     private int chips;
     private int stakedChips;
     private String token;
-    private PlayerActions actions;
+    private List<String> actions;
 
     public Player(PlayerBuilder pb) {
         this.id = pb.getId();

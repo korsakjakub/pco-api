@@ -1,5 +1,6 @@
 package xyz.korsak.pcoapi.player;
 
+import java.util.List;
 import java.util.UUID;
 
 import lombok.Getter;
@@ -16,7 +17,7 @@ public class PlayerBuilder {
     private int chips;
     private int stakedChips;
     private String token;
-    private PlayerActions actions;
+    private List<String> actions;
 
     public PlayerBuilder(String name) {
         this.name = name;
@@ -27,6 +28,7 @@ public class PlayerBuilder {
         this.name = name;
         this.chips = chips;
         this.stakedChips = 0;
+        this.actions = PlayerActions.createDefaultActions();
     }
 
     public PlayerBuilder(String id, String name, int chips) {
@@ -34,6 +36,7 @@ public class PlayerBuilder {
         this.name = name;
         this.chips = chips;
         this.stakedChips = 0;
+        this.actions = PlayerActions.createDefaultActions();
     }
 
     public PlayerBuilder(String id, String name, String token) {
@@ -42,6 +45,7 @@ public class PlayerBuilder {
         this.token = token;
         this.chips = 0;
         this.stakedChips = 0;
+        this.actions = PlayerActions.createDefaultActions();
     }
 
     public PlayerBuilder(String id, String name, int chips, int stakedChips, String token) {
@@ -50,6 +54,7 @@ public class PlayerBuilder {
         this.token = token;
         this.chips = chips;
         this.stakedChips = stakedChips;
+        this.actions = PlayerActions.createDefaultActions();
     }
 
     public PlayerBuilder token(String token) {
@@ -58,7 +63,6 @@ public class PlayerBuilder {
     }
 
     public Player build() {
-        this.actions = new PlayerActions().getInitialActions();
         return new Player(this);
     }
 }

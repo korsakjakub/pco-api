@@ -1,6 +1,7 @@
 package xyz.korsak.pcoapi.room;
 
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import xyz.korsak.pcoapi.BaseService;
 import xyz.korsak.pcoapi.authorization.Authorization;
 import xyz.korsak.pcoapi.exceptions.UnauthorizedAccessException;
@@ -8,13 +9,39 @@ import xyz.korsak.pcoapi.player.Player;
 import xyz.korsak.pcoapi.player.PlayerBuilder;
 import xyz.korsak.pcoapi.responses.GetPlayersResponse;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 @Service
 public class RoomService extends BaseService {
     private final RoomRepository roomRepository;
     private final Authorization auth;
+
+    private final List<SseEmitter> emitters = new CopyOnWriteArrayList<>();
+
+    private void notifySubscribers(String roomId) {
+        GetPlayersResponse r = getPlayersInRoom(roomId);
+        emitters.forEach(emitter -> {
+            try {
+                emitter.send(r);
+            } catch(IOException e) {
+                emitter.complete();
+                emitters.remove(emitter);
+            }
+        });
+    }
+
+    public SseEmitter streamPlayersInRoom(String roomId) {
+        SseEmitter emitter = new SseEmitter();
+        emitters.add(emitter);
+        emitter.onTimeout(() -> emitters.remove(emitter));
+        emitter.onCompletion(() -> emitters.remove(emitter));
+
+        notifySubscribers(roomId);
+        return emitter;
+    }
 
     public RoomService(Authorization authorization, RoomRepository roomRepository) {
         this.auth = authorization;
