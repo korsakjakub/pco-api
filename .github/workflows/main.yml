@@ -35,7 +35,7 @@ jobs:
       - uses: actions/setup-java@v3
         with:
           distribution: 'corretto'
-          java-version: '20'
+          java-version: '21'
           cache: 'maven'
       - run: make test
 
@@ -49,7 +49,7 @@ jobs:
       - uses: actions/setup-java@v3
         with:
           distribution: 'corretto'
-          java-version: '20'
+          java-version: '21'
           cache: 'maven'
       - run: make docker
 
@@ -66,7 +66,7 @@ jobs:
       - uses: actions/setup-java@v3
         with:
           distribution: 'corretto'
-          java-version: '20'
+          java-version: '21'
           cache: 'maven'
       - name: Docker Login
         uses: docker/login-action@v2.2.0
