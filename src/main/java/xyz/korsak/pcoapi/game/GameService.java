@@ -144,19 +144,36 @@ public class GameService {
 
         action.execute(room, game, turnIndex, player);
 
-        game.setCurrentTurnIndex((turnIndex + 1) % room.getPlayers().size());
+        List<Player> players = room.getPlayers();
+        game.setCurrentTurnIndex((turnIndex + 1) % players.size());
+
+        if (isBettingRoundOver(players, game.getCurrentTurnIndex(), game.getDealerIndex())) {
+            game.nextStage();
+
+            players.forEach(p -> p.setStakedChips(0));
+            game.setCurrentBetSize(0);
+            game.setCurrentTurnIndex(firstToPlayIndex(game.getStage(), game.getDealerIndex(), players.size()));
+        }
         room.setGame(game);
+        room.setPlayers(players);
 
         room.getPlayers().forEach(p -> p.setActions(PlayerActions.createActionsBasedOnBet(game.getCurrentBetSize(), p.getStakedChips())));
         roomRepository.create(room);
         notifySubscribers(roomId);
     }
 
+    public void fold(String roomId, String playerToken) {
+        performAction(roomId, playerToken, (room, game, turnIndex, player) -> {
+            player.setActive(false);
+        });
+    }
+
     public void call(String roomId, String playerToken) {
         performAction(roomId, playerToken, (room, game, turnIndex, player) -> {
-            player.setChips(player.getChips() - game.getCurrentBetSize());
-            player.addToStake(game.getCurrentBetSize());
-            game.addToStake(game.getCurrentBetSize());
+            int leftToCall = game.getCurrentBetSize() - player.getStakedChips();
+            player.setChips(player.getChips() - leftToCall);
+            player.addToStake(leftToCall);
+            game.addToStake(leftToCall);
         });
     }
 
@@ -208,4 +225,38 @@ public class GameService {
             game.setCurrentBetSize(betSize);
         });
     }
+
+    public static int firstToPlayIndex(GameStage gameStage, int dealerIndex, int numberOfPlayers) {
+        int smallBlindIndex = (dealerIndex + 1) % numberOfPlayers;
+        if (gameStage == GameStage.PRE_FLOP)
+            return smallBlindIndex;
+        else
+            return (smallBlindIndex + 1) % numberOfPlayers;
+    }
+
+    public boolean isBettingRoundOver(List<Player> players, int currentTurnIndex, int dealerIndex) {
+        int activePlayersCount = (int) players.stream().filter(Player::isActive).count();
+
+        if (activePlayersCount == 1) {
+            return true;
+        }
+
+        if (currentTurnIndex == (dealerIndex + activePlayersCount - 1) % players.size()) {
+            return areBettingAmountsEqual(players);
+        }
+        return false;
+    }
+
+    private boolean areBettingAmountsEqual(List<Player> players) {
+        int referenceBet = players.stream()
+                .filter(Player::isActive)
+                .findFirst()
+                .map(Player::getStakedChips)
+                .orElse(0);
+
+        return players.stream()
+                .filter(Player::isActive)
+                .allMatch(player -> player.getStakedChips() == referenceBet);
+    }
+
 }

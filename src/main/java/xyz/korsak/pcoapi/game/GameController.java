@@ -106,6 +106,13 @@ public class GameController extends BaseController {
         return logResponse(ResponseEntity.ok(currentPlayer(roomId)));
     }
 
+    @PostMapping("/fold")
+    public ResponseEntity<String> fold(@RequestParam String roomId,
+                                       @RequestHeader("Authorization") String authorizationHeader) {
+        gameService.fold(roomId, extractBearerToken(authorizationHeader));
+        return logResponse(ResponseEntity.ok("Folded"));
+    }
+
     @PostMapping("/bet")
     public ResponseEntity<String> bet(@RequestParam String roomId,
                                       @RequestBody ChipsRequest request,

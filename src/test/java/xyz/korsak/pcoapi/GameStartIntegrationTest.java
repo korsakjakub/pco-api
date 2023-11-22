@@ -34,29 +34,31 @@ public class GameStartIntegrationTest {
 
     @BeforeEach
     public void setup() {
-        String key = "room:rid-NeedQRnwfN";
+        String key = "room:rid-test";
         String json = "{" +
-                "\"id\": \"rid-NeedQRnwfN\"," +
+                "\"id\": \"rid-test\"," +
                 "\"name\": null," +
                 "\"players\": [" +
                 "{" +
-                "\"id\": \"pid-8oTjJJ54VC\"," +
+                "\"id\": \"pid-player1\"," +
                 "\"name\": \"jk\"," +
                 "\"chips\": 1000," +
                 "\"stakedChips\": 0," +
-                "\"token\": \"ptk-ZQH749MkZP\"," +
-                "\"actions\": [\"Fold\", \"Check\", \"Bet\"]" +
+                "\"token\": \"ptk-player1\"," +
+                "\"actions\": [\"Fold\", \"Check\", \"Bet\"]," +
+                "\"active\": true" +
                 "}," +
                 "{" +
-                "\"id\": \"pid-rFvX5M1QDh\"," +
-                "\"name\": \"Ola\"," +
+                "\"id\": \"pid-player2\"," +
+                "\"name\": \"ola\"," +
                 "\"chips\": 1000," +
                 "\"stakedChips\": 0," +
-                "\"token\": \"ptk-NWAl02JrwM\"," +
-                "\"actions\": [\"Fold\", \"Check\", \"Bet\"]" +
+                "\"token\": \"ptk-player2\"," +
+                "\"actions\": [\"Fold\", \"Check\", \"Bet\"]," +
+                "\"active\": true" +
                 "}" +
                 "]," +
-                "\"token\": \"rtk-q9Eh8BE0Cg\"," +
+                "\"token\": \"rtk-test\"," +
                 "\"game\": {" +
                 "\"rules\": {" +
                 "\"startingChips\": 1000," +
@@ -73,7 +75,7 @@ public class GameStartIntegrationTest {
                 "\"smallBlindIndex\": 1," +
                 "\"bigBlindIndex\": 2" +
                 "}," +
-                "\"queueId\": \"qid-NeE9GM0gbD\"" +
+                "\"queueId\": \"qid-test\"" +
                 "}";
 
         try {
@@ -86,9 +88,8 @@ public class GameStartIntegrationTest {
     }
 
     @Test
-    public void testBetting() throws Exception {
+    public void testBetFold() throws Exception {
         Player p1 = room.getPlayers().get(0);
-        Player p2 = room.getPlayers().get(1);
         String roomId = room.getId();
 
         Assertions.assertEquals(GameStage.PRE_FLOP, room.getGame().getStage());
@@ -96,7 +97,26 @@ public class GameStartIntegrationTest {
         Assertions.assertEquals("Bet", Utils.bet(mockMvc, roomId, p1.getToken(), 100));
 
         room = Utils.getRoom(mockMvc, roomId);
+        Player p2 = room.getPlayers().get(1);
+
+        Assertions.assertEquals("[Fold, Call, Raise]", p2.getActions().toString());
+        Assertions.assertEquals("Folded", Utils.fold(mockMvc, roomId, p2.getToken()));
+
+        room = Utils.getRoom(mockMvc, roomId);
+        p1 = room.getPlayers().get(0);
         p2 = room.getPlayers().get(1);
+    }
+    @Test
+    public void testBetRaiseCall() throws Exception {
+        Player p1 = room.getPlayers().get(0);
+        String roomId = room.getId();
+
+        Assertions.assertEquals(GameStage.PRE_FLOP, room.getGame().getStage());
+        Assertions.assertEquals("[Fold, Check, Bet]", p1.getActions().toString());
+        Assertions.assertEquals("Bet", Utils.bet(mockMvc, roomId, p1.getToken(), 100));
+
+        room = Utils.getRoom(mockMvc, roomId);
+        Player p2 = room.getPlayers().get(1);
 
         Assertions.assertEquals("[Fold, Call, Raise]", p2.getActions().toString());
         Assertions.assertEquals("Raised", Utils.raise(mockMvc, roomId, p2.getToken(), 200));
@@ -107,12 +127,16 @@ public class GameStartIntegrationTest {
         Assertions.assertEquals("[Fold, Call, Raise]", p1.getActions().toString());
         Assertions.assertEquals("Called", Utils.call(mockMvc, roomId, p1.getToken()));
 
-//        room = Utils.getRoom(mockMvc, roomId);
-//        p1 = room.getPlayers().get(0);
-//        p2 = room.getPlayers().get(1);
+        room = Utils.getRoom(mockMvc, roomId);
+        p1 = room.getPlayers().get(0);
+        p2 = room.getPlayers().get(1);
 
-//        Assertions.assertEquals(GameStage.FLOP, room.getGame().getStage());
-//        Assertions.assertEquals("[Fold, Check, Bet]", p1.getActions().toString());
-//        Assertions.assertEquals("[Fold, Check, Bet]", p2.getActions().toString());
+        Assertions.assertEquals(GameStage.FLOP, room.getGame().getStage());
+        Assertions.assertEquals("[Fold, Check, Bet]", p1.getActions().toString());
+        Assertions.assertEquals("[Fold, Check, Bet]", p2.getActions().toString());
+        Assertions.assertEquals(400, room.getGame().getStakedChips());
+        Assertions.assertEquals(0, room.getGame().getCurrentBetSize());
+        Assertions.assertEquals(0, p1.getStakedChips());
+        Assertions.assertEquals(0, p2.getStakedChips());
     }
 }

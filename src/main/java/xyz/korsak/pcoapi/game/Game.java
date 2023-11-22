@@ -45,4 +45,11 @@ public class Game {
         this.smallBlindIndex = 1;
         this.bigBlindIndex = 2;
     }
+
+    public void nextStage() {
+        int currentStageOrdinal = this.stage.ordinal();
+        GameStage[] stages = GameStage.values();
+        int nextStageOrdinal = (currentStageOrdinal + 1) % stages.length;
+        this.stage = stages[nextStageOrdinal];
+    }
 }

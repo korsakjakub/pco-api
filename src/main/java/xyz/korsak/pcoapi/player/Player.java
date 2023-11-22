@@ -18,6 +18,7 @@ public class Player {
     private int stakedChips;
     private String token;
     private List<String> actions;
+    private boolean active;
 
     public Player(PlayerBuilder pb) {
         this.id = pb.getId();
@@ -26,6 +27,7 @@ public class Player {
         this.stakedChips = pb.getStakedChips();
         this.token = pb.getToken();
         this.actions = pb.getActions();
+        this.active = pb.isActive();
     }
 
     public void addToStake(int bet) {

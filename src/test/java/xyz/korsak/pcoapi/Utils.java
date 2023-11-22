@@ -16,6 +16,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 public class Utils {
 
+    public static String fold(MockMvc mockMvc, String roomId, String playerToken) throws Exception {
+        MvcResult createResult = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/game/fold?roomId=" + roomId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + playerToken))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        return createResult.getResponse().getContentAsString();
+    }
+
     public static String call(MockMvc mockMvc, String roomId, String playerToken) throws Exception {
         MvcResult createResult = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/game/call?roomId=" + roomId)
                         .contentType(MediaType.APPLICATION_JSON)

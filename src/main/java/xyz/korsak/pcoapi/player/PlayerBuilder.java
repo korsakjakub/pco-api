@@ -18,6 +18,7 @@ public class PlayerBuilder {
     private int stakedChips;
     private String token;
     private List<String> actions;
+    private boolean active;
 
     public PlayerBuilder(String name) {
         this.name = name;
@@ -29,6 +30,7 @@ public class PlayerBuilder {
         this.chips = chips;
         this.stakedChips = 0;
         this.actions = PlayerActions.createDefaultActions();
+        this.active = true;
     }
 
     public PlayerBuilder(String id, String name, int chips) {
@@ -37,6 +39,7 @@ public class PlayerBuilder {
         this.chips = chips;
         this.stakedChips = 0;
         this.actions = PlayerActions.createDefaultActions();
+        this.active = true;
     }
 
     public PlayerBuilder(String id, String name, String token) {
@@ -46,6 +49,7 @@ public class PlayerBuilder {
         this.chips = 0;
         this.stakedChips = 0;
         this.actions = PlayerActions.createDefaultActions();
+        this.active = true;
     }
 
     public PlayerBuilder(String id, String name, int chips, int stakedChips, String token) {
@@ -55,6 +59,7 @@ public class PlayerBuilder {
         this.chips = chips;
         this.stakedChips = stakedChips;
         this.actions = PlayerActions.createDefaultActions();
+        this.active = true;
     }
 
     public PlayerBuilder token(String token) {
@@ -65,4 +70,5 @@ public class PlayerBuilder {
     public Player build() {
         return new Player(this);
     }
+
 }
