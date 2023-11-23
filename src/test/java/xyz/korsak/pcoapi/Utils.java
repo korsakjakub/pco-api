@@ -36,6 +36,16 @@ public class Utils {
         return createResult.getResponse().getContentAsString();
     }
 
+    public static String check(MockMvc mockMvc, String roomId, String playerToken) throws Exception {
+        MvcResult createResult = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/game/check?roomId=" + roomId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + playerToken))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        return createResult.getResponse().getContentAsString();
+    }
+
     public static String raise(MockMvc mockMvc, String roomId, String playerToken, int chips) throws Exception {
         MvcResult createResult = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/game/raise?roomId=" + roomId)
                         .contentType(MediaType.APPLICATION_JSON)

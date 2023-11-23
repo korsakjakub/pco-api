@@ -105,6 +105,7 @@ public class GameStartIntegrationTest {
         room = Utils.getRoom(mockMvc, roomId);
         p1 = room.getPlayers().get(0);
         p2 = room.getPlayers().get(1);
+        // TODO rest of the test
     }
     @Test
     public void testBetRaiseCall() throws Exception {
@@ -139,4 +140,37 @@ public class GameStartIntegrationTest {
         Assertions.assertEquals(0, p1.getStakedChips());
         Assertions.assertEquals(0, p2.getStakedChips());
     }
+
+    @Test
+    public void testCheckUpToRiver() throws Exception {
+        Player p1 = room.getPlayers().get(0);
+        String roomId = room.getId();
+
+        Assertions.assertEquals(GameStage.PRE_FLOP, room.getGame().getStage());
+        Assertions.assertEquals("[Fold, Check, Bet]", p1.getActions().toString());
+        Assertions.assertEquals("Checked", Utils.check(mockMvc, roomId, p1.getToken()));
+
+        room = Utils.getRoom(mockMvc, roomId);
+        Player p2 = room.getPlayers().get(1);
+
+        Assertions.assertEquals("[Fold, Check, Bet]", p2.getActions().toString());
+        Assertions.assertEquals("Checked", Utils.check(mockMvc, roomId, p2.getToken()));
+
+        room = Utils.getRoom(mockMvc, roomId);
+        p1 = room.getPlayers().get(0);
+        Assertions.assertEquals(GameStage.FLOP, room.getGame().getStage());
+        Assertions.assertEquals("[Fold, Check, Bet]", p1.getActions().toString());
+        Assertions.assertEquals("Checked", Utils.check(mockMvc, roomId, p1.getToken()));
+
+        room = Utils.getRoom(mockMvc, roomId);
+        p2 = room.getPlayers().get(1);
+
+        Assertions.assertEquals("[Fold, Check, Bet]", p2.getActions().toString());
+        Assertions.assertEquals("Checked", Utils.check(mockMvc, roomId, p2.getToken()));
+
+        room = Utils.getRoom(mockMvc, roomId);
+        p1 = room.getPlayers().get(0);
+        Assertions.assertEquals(GameStage.TURN, room.getGame().getStage());
+    }
+
 }
