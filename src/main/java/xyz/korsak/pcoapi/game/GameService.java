@@ -15,6 +15,7 @@ import xyz.korsak.pcoapi.rules.PokerRules;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 
@@ -147,12 +148,17 @@ public class GameService {
         List<Player> players = room.getPlayers();
         game.setCurrentTurnIndex((turnIndex + 1) % players.size());
 
+        if (activePlayersCount(players) == 1) {
+            // one player remainding get the pot
+            Optional<Player> lastPlayer = players.stream().filter(Player::isActive).findFirst();
+        }
+
         if (isBettingRoundOver(players, game.getCurrentTurnIndex(), game.getDealerIndex())) {
             game.nextStage();
 
             players.forEach(p -> p.setStakedChips(0));
             game.setCurrentBetSize(0);
-            game.setCurrentTurnIndex(firstToPlayIndex(game.getStage(), game.getDealerIndex(), players.size()));
+            game.setCurrentTurnIndex(firstToPlayIndex(game.getDealerIndex(), players.size()));
         }
         room.setGame(game);
         room.setPlayers(players);
@@ -226,25 +232,21 @@ public class GameService {
         });
     }
 
-    public static int firstToPlayIndex(GameStage gameStage, int dealerIndex, int numberOfPlayers) {
-        int smallBlindIndex = (dealerIndex + 1) % numberOfPlayers;
-        if (gameStage == GameStage.PRE_FLOP)
-            return smallBlindIndex;
-        else
-            return (smallBlindIndex + 1) % numberOfPlayers;
+    public static int firstToPlayIndex(int dealerIndex, int numberOfPlayers) {
+        return (dealerIndex + 1) % numberOfPlayers;
     }
 
     public boolean isBettingRoundOver(List<Player> players, int currentTurnIndex, int dealerIndex) {
-        int activePlayersCount = (int) players.stream().filter(Player::isActive).count();
-
-        if (activePlayersCount == 1) {
-            return true;
-        }
+        int activePlayersCount = activePlayersCount(players);
 
         if (currentTurnIndex == (dealerIndex + activePlayersCount - 1) % players.size()) {
             return areBettingAmountsEqual(players);
         }
         return false;
+    }
+
+    public int activePlayersCount(List<Player> players) {
+        return (int) players.stream().filter(Player::isActive).count();
     }
 
     private boolean areBettingAmountsEqual(List<Player> players) {

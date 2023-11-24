@@ -171,6 +171,17 @@ public class GameStartIntegrationTest {
         room = Utils.getRoom(mockMvc, roomId);
         p1 = room.getPlayers().get(0);
         Assertions.assertEquals(GameStage.TURN, room.getGame().getStage());
+        Assertions.assertEquals("[Fold, Check, Bet]", p1.getActions().toString());
+        Assertions.assertEquals("Checked", Utils.check(mockMvc, roomId, p1.getToken()));
+
+        room = Utils.getRoom(mockMvc, roomId);
+        p2 = room.getPlayers().get(1);
+
+        Assertions.assertEquals("[Fold, Check, Bet]", p2.getActions().toString());
+        Assertions.assertEquals("Checked", Utils.check(mockMvc, roomId, p2.getToken()));
+
+        room = Utils.getRoom(mockMvc, roomId);
+        Assertions.assertEquals(GameStage.RIVER, room.getGame().getStage());
     }
 
 }
