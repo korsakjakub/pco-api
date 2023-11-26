@@ -15,7 +15,7 @@ public class Authorization {
     public Authorization(RoomRepository roomRepository) {
         this.roomRepository = roomRepository;
     }
-    public boolean authorizeRoomOwner(String roomId, String roomToken) throws UnauthorizedAccessException {
+    public boolean authorizeRoomOwner(String roomId, String roomToken) {
         Room room = roomRepository.findById(roomId);
         return room != null && room.getToken().equals(roomToken);
     }
@@ -49,17 +49,18 @@ public class Authorization {
         return room;
     }
 
-    public boolean authorizePlayer(String roomId, String playerId, String playerToken) throws UnauthorizedAccessException {
+
+    public boolean playerIsNotAuthorized(String roomId, String playerId, String playerToken) throws UnauthorizedAccessException {
         Room room = roomRepository.findById(roomId);
         if (room == null) {
             throw new UnauthorizedAccessException();
         }
         for (Player p : room.getPlayers()) {
             if (p.getId().equals(playerId) && p.getToken().equals(playerToken)) {
-                return true;
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
 }

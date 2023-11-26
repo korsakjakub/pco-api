@@ -13,6 +13,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import xyz.korsak.pcoapi.game.GameStage;
 import xyz.korsak.pcoapi.player.Player;
+import xyz.korsak.pcoapi.responses.IdResponse;
 import xyz.korsak.pcoapi.room.Room;
 
 @ExtendWith(SpringExtension.class)
@@ -148,7 +149,7 @@ public class GameTwoPlayersIntegrationTest {
     }
 
     @Test
-    public void testCheckUpToRiver() throws Exception {
+    public void testCheckWholeHand() throws Exception {
         Player p2 = room.getPlayers().get(1);
         String roomId = room.getId();
 
@@ -187,6 +188,29 @@ public class GameTwoPlayersIntegrationTest {
         Assertions.assertEquals("Checked", Utils.check(mockMvc, roomId, p1.getToken()));
 
         room = Utils.getRoom(mockMvc, roomId);
+        p2 = room.getPlayers().get(1);
         Assertions.assertEquals(GameStage.RIVER, room.getGame().getStage());
+        Assertions.assertEquals("[Fold, Check, Bet]", p2.getActions().toString());
+        Assertions.assertEquals("Checked", Utils.check(mockMvc, roomId, p2.getToken()));
+
+        room = Utils.getRoom(mockMvc, roomId);
+        p1 = room.getPlayers().get(0);
+
+        Assertions.assertEquals("[Fold, Check, Bet]", p1.getActions().toString());
+        Assertions.assertEquals("Checked", Utils.check(mockMvc, roomId, p1.getToken()));
+
+        room = Utils.getRoom(mockMvc, roomId);
+        Assertions.assertEquals(GameStage.SHOWDOWN, room.getGame().getStage());
+        Assertions.assertEquals(new IdResponse("pid-player1").getId(), Utils.decideWinner(mockMvc, roomId, p1.getId(), room.getToken()).getId());
+    }
+
+    @Test
+    public void testFullRoundWithBlinds() throws Exception {
+        Player p2 = room.getPlayers().get(1);
+        String roomId = room.getId();
+
+        Assertions.assertEquals(GameStage.PRE_FLOP, room.getGame().getStage());
+        Assertions.assertEquals("[Fold, Check, Bet]", p2.getActions().toString());
+        Assertions.assertEquals("Checked", Utils.check(mockMvc, roomId, p2.getToken()));
     }
 }

@@ -8,6 +8,7 @@ import xyz.korsak.pcoapi.BaseController;
 import xyz.korsak.pcoapi.exceptions.NotFoundException;
 import xyz.korsak.pcoapi.player.Player;
 import xyz.korsak.pcoapi.requests.ChipsRequest;
+import xyz.korsak.pcoapi.requests.IdRequest;
 import xyz.korsak.pcoapi.responses.GetGameResponse;
 import xyz.korsak.pcoapi.responses.IdResponse;
 import xyz.korsak.pcoapi.room.Room;
@@ -141,6 +142,14 @@ public class GameController extends BaseController {
                                         @RequestHeader("Authorization") String authorizationHeader) {
         gameService.check(roomId, extractBearerToken(authorizationHeader));
         return logResponse(ResponseEntity.ok("Checked"));
+    }
+
+    @PostMapping("/decide-winner")
+    public ResponseEntity<IdResponse> decideWinner(@RequestParam String roomId,
+                                               @RequestBody IdRequest playerIdRequest,
+                                               @RequestHeader("Authorization") String authorizationHeader) {
+        gameService.decideWinner(roomId, playerIdRequest.getId(), extractBearerToken(authorizationHeader));
+        return logResponse(ResponseEntity.ok(new IdResponse(playerIdRequest.getId())));
     }
 
 }

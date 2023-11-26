@@ -31,18 +31,6 @@ public class GameService {
         this.roomRepository = roomRepository;
     }
 
-    private void notifySubscribers(String roomId) {
-        GetGameResponse r = getGameResponse(roomId);
-        emitters.forEach(emitter -> {
-            try {
-                emitter.send(r);
-            } catch(IOException e) {
-                emitter.complete();
-                emitters.remove(emitter);
-            }
-        });
-    }
-
     public SseEmitter streamGame(String roomId) {
         SseEmitter emitter = new SseEmitter();
         emitters.add(emitter);
@@ -69,13 +57,8 @@ public class GameService {
     }
 
     public void start(String roomId, String roomToken) {
-        if (!auth.authorizeRoomOwner(roomId, roomToken)) {
-            throw new UnauthorizedAccessException();
-        }
-        Room room = roomRepository.findById(roomId);
-        if (room == null) {
-            throw new NotFoundException("Room not found with ID: " + roomId);
-        }
+        Room room = auth.getRoomByIdWithOwnerAuthorization(roomId, roomToken);
+
         room.setGame(new Game(GameState.IN_PROGRESS, 1));
 
         room.getPlayers().forEach(player -> player.setChips(room.getGame().getRules().getStartingChips()));
@@ -84,10 +67,8 @@ public class GameService {
     }
 
     public void setRules(String roomId, String roomToken, PokerRules rules) {
-        if (!auth.authorizeRoomOwner(roomId, roomToken)) {
-            throw new UnauthorizedAccessException();
-        }
-        Room room = roomRepository.findById(roomId);
+        Room room = auth.getRoomByIdWithOwnerAuthorization(roomId, roomToken);
+
         Game game = room.getGame();
         game.setRules(rules);
         roomRepository.create(room);
@@ -109,7 +90,7 @@ public class GameService {
         Game game = room.getGame();
         String playerId = getCurrentPlayer(room, game.getCurrentTurnIndex()).getId();
 
-        if (!auth.authorizePlayer(roomId, playerId, playerToken)) {
+        if (auth.playerIsNotAuthorized(roomId, playerId, playerToken)) {
             throw new UnauthorizedAccessException();
         }
         if (game.getState() != GameState.IN_PROGRESS || game.getCurrentTurnIndex() < 0) {
@@ -118,77 +99,18 @@ public class GameService {
         return room;
     }
 
-    public Room getRoomWithAuthorization(String roomId, String playerId, String playerToken) {
-        if (!auth.authorizePlayer(roomId, playerId, playerToken)) {
-            throw new UnauthorizedAccessException();
-        }
-        Room room = roomRepository.findById(roomId);
-        Game game = room.getGame();
-        int turnIndex = game.getCurrentTurnIndex();
-
-        if (game.getState() != GameState.IN_PROGRESS || turnIndex < 0) {
-            throw new GameException("Invalid game state");
-        }
-        return room;
-    }
-
-    @FunctionalInterface
-    private interface Action {
-        void execute(Room room, Game game, int turnIndex, Player player);
-    }
-
-    private void performAction(String roomId, String playerToken, Action action) {
-        Room room = getRoomWithCurrentPlayerToken(roomId, playerToken);
-        Game game = room.getGame();
-        int turnIndex = game.getCurrentTurnIndex();
-        Player player = getCurrentPlayer(room, turnIndex);
-
-        action.execute(room, game, turnIndex, player);
-
-        List<Player> players = room.getPlayers();
-
-        if (activePlayersCount(players) == 1) {
-            Optional<Player> lastPlayer = players.stream().filter(Player::isActive).findFirst();
-            if (lastPlayer.isPresent()) {
-                Player winner = lastPlayer.get();
-                winner.setChips(winner.getChips() + game.getStakedChips());
-                game.setStage(GameStage.PRE_FLOP);
-                game.setCurrentBetSize(0);
-                game.setStakedChips(0);
-                players.forEach(p -> p.setStakedChips(0));
-                game.setCurrentTurnIndex(game.firstToPlayIndex(players.size()));
-            }
-        }
-
-        if (game.getActionsTakenThisRound() == 0) {
-            game.updateLastToPlay(players.size());
-        }
-
-        if (isBettingRoundOver(players, game.getCurrentTurnIndex(), game.getLastToPlayIndex(), game.getActionsTakenThisRound())) {
-            game.nextStage();
-            players.forEach(p -> p.setStakedChips(0));
-            game.setCurrentBetSize(0);
-            game.setCurrentTurnIndex(game.firstToPlayIndex(players.size()));
-            game.setActionsTakenThisRound(0);
-        } else {
-            game.nextTurnIndex(players.size());
-        }
-
-        game.incrementActionsTakenThisRound();
-        room.setGame(game);
-        room.setPlayers(players);
-
-        room.getPlayers().forEach(p -> p.setActions(PlayerActions.createActionsBasedOnBet(game.getCurrentBetSize(), p.getStakedChips())));
-        roomRepository.create(room);
-        notifySubscribers(roomId);
+    public void decideWinner(String roomId, String winnerId, String roomToken) {
+        Room room = auth.getRoomByIdWithOwnerAuthorization(roomId, roomToken);
+        Player winner = auth.getPlayerWithAuthorization(roomId, winnerId, roomToken);
+        endHandWithWinner(winner, room.getPlayers(), room.getGame());
     }
 
     public void fold(String roomId, String playerToken) {
-        performAction(roomId, playerToken, (room, game, turnIndex, player) -> player.setActive(false));
+        performAction(roomId, playerToken, (room, game, player) -> player.setActive(false));
     }
 
     public void call(String roomId, String playerToken) {
-        performAction(roomId, playerToken, (room, game, turnIndex, player) -> {
+        performAction(roomId, playerToken, (room, game, player) -> {
             int leftToCall = game.getCurrentBetSize() - player.getStakedChips();
             player.setChips(player.getChips() - leftToCall);
             player.addToStake(leftToCall);
@@ -197,7 +119,7 @@ public class GameService {
     }
 
     public void bet(String roomId, String playerToken, int betSize) {
-        performAction(roomId, playerToken, (room, game, turnIndex, player) -> {
+        performAction(roomId, playerToken, (room, game, player) -> {
             if (game.getCurrentBetSize() != 0) {
                 throw new GameException("Current bet size is nonzero");
             }
@@ -215,7 +137,7 @@ public class GameService {
     }
 
     public void check(String roomId, String playerToken) {
-        performAction(roomId, playerToken, (room, game, turnIndex, player) -> {
+        performAction(roomId, playerToken, (room, game, player) -> {
             if (game.getCurrentBetSize() != 0) {
                 throw new GameException("Current bet size is nonzero");
             }
@@ -223,7 +145,7 @@ public class GameService {
     }
 
     public void raise(String roomId, String playerToken, int betSize) {
-        performAction(roomId, playerToken, (room, game, turnIndex, player) -> {
+        performAction(roomId, playerToken, (room, game, player) -> {
             if (game.getCurrentBetSize() == 0) {
                 throw new GameException("Current bet size is zero");
             }
@@ -246,7 +168,58 @@ public class GameService {
         });
     }
 
-    public boolean isBettingRoundOver(List<Player> players, int currentTurnIndex, int lastToPlayIndex, int actionsTakenThisRound) {
+    @FunctionalInterface
+    private interface Action {
+        void execute(Room room, Game game, Player player);
+    }
+
+    private void performAction(String roomId, String playerToken, Action action) {
+        Room room = getRoomWithCurrentPlayerToken(roomId, playerToken);
+        Game game = room.getGame();
+        Player player = getCurrentPlayer(room, game.getCurrentTurnIndex());
+        action.execute(room, game, player);
+        List<Player> players = room.getPlayers();
+
+        if (activePlayersCount(players) == 1) {
+            Optional<Player> lastPlayer = players.stream().filter(Player::isActive).findFirst();
+            if (lastPlayer.isPresent()) {
+                Player winner = lastPlayer.get();
+                endHandWithWinner(winner, players, game);
+            }
+        }
+
+        if (game.getActionsTakenThisRound() == 0) {
+            game.updateLastToPlay(players.size());
+        }
+
+        if (isBettingRoundOver(players, game.getCurrentTurnIndex(), game.getLastToPlayIndex(), game.getActionsTakenThisRound())) {
+            game.nextStage();
+            game.setCurrentBetSize(0);
+            game.setCurrentTurnIndex(game.firstToPlayIndex(players.size()));
+            game.setActionsTakenThisRound(0);
+            players.forEach(p -> p.setStakedChips(0));
+        } else {
+            game.nextTurnIndex(players.size());
+            game.incrementActionsTakenThisRound();
+        }
+        room.getPlayers().forEach(p -> p.setActions(PlayerActions.createActionsBasedOnBet(game.getCurrentBetSize(), p.getStakedChips())));
+        room.setGame(game);
+        room.setPlayers(players);
+
+        roomRepository.create(room);
+        notifySubscribers(roomId);
+    }
+
+    private void endHandWithWinner(Player winner, List<Player> players, Game game) {
+        winner.setChips(winner.getChips() + game.getStakedChips());
+        game.setStage(GameStage.PRE_FLOP);
+        game.setCurrentBetSize(0);
+        game.setStakedChips(0);
+        players.forEach(p -> p.setStakedChips(0));
+        game.setCurrentTurnIndex(game.firstToPlayIndex(players.size()));
+    }
+
+    private boolean isBettingRoundOver(List<Player> players, int currentTurnIndex, int lastToPlayIndex, int actionsTakenThisRound) {
         if (actionsTakenThisRound == 0) {
             return false;
         }
@@ -256,7 +229,7 @@ public class GameService {
         return currentTurnIndex == lastToPlayIndex;
     }
 
-    public int activePlayersCount(List<Player> players) {
+    private int activePlayersCount(List<Player> players) {
         return (int) players.stream().filter(Player::isActive).count();
     }
 
@@ -270,5 +243,17 @@ public class GameService {
         return players.stream()
                 .filter(Player::isActive)
                 .allMatch(player -> player.getStakedChips() == referenceBet);
+    }
+
+    private void notifySubscribers(String roomId) {
+        GetGameResponse r = getGameResponse(roomId);
+        emitters.forEach(emitter -> {
+            try {
+                emitter.send(r);
+            } catch(IOException e) {
+                emitter.complete();
+                emitters.remove(emitter);
+            }
+        });
     }
 }

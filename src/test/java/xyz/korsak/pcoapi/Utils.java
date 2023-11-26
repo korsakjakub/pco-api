@@ -8,6 +8,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import xyz.korsak.pcoapi.player.Player;
 import xyz.korsak.pcoapi.responses.GetPlayersResponse;
+import xyz.korsak.pcoapi.responses.IdResponse;
 import xyz.korsak.pcoapi.responses.IdTokenResponse;
 import xyz.korsak.pcoapi.responses.RoomCreatedResponse;
 import xyz.korsak.pcoapi.room.Room;
@@ -123,5 +124,16 @@ public class Utils {
                 .andExpect(status().isOk())
                 .andReturn();
         return new ObjectMapper().readValue(movePlayerToRoomResult.getResponse().getContentAsString(), Player.class);
+    }
+
+    public static IdResponse decideWinner(MockMvc mockMvc, String roomId, String playerId, String roomToken) throws Exception {
+        MvcResult decideWinnerResult = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/game/decide-winner?roomId=" + roomId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + roomToken)
+                        .content("{\"id\": \""+ playerId + "\"}"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        return new ObjectMapper().readValue(decideWinnerResult.getResponse().getContentAsString(), IdResponse.class);
     }
 }

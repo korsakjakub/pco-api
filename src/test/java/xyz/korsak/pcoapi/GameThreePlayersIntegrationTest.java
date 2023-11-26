@@ -13,6 +13,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import xyz.korsak.pcoapi.game.GameStage;
 import xyz.korsak.pcoapi.player.Player;
+import xyz.korsak.pcoapi.responses.IdResponse;
 import xyz.korsak.pcoapi.room.Room;
 
 @ExtendWith(SpringExtension.class)
@@ -223,6 +224,25 @@ public class GameThreePlayersIntegrationTest {
         Assertions.assertEquals("Checked", Utils.check(mockMvc, roomId, p1.getToken()));
 
         room = Utils.getRoom(mockMvc, roomId);
+        p2 = room.getPlayers().get(1);
         Assertions.assertEquals(GameStage.RIVER, room.getGame().getStage());
+        Assertions.assertEquals("[Fold, Check, Bet]", p2.getActions().toString());
+        Assertions.assertEquals("Checked", Utils.check(mockMvc, roomId, p2.getToken()));
+
+        room = Utils.getRoom(mockMvc, roomId);
+        p3 = room.getPlayers().get(2);
+
+        Assertions.assertEquals("[Fold, Check, Bet]", p3.getActions().toString());
+        Assertions.assertEquals("Checked", Utils.check(mockMvc, roomId, p3.getToken()));
+
+        room = Utils.getRoom(mockMvc, roomId);
+        p1 = room.getPlayers().get(0);
+
+        Assertions.assertEquals("[Fold, Check, Bet]", p1.getActions().toString());
+        Assertions.assertEquals("Checked", Utils.check(mockMvc, roomId, p1.getToken()));
+
+        room = Utils.getRoom(mockMvc, roomId);
+        Assertions.assertEquals(GameStage.SHOWDOWN, room.getGame().getStage());
+        Assertions.assertEquals(new IdResponse("pid-player1").getId(), Utils.decideWinner(mockMvc, roomId, p1.getId(), room.getToken()).getId());
     }
 }
