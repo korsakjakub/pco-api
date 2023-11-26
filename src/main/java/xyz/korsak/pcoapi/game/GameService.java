@@ -76,7 +76,7 @@ public class GameService {
         if (room == null) {
             throw new NotFoundException("Room not found with ID: " + roomId);
         }
-        room.setGame(new Game(GameState.IN_PROGRESS, 0));
+        room.setGame(new Game(GameState.IN_PROGRESS, 1));
 
         room.getPlayers().forEach(player -> player.setChips(room.getGame().getRules().getStartingChips()));
         roomRepository.create(room);
@@ -146,20 +146,35 @@ public class GameService {
         action.execute(room, game, turnIndex, player);
 
         List<Player> players = room.getPlayers();
-        game.setCurrentTurnIndex((turnIndex + 1) % players.size());
 
         if (activePlayersCount(players) == 1) {
-            // one player remainding get the pot
             Optional<Player> lastPlayer = players.stream().filter(Player::isActive).findFirst();
+            if (lastPlayer.isPresent()) {
+                Player winner = lastPlayer.get();
+                winner.setChips(winner.getChips() + game.getStakedChips());
+                game.setStage(GameStage.PRE_FLOP);
+                game.setCurrentBetSize(0);
+                game.setStakedChips(0);
+                players.forEach(p -> p.setStakedChips(0));
+                game.setCurrentTurnIndex(game.firstToPlayIndex(players.size()));
+            }
         }
 
-        if (isBettingRoundOver(players, game.getCurrentTurnIndex(), game.getDealerIndex())) {
-            game.nextStage();
+        if (game.getActionsTakenThisRound() == 0) {
+            game.updateLastToPlay(players.size());
+        }
 
+        if (isBettingRoundOver(players, game.getCurrentTurnIndex(), game.getLastToPlayIndex(), game.getActionsTakenThisRound())) {
+            game.nextStage();
             players.forEach(p -> p.setStakedChips(0));
             game.setCurrentBetSize(0);
-            game.setCurrentTurnIndex(firstToPlayIndex(game.getDealerIndex(), players.size()));
+            game.setCurrentTurnIndex(game.firstToPlayIndex(players.size()));
+            game.setActionsTakenThisRound(0);
+        } else {
+            game.nextTurnIndex(players.size());
         }
+
+        game.incrementActionsTakenThisRound();
         room.setGame(game);
         room.setPlayers(players);
 
@@ -169,9 +184,7 @@ public class GameService {
     }
 
     public void fold(String roomId, String playerToken) {
-        performAction(roomId, playerToken, (room, game, turnIndex, player) -> {
-            player.setActive(false);
-        });
+        performAction(roomId, playerToken, (room, game, turnIndex, player) -> player.setActive(false));
     }
 
     public void call(String roomId, String playerToken) {
@@ -229,20 +242,18 @@ public class GameService {
             game.addToStake(betSize);
             player.addToStake(betSize);
             game.setCurrentBetSize(betSize);
+            game.updateLastToPlay(room.getPlayers().size());
         });
     }
 
-    public static int firstToPlayIndex(int dealerIndex, int numberOfPlayers) {
-        return (dealerIndex + 1) % numberOfPlayers;
-    }
-
-    public boolean isBettingRoundOver(List<Player> players, int currentTurnIndex, int dealerIndex) {
-        int activePlayersCount = activePlayersCount(players);
-
-        if (currentTurnIndex == (dealerIndex + activePlayersCount - 1) % players.size()) {
-            return areBettingAmountsEqual(players);
+    public boolean isBettingRoundOver(List<Player> players, int currentTurnIndex, int lastToPlayIndex, int actionsTakenThisRound) {
+        if (actionsTakenThisRound == 0) {
+            return false;
         }
-        return false;
+        if (!areBettingAmountsEqual(players)) {
+            return false;
+        }
+        return currentTurnIndex == lastToPlayIndex;
     }
 
     public int activePlayersCount(List<Player> players) {
@@ -260,5 +271,4 @@ public class GameService {
                 .filter(Player::isActive)
                 .allMatch(player -> player.getStakedChips() == referenceBet);
     }
-
 }
