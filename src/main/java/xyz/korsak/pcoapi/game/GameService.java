@@ -1,5 +1,6 @@
 package xyz.korsak.pcoapi.game;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import xyz.korsak.pcoapi.BaseService;
@@ -19,6 +20,7 @@ import java.util.Optional;
 
 
 @Service
+@Slf4j
 public class GameService extends BaseService {
     private final Authorization auth;
     private final RoomRepository roomRepository;
@@ -95,7 +97,9 @@ public class GameService extends BaseService {
     public void decideWinner(String roomId, String winnerId, String roomToken) {
         Room room = auth.getRoomByIdWithOwnerAuthorization(roomId, roomToken);
         Player winner = auth.getPlayerWithAuthorization(roomId, winnerId, roomToken);
-        endHandWithWinner(winner, room.getPlayers(), room.getGame());
+        endHandWithWinner(winner, room);
+
+        roomRepository.create(room);
     }
 
     public void fold(String roomId, String playerToken) {
@@ -169,6 +173,11 @@ public class GameService extends BaseService {
     private void performAction(String roomId, String playerToken, Action action) {
         Room room = getRoomWithCurrentPlayerToken(roomId, playerToken);
         Game game = room.getGame();
+
+        if (game.getStage() == GameStage.SHOWDOWN) {
+            return; // cannot perform actions now
+        }
+
         Player player = getCurrentPlayer(room, game.getCurrentTurnIndex());
         action.execute(room, game, player);
         List<Player> players = room.getPlayers();
@@ -177,7 +186,7 @@ public class GameService extends BaseService {
             Optional<Player> lastPlayer = players.stream().filter(Player::isActive).findFirst();
             if (lastPlayer.isPresent()) {
                 Player winner = lastPlayer.get();
-                endHandWithWinner(winner, players, game);
+                endHandWithWinner(winner, room);
             }
         }
 
@@ -202,13 +211,22 @@ public class GameService extends BaseService {
         roomRepository.create(room);
     }
 
-    private void endHandWithWinner(Player winner, List<Player> players, Game game) {
-        winner.setChips(winner.getChips() + game.getStakedChips());
+    private void endHandWithWinner(Player winner, Room room) {
+        Game game = room.getGame();
+        List<Player> players = room.getPlayers();
+        players.forEach(p -> {
+            p.setStakedChips(0);
+            if (p.getId().equals(winner.getId())) {
+                p.setChips(winner.getChips() + game.getStakedChips());
+            }
+        });
         game.setStage(GameStage.PRE_FLOP);
         game.setCurrentBetSize(0);
         game.setStakedChips(0);
-        players.forEach(p -> p.setStakedChips(0));
         game.setCurrentTurnIndex(game.firstToPlayIndex(players.size()));
+
+        room.setPlayers(players);
+        room.setGame(game);
     }
 
     private boolean isBettingRoundOver(List<Player> players, int currentTurnIndex, int lastToPlayIndex, int actionsTakenThisRound) {
