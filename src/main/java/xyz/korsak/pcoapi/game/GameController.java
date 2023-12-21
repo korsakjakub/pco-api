@@ -36,7 +36,7 @@ public class GameController extends BaseController {
 
     @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter streamGame(@RequestParam("roomId") String roomId) {
-        SseEmitter emitter = gameService.streamGame();
+        SseEmitter emitter = gameService.streamGame(roomId);
         notifyPlayers(roomId);
         return emitter;
     }

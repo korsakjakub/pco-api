@@ -16,12 +16,8 @@ public class QueueService extends BaseService {
     private final QueueRepository queueRepository;
 
     public SseEmitter streamPlayersInQueue(String queueId) {
-        SseEmitter emitter = new SseEmitter(1000*60*60L);
-        emitters.add(emitter);
-        emitter.onTimeout(() -> emitters.remove(emitter));
-        emitter.onCompletion(() -> emitters.remove(emitter));
-
-        notifySubscribers(getPlayersInQueue(queueId));
+        SseEmitter emitter = newEmitter(queueId);
+        notifySubscribers(getPlayersInQueue(queueId), queueId);
         return emitter;
     }
     public QueueService(QueueRepository queueRepository) {
@@ -46,7 +42,7 @@ public class QueueService extends BaseService {
         Player player = new PlayerBuilder(id, name, token).build();
         queue.getPlayers().add(player);
         queueRepository.create(queue);
-        notifySubscribers(getPlayersInQueue(queueId));
+        notifySubscribers(getPlayersInQueue(queueId), queueId);
         return player;
     }
 
@@ -60,7 +56,7 @@ public class QueueService extends BaseService {
 
     public Player removePlayerFromQueue(String queueId, String playerId) {
         Player removedPlayer = queueRepository.removePlayer(queueId, playerId);
-        notifySubscribers(getPlayersInQueue(queueId));
+        notifySubscribers(getPlayersInQueue(queueId), queueId);
         return removedPlayer;
     }
 

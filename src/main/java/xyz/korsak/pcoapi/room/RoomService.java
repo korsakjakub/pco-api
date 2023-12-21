@@ -18,16 +18,12 @@ public class RoomService extends BaseService {
     private final Authorization auth;
 
     public void pushData(String roomId) {
-        notifySubscribers(getPlayersInRoom(roomId));
+        notifySubscribers(getPlayersInRoom(roomId), roomId);
     }
 
     public SseEmitter streamPlayersInRoom(String roomId) {
-        SseEmitter emitter = new SseEmitter(1000*60*60L);
-        emitters.add(emitter);
-        emitter.onTimeout(() -> emitters.remove(emitter));
-        emitter.onCompletion(() -> emitters.remove(emitter));
-
-        notifySubscribers(getPlayersInRoom(roomId));
+        SseEmitter emitter = newEmitter(roomId);
+        pushData(roomId);
         return emitter;
     }
 

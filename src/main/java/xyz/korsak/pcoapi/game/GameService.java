@@ -24,7 +24,7 @@ public class GameService extends BaseService {
     private final RoomRepository roomRepository;
 
     public void pushData(String roomId) {
-        notifySubscribers(getGameResponse(roomId));
+        notifySubscribers(getGameResponse(roomId), roomId);
     }
 
     public GameService(Authorization authorization, RoomRepository roomRepository) {
@@ -32,13 +32,8 @@ public class GameService extends BaseService {
         this.roomRepository = roomRepository;
     }
 
-    public SseEmitter streamGame() {
-        SseEmitter emitter = new SseEmitter(1000*60*60L);
-        emitters.add(emitter);
-        emitter.onTimeout(() -> emitters.remove(emitter));
-        emitter.onCompletion(() -> emitters.remove(emitter));
-
-        return emitter;
+    public SseEmitter streamGame(String roomId) {
+        return newEmitter(roomId);
     }
 
     public GetGameResponse getGameResponse(String roomId) {
