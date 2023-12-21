@@ -9,37 +9,25 @@ import xyz.korsak.pcoapi.player.Player;
 import xyz.korsak.pcoapi.player.PlayerBuilder;
 import xyz.korsak.pcoapi.responses.GetPlayersResponse;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 @Service
 public class RoomService extends BaseService {
     private final RoomRepository roomRepository;
     private final Authorization auth;
 
-    private final List<SseEmitter> emitters = new CopyOnWriteArrayList<>();
-
-    private void notifySubscribers(String roomId) {
-        GetPlayersResponse r = getPlayersInRoom(roomId);
-        emitters.forEach(emitter -> {
-            try {
-                emitter.send(r);
-            } catch(IOException e) {
-                emitter.complete();
-                emitters.remove(emitter);
-            }
-        });
+    public void pushData(String roomId) {
+        notifySubscribers(getPlayersInRoom(roomId));
     }
 
     public SseEmitter streamPlayersInRoom(String roomId) {
-        SseEmitter emitter = new SseEmitter();
+        SseEmitter emitter = new SseEmitter(1000*60*60L);
         emitters.add(emitter);
         emitter.onTimeout(() -> emitters.remove(emitter));
         emitter.onCompletion(() -> emitters.remove(emitter));
 
-        notifySubscribers(roomId);
+        notifySubscribers(getPlayersInRoom(roomId));
         return emitter;
     }
 

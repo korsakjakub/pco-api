@@ -2,6 +2,7 @@ package xyz.korsak.pcoapi.game;
 
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import xyz.korsak.pcoapi.BaseService;
 import xyz.korsak.pcoapi.authorization.Authorization;
 import xyz.korsak.pcoapi.exceptions.GameException;
 import xyz.korsak.pcoapi.exceptions.NotFoundException;
@@ -13,31 +14,30 @@ import xyz.korsak.pcoapi.room.Room;
 import xyz.korsak.pcoapi.room.RoomRepository;
 import xyz.korsak.pcoapi.rules.PokerRules;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 
 @Service
-public class GameService {
+public class GameService extends BaseService {
     private final Authorization auth;
     private final RoomRepository roomRepository;
 
-    private final List<SseEmitter> emitters = new CopyOnWriteArrayList<>();
+    public void pushData(String roomId) {
+        notifySubscribers(getGameResponse(roomId));
+    }
 
     public GameService(Authorization authorization, RoomRepository roomRepository) {
         this.auth = authorization;
         this.roomRepository = roomRepository;
     }
 
-    public SseEmitter streamGame(String roomId) {
-        SseEmitter emitter = new SseEmitter();
+    public SseEmitter streamGame() {
+        SseEmitter emitter = new SseEmitter(1000*60*60L);
         emitters.add(emitter);
         emitter.onTimeout(() -> emitters.remove(emitter));
         emitter.onCompletion(() -> emitters.remove(emitter));
 
-        notifySubscribers(roomId);
         return emitter;
     }
 
@@ -63,7 +63,6 @@ public class GameService {
 
         room.getPlayers().forEach(player -> player.setChips(room.getGame().getRules().getStartingChips()));
         roomRepository.create(room);
-        notifySubscribers(roomId);
     }
 
     public void setRules(String roomId, String roomToken, PokerRules rules) {
@@ -72,7 +71,6 @@ public class GameService {
         Game game = room.getGame();
         game.setRules(rules);
         roomRepository.create(room);
-        notifySubscribers(roomId);
     }
     public Player getCurrentPlayer(Room room, int currentTurnIndex) {
         if (currentTurnIndex < 0 || currentTurnIndex >= room.getPlayers().size()) {
@@ -207,7 +205,6 @@ public class GameService {
         room.setPlayers(players);
 
         roomRepository.create(room);
-        notifySubscribers(roomId);
     }
 
     private void endHandWithWinner(Player winner, List<Player> players, Game game) {
@@ -243,17 +240,5 @@ public class GameService {
         return players.stream()
                 .filter(Player::isActive)
                 .allMatch(player -> player.getStakedChips() == referenceBet);
-    }
-
-    private void notifySubscribers(String roomId) {
-        GetGameResponse r = getGameResponse(roomId);
-        emitters.forEach(emitter -> {
-            try {
-                emitter.send(r);
-            } catch(IOException e) {
-                emitter.complete();
-                emitters.remove(emitter);
-            }
-        });
     }
 }

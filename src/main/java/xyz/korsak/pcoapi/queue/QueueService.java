@@ -9,36 +9,19 @@ import xyz.korsak.pcoapi.player.PlayerBuilder;
 import xyz.korsak.pcoapi.responses.GetPlayersResponse;
 import xyz.korsak.pcoapi.responses.IdResponse;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 @Service
 public class QueueService extends BaseService {
     private final QueueRepository queueRepository;
 
-    private final List<SseEmitter> emitters = new CopyOnWriteArrayList<>();
-
-    private void notifySubscribers(String queueId) {
-        GetPlayersResponse r = getPlayersInQueue(queueId);
-        emitters.forEach(emitter -> {
-            try {
-                emitter.send(r);
-            } catch(IOException e) {
-                emitter.complete();
-                emitters.remove(emitter);
-            }
-        });
-    }
-
     public SseEmitter streamPlayersInQueue(String queueId) {
-        SseEmitter emitter = new SseEmitter();
+        SseEmitter emitter = new SseEmitter(1000*60*60L);
         emitters.add(emitter);
         emitter.onTimeout(() -> emitters.remove(emitter));
         emitter.onCompletion(() -> emitters.remove(emitter));
 
-        notifySubscribers(queueId);
+        notifySubscribers(getPlayersInQueue(queueId));
         return emitter;
     }
     public QueueService(QueueRepository queueRepository) {
@@ -63,7 +46,7 @@ public class QueueService extends BaseService {
         Player player = new PlayerBuilder(id, name, token).build();
         queue.getPlayers().add(player);
         queueRepository.create(queue);
-        notifySubscribers(queueId);
+        notifySubscribers(getPlayersInQueue(queueId));
         return player;
     }
 
@@ -77,7 +60,7 @@ public class QueueService extends BaseService {
 
     public Player removePlayerFromQueue(String queueId, String playerId) {
         Player removedPlayer = queueRepository.removePlayer(queueId, playerId);
-        notifySubscribers(queueId);
+        notifySubscribers(getPlayersInQueue(queueId));
         return removedPlayer;
     }
 

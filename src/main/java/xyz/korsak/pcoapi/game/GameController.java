@@ -29,9 +29,16 @@ public class GameController extends BaseController {
         this.roomService = roomService;
     }
 
+    private void notifyPlayers(String roomId) {
+        gameService.pushData(roomId);
+        roomService.pushData(roomId);
+    }
+
     @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter streamGame(@RequestParam("roomId") String roomId) {
-        return gameService.streamGame(roomId);
+        SseEmitter emitter = gameService.streamGame();
+        notifyPlayers(roomId);
+        return emitter;
     }
 
     @PostMapping("/start")
@@ -39,6 +46,7 @@ public class GameController extends BaseController {
                                             @RequestHeader("Authorization") String authorization) {
         String roomToken = extractBearerToken(authorization);
         gameService.start(roomId, roomToken);
+        notifyPlayers(roomId);
         return logResponse(ResponseEntity.ok("Game started successfully"));
     }
 
@@ -48,6 +56,7 @@ public class GameController extends BaseController {
                                            @RequestBody PokerRules rules) {
         String roomToken = extractBearerToken(authorization);
         gameService.setRules(roomId, roomToken, rules);
+        notifyPlayers(roomId);
         return logResponse(ResponseEntity.ok("Rules set successfully"));
     }
 
@@ -111,6 +120,7 @@ public class GameController extends BaseController {
     public ResponseEntity<String> fold(@RequestParam String roomId,
                                        @RequestHeader("Authorization") String authorizationHeader) {
         gameService.fold(roomId, extractBearerToken(authorizationHeader));
+        notifyPlayers(roomId);
         return logResponse(ResponseEntity.ok("Folded"));
     }
 
@@ -119,6 +129,7 @@ public class GameController extends BaseController {
                                       @RequestBody ChipsRequest request,
                                       @RequestHeader("Authorization") String authorizationHeader) {
         gameService.bet(roomId, extractBearerToken(authorizationHeader), request.getChips());
+        notifyPlayers(roomId);
         return logResponse(ResponseEntity.ok("Bet"));
     }
 
@@ -127,6 +138,7 @@ public class GameController extends BaseController {
                                         @RequestBody ChipsRequest request,
                                         @RequestHeader("Authorization") String authorizationHeader) {
         gameService.raise(roomId,  extractBearerToken(authorizationHeader), request.getChips());
+        notifyPlayers(roomId);
         return logResponse(ResponseEntity.ok("Raised"));
     }
 
@@ -134,6 +146,7 @@ public class GameController extends BaseController {
     public ResponseEntity<String> call(@RequestParam String roomId,
                                        @RequestHeader("Authorization") String authorizationHeader) {
         gameService.call(roomId, extractBearerToken(authorizationHeader));
+        notifyPlayers(roomId);
         return logResponse(ResponseEntity.ok("Called"));
     }
 
@@ -141,6 +154,7 @@ public class GameController extends BaseController {
     public ResponseEntity<String> check(@RequestParam String roomId,
                                         @RequestHeader("Authorization") String authorizationHeader) {
         gameService.check(roomId, extractBearerToken(authorizationHeader));
+        notifyPlayers(roomId);
         return logResponse(ResponseEntity.ok("Checked"));
     }
 
@@ -149,6 +163,7 @@ public class GameController extends BaseController {
                                                @RequestBody IdRequest playerIdRequest,
                                                @RequestHeader("Authorization") String authorizationHeader) {
         gameService.decideWinner(roomId, playerIdRequest.getId(), extractBearerToken(authorizationHeader));
+        notifyPlayers(roomId);
         return logResponse(ResponseEntity.ok(new IdResponse(playerIdRequest.getId())));
     }
 
