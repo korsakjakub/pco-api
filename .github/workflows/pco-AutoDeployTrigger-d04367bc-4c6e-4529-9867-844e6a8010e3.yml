@@ -1,0 +1,42 @@
+name: Trigger auto deployment for pco
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - '**'
+    - '.github/workflows/pco-AutoDeployTrigger-d04367bc-4c6e-4529-9867-844e6a8010e3.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:
+      
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.PCO_AZURE_CREDENTIALS }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }} 
+          registryUrl: docker.io
+          registryUsername: ${{ secrets.PCO_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.PCO_REGISTRY_PASSWORD }}
+          containerAppName: pco
+          resourceGroup: pco
+          imageToBuild: korsakjakub/korsakjakub/pco-api:${{ github.sha }}
+          
+
+     
+
