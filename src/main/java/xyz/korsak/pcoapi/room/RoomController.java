@@ -64,6 +64,7 @@ public class RoomController extends BaseController {
             throw new UnauthorizedAccessException();
         }
         roomService.addPlayerToRoom(roomId, player, roomToken);
+        roomService.pushData(roomId);
         return logResponse(ResponseEntity.status(HttpStatus.OK).body(player));
     }
 
