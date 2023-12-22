@@ -151,15 +151,17 @@ public class GameService extends BaseService {
                 throw new GameException("The bet size is too low");
             }
 
-            int newPlayerBalance = player.getChips() - betSize;
+            final int betAddition = betSize - player.getStakedChips();
+
+            final int newPlayerBalance = player.getChips() - betAddition;
 
             if (newPlayerBalance < 0) {
                 throw new GameException("Insufficient amount of chips for the player with ID: " + player.getId());
             }
 
             player.setChips(newPlayerBalance);
-            game.addToStake(betSize);
-            player.addToStake(betSize);
+            game.addToStake(betAddition);
+            player.addToStake(betAddition);
             game.setCurrentBetSize(betSize);
             game.updateLastToPlay(room.getPlayers().size());
         });

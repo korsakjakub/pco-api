@@ -149,6 +149,46 @@ public class GameTwoPlayersIntegrationTest {
     }
 
     @Test
+    public void testBetRaiseReRaise() throws Exception {
+        Player p2 = room.getPlayers().get(1);
+        String roomId = room.getId();
+
+        Assertions.assertEquals(GameStage.PRE_FLOP, room.getGame().getStage());
+        Assertions.assertEquals("[Fold, Check, Bet]", p2.getActions().toString());
+        Assertions.assertEquals("Bet", Utils.bet(mockMvc, roomId, p2.getToken(), 100));
+
+        room = Utils.getRoom(mockMvc, roomId);
+        Player p1 = room.getPlayers().get(0);
+
+        Assertions.assertEquals("[Fold, Call, Raise]", p1.getActions().toString());
+        Assertions.assertEquals("Raised", Utils.raise(mockMvc, roomId, p1.getToken(), 200));
+
+        room = Utils.getRoom(mockMvc, roomId);
+        p2 = room.getPlayers().get(1);
+
+        Assertions.assertEquals("[Fold, Call, Raise]", p2.getActions().toString());
+        Assertions.assertEquals("Raised", Utils.raise(mockMvc, roomId, p2.getToken(), 300));
+
+        room = Utils.getRoom(mockMvc, roomId);
+        p1 = room.getPlayers().get(0);
+
+        Assertions.assertEquals("[Fold, Call, Raise]", p1.getActions().toString());
+        Assertions.assertEquals("Called", Utils.call(mockMvc, roomId, p1.getToken()));
+
+        room = Utils.getRoom(mockMvc, roomId);
+        p1 = room.getPlayers().get(0);
+        p2 = room.getPlayers().get(1);
+
+        Assertions.assertEquals(GameStage.FLOP, room.getGame().getStage());
+        Assertions.assertEquals("[Fold, Check, Bet]", p1.getActions().toString());
+        Assertions.assertEquals("[Fold, Check, Bet]", p2.getActions().toString());
+        Assertions.assertEquals(600, room.getGame().getStakedChips());
+        Assertions.assertEquals(0, room.getGame().getCurrentBetSize());
+        Assertions.assertEquals(0, p1.getStakedChips());
+        Assertions.assertEquals(0, p2.getStakedChips());
+    }
+
+    @Test
     public void testCheckWholeHand() throws Exception {
         Player p2 = room.getPlayers().get(1);
         String roomId = room.getId();
