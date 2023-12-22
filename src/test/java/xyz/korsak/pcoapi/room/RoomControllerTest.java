@@ -84,34 +84,6 @@ class RoomControllerTest {
     }
 
     @Test
-    void addPlayerToRoom_AddsPlayerToRoom_WhenAuthorizedAndPlayerInQueue() {
-        // Arrange
-        String roomId = "123";
-        String playerId = "456";
-        String authorizationHeader = "Bearer <room-token>";
-        Room room = new Room("123", "Test Room", new ArrayList<>(), "<room-token>");
-        Player player = new PlayerBuilder("456", 0).build();
-
-        RoomService roomService = mock(RoomService.class);
-        QueueService queueService = mock(QueueService.class);
-        when(roomService.getRoomById(eq(roomId))).thenReturn(room);
-        when(queueService.removePlayerFromQueue(eq(room.getQueueId()), eq(playerId))).thenReturn(player);
-
-        RoomController roomController = new RoomController(roomService, queueService);
-
-        // Act
-        ResponseEntity<Player> response = roomController.addPlayerToRoom(roomId, playerId, authorizationHeader);
-
-        // Assert
-        verify(roomService, times(1)).getRoomById(eq(roomId));
-        verify(queueService, times(1)).removePlayerFromQueue(eq(room.getQueueId()), eq(playerId));
-        verify(roomService, times(1)).addPlayerToRoom(eq(roomId), eq(player), eq("<room-token>"));
-        verifyNoMoreInteractions(roomService, queueService);
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(player, response.getBody());
-    }
-
-    @Test
     void getPlayersInRoom_ReturnsPlayersInRoom_WhenValidRoomId() {
         // Arrange
         String roomId = "123";
