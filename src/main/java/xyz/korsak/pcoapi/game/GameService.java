@@ -1,6 +1,5 @@
 package xyz.korsak.pcoapi.game;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import xyz.korsak.pcoapi.BaseService;
@@ -18,9 +17,7 @@ import xyz.korsak.pcoapi.rules.PokerRules;
 import java.util.List;
 import java.util.Optional;
 
-
 @Service
-@Slf4j
 public class GameService extends BaseService {
     private final Authorization auth;
     private final RoomRepository roomRepository;
@@ -69,6 +66,7 @@ public class GameService extends BaseService {
         game.setRules(rules);
         roomRepository.create(room);
     }
+
     public Player getCurrentPlayer(Room room, int currentTurnIndex) {
         if (currentTurnIndex < 0 || currentTurnIndex >= room.getPlayers().size()) {
             throw new IllegalStateException("Invalid turn index");
@@ -147,7 +145,7 @@ public class GameService extends BaseService {
                 throw new GameException("Current bet size is zero");
             }
 
-            if (betSize - game.getCurrentBetSize() < 0 || betSize < 2 *game.getRules().getBigBlind()) {
+            if (betSize - game.getCurrentBetSize() <= 0 || betSize <= 2 * game.getRules().getBigBlind()) {
                 throw new GameException("The bet size is too low");
             }
 
@@ -177,7 +175,7 @@ public class GameService extends BaseService {
         Game game = room.getGame();
 
         if (game.getStage() == GameStage.SHOWDOWN) {
-            return; // cannot perform actions now
+            return;
         }
 
         Player player = getCurrentPlayer(room, game.getCurrentTurnIndex());
@@ -196,7 +194,8 @@ public class GameService extends BaseService {
             game.updateLastToPlay(players.size());
         }
 
-        if (isBettingRoundOver(players, game.getCurrentTurnIndex(), game.getLastToPlayIndex(), game.getActionsTakenThisRound())) {
+        if (isBettingRoundOver(players, game.getCurrentTurnIndex(), game.getLastToPlayIndex(),
+                game.getActionsTakenThisRound())) {
             game.nextStage();
             game.setCurrentBetSize(0);
             game.setCurrentTurnIndex(game.firstToPlayIndex(players.size()));
@@ -206,7 +205,8 @@ public class GameService extends BaseService {
             game.nextTurnIndex(players.size());
             game.incrementActionsTakenThisRound();
         }
-        room.getPlayers().forEach(p -> p.setActions(PlayerActions.createActionsBasedOnBet(game.getCurrentBetSize(), p.getStakedChips())));
+        room.getPlayers().forEach(
+                p -> p.setActions(PlayerActions.createActionsBasedOnBet(game.getCurrentBetSize(), p.getStakedChips())));
         room.setGame(game);
         room.setPlayers(players);
 
@@ -231,11 +231,9 @@ public class GameService extends BaseService {
         room.setGame(game);
     }
 
-    private boolean isBettingRoundOver(List<Player> players, int currentTurnIndex, int lastToPlayIndex, int actionsTakenThisRound) {
-        if (actionsTakenThisRound == 0) {
-            return false;
-        }
-        if (!areBettingAmountsEqual(players)) {
+    private boolean isBettingRoundOver(List<Player> players, int currentTurnIndex, int lastToPlayIndex,
+            int actionsTakenThisRound) {
+        if (actionsTakenThisRound == 0 || !areBettingAmountsEqual(players)) {
             return false;
         }
         return currentTurnIndex == lastToPlayIndex;

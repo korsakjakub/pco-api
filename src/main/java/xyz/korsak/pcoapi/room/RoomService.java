@@ -1,5 +1,6 @@
 package xyz.korsak.pcoapi.room;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import xyz.korsak.pcoapi.BaseService;
@@ -11,7 +12,9 @@ import xyz.korsak.pcoapi.responses.GetPlayersResponse;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
+@Slf4j
 @Service
 public class RoomService extends BaseService {
     private final RoomRepository roomRepository;
@@ -91,9 +94,9 @@ public class RoomService extends BaseService {
         if (room == null) {
             throw new UnauthorizedAccessException();
         }
-        Player player = auth.getPlayerWithAuthorization(roomId, playerId, token);
-        List<Player> players = room.getPlayers();
-        players.remove(player);
+        final Player player = auth.getPlayerWithAuthorization(roomId, playerId, token);
+        final List<Player> newPlayers = room.getPlayers().stream().filter(p -> !Objects.equals(p.getId(), player.getId())).toList();
+        room.setPlayers(newPlayers);
         roomRepository.create(room);
     }
 
