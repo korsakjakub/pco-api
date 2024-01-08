@@ -46,6 +46,9 @@ public class GameController extends BaseController {
                                             @RequestHeader("Authorization") String authorization) {
         String roomToken = extractBearerToken(authorization);
         gameService.start(roomId, roomToken);
+        // Game starts with mandatory bets - the small and big blinds.
+        gameService.smallBlind(roomId, roomToken);
+        gameService.bigBlind(roomId, roomToken);
         notifyPlayers(roomId);
         return logResponse(ResponseEntity.ok("Game started successfully"));
     }

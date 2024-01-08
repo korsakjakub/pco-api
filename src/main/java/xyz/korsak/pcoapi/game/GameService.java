@@ -101,11 +101,13 @@ public class GameService extends BaseService {
     }
 
     public void fold(String roomId, String playerToken) {
-        performAction(roomId, playerToken, (room, game, player) -> player.setActive(false));
+        Room r = getRoomWithCurrentPlayerToken(roomId, playerToken);
+        performAction(r, (room, game, player) -> player.setActive(false));
     }
 
     public void call(String roomId, String playerToken) {
-        performAction(roomId, playerToken, (room, game, player) -> {
+        Room r = getRoomWithCurrentPlayerToken(roomId, playerToken);
+        performAction(r, (room, game, player) -> {
             int leftToCall = game.getCurrentBetSize() - player.getStakedChips();
             player.setChips(player.getChips() - leftToCall);
             player.addToStake(leftToCall);
@@ -114,7 +116,8 @@ public class GameService extends BaseService {
     }
 
     public void bet(String roomId, String playerToken, int betSize) {
-        performAction(roomId, playerToken, (room, game, player) -> {
+        Room r = getRoomWithCurrentPlayerToken(roomId, playerToken);
+        performAction(r, (room, game, player) -> {
             if (game.getCurrentBetSize() != 0) {
                 throw new GameException("Current bet size is nonzero");
             }
@@ -132,7 +135,8 @@ public class GameService extends BaseService {
     }
 
     public void check(String roomId, String playerToken) {
-        performAction(roomId, playerToken, (room, game, player) -> {
+        Room r = getRoomWithCurrentPlayerToken(roomId, playerToken);
+        performAction(r, (room, game, player) -> {
             if (game.getCurrentBetSize() != 0) {
                 throw new GameException("Current bet size is nonzero");
             }
@@ -140,7 +144,8 @@ public class GameService extends BaseService {
     }
 
     public void raise(String roomId, String playerToken, int betSize) {
-        performAction(roomId, playerToken, (room, game, player) -> {
+        Room r = getRoomWithCurrentPlayerToken(roomId, playerToken);
+        performAction(r, (room, game, player) -> {
             if (game.getCurrentBetSize() == 0) {
                 throw new GameException("Current bet size is zero");
             }
@@ -165,13 +170,53 @@ public class GameService extends BaseService {
         });
     }
 
+    public void smallBlind(String roomId, String roomToken) {
+        Room r = auth.getRoomByIdWithOwnerAuthorization(roomId, roomToken);
+        performAction(r, (room, game, player) -> {
+            int sb = game.getRules().getSmallBlind();
+
+            int newPlayerBalance = player.getChips() - sb;
+            if (newPlayerBalance < 0) {
+                throw new GameException("Insufficient amount of chips for the player with ID: " + player.getId());
+            }
+
+            player.setChips(newPlayerBalance);
+            player.addToStake(sb);
+            game.addToStake(sb);
+            game.setCurrentBetSize(sb);
+        });
+    }
+
+    public void bigBlind(String roomId, String roomToken) {
+        Room r = auth.getRoomByIdWithOwnerAuthorization(roomId, roomToken);
+        performAction(r, (room, game, player) -> {
+            int bb = game.getRules().getBigBlind();
+
+            int newPlayerBalance = player.getChips() - bb;
+            if (newPlayerBalance < 0) {
+                throw new GameException("Insufficient amount of chips for the player with ID: " + player.getId());
+            }
+
+            player.setChips(newPlayerBalance);
+            player.addToStake(bb);
+            game.addToStake(bb);
+            game.setCurrentBetSize(bb);
+        });
+    }
+
     @FunctionalInterface
     private interface Action {
         void execute(Room room, Game game, Player player);
     }
 
-    private void performAction(String roomId, String playerToken, Action action) {
-        Room room = getRoomWithCurrentPlayerToken(roomId, playerToken);
+    /***
+     * There are two scenarios in which a betting round with blinds can end:
+     * - One player is left -> he is the winner
+     * - All players matched the highest bet (game.getCurrentBetSize())
+     * NOTE: If we play without blinds, another rule has to be implemented - if currentBetSize starts with 0,
+     * then automatically the round ends after first player's action.
+     */
+    private void performAction(Room room, Action action) {
         Game game = room.getGame();
 
         if (game.getStage() == GameStage.SHOWDOWN) {
@@ -182,6 +227,7 @@ public class GameService extends BaseService {
         action.execute(room, game, player);
         List<Player> players = room.getPlayers();
 
+        // First case - one player left
         if (activePlayersCount(players) == 1) {
             Optional<Player> lastPlayer = players.stream().filter(Player::isActive).findFirst();
             if (lastPlayer.isPresent()) {
@@ -189,23 +235,19 @@ public class GameService extends BaseService {
                 endHandWithWinner(winner, room);
             }
         }
-
-        if (game.getActionsTakenThisRound() == 0) {
-            game.updateLastToPlay(players.size());
-        }
-
-        if (isBettingRoundOver(players, game.getCurrentTurnIndex(), game.getLastToPlayIndex(),
-                game.getActionsTakenThisRound())) {
+        // Second case - all players matched the highest bet
+        else if (areAllPlayersMatchingBetSize(players, game.getCurrentBetSize())) {
             game.nextStage();
             game.setCurrentBetSize(0);
             game.setCurrentTurnIndex(game.firstToPlayIndex(players.size()));
             game.setActionsTakenThisRound(0);
             players.forEach(p -> p.setStakedChips(0));
-        } else {
+        } // The round doesn't end
+        else {
             game.nextTurnIndex(players.size());
             game.incrementActionsTakenThisRound();
         }
-        room.getPlayers().forEach(
+        players.forEach(
                 p -> p.setActions(PlayerActions.createActionsBasedOnBet(game.getCurrentBetSize(), p.getStakedChips())));
         room.setGame(game);
         room.setPlayers(players);
@@ -231,27 +273,13 @@ public class GameService extends BaseService {
         room.setGame(game);
     }
 
-    private boolean isBettingRoundOver(List<Player> players, int currentTurnIndex, int lastToPlayIndex,
-            int actionsTakenThisRound) {
-        if (actionsTakenThisRound == 0 || !areBettingAmountsEqual(players)) {
-            return false;
-        }
-        return currentTurnIndex == lastToPlayIndex;
-    }
-
     private int activePlayersCount(List<Player> players) {
         return (int) players.stream().filter(Player::isActive).count();
     }
 
-    private boolean areBettingAmountsEqual(List<Player> players) {
-        int referenceBet = players.stream()
-                .filter(Player::isActive)
-                .findFirst()
-                .map(Player::getStakedChips)
-                .orElse(0);
-
+    private boolean areAllPlayersMatchingBetSize(List<Player> players, int betSize) {
         return players.stream()
                 .filter(Player::isActive)
-                .allMatch(player -> player.getStakedChips() == referenceBet);
+                .allMatch(player -> player.getStakedChips() == betSize);
     }
 }
