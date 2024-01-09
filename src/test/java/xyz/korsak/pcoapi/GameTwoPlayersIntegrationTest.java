@@ -107,10 +107,10 @@ public class GameTwoPlayersIntegrationTest {
 
         Assertions.assertEquals(GameStage.PRE_FLOP, room.getGame().getStage());
         Assertions.assertEquals("[Fold, Check, Bet]", p1.getActions().toString());
-        Assertions.assertEquals(1000, p1.getChips());
-        Assertions.assertEquals(1000, p2.getChips());
-        Assertions.assertEquals(0, room.getGame().getStakedChips());
-        Assertions.assertEquals(0, room.getGame().getCurrentBetSize());
+        Assertions.assertEquals(980, p1.getChips());
+        Assertions.assertEquals(990, p2.getChips());
+        Assertions.assertEquals(30, room.getGame().getStakedChips());
+        Assertions.assertEquals(20, room.getGame().getCurrentBetSize());
     }
 
     @Test

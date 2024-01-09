@@ -18,7 +18,6 @@ public class Game {
     private int dealerIndex;
     private int smallBlindIndex;
     private int bigBlindIndex;
-    private int lastToPlayIndex;
     private int actionsTakenThisRound;
 
     public void addToStake(int bet) {
@@ -66,11 +65,11 @@ public class Game {
         return (this.dealerIndex + 1) % numberOfPlayers;
     }
 
-    public void updateLastToPlay(int numberOfPlayers) {
-        this.lastToPlayIndex = (this.currentTurnIndex + (numberOfPlayers - 1)) % numberOfPlayers;
-    }
-
     public void incrementActionsTakenThisRound() {
         this.actionsTakenThisRound++;
+    }
+
+    public void decrementActionsTakenThisRound() {
+        this.actionsTakenThisRound--;
     }
 }

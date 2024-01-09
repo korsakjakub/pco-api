@@ -56,6 +56,10 @@ public class GameService extends BaseService {
         room.setGame(new Game(GameState.IN_PROGRESS, 1));
 
         room.getPlayers().forEach(player -> player.setChips(room.getGame().getRules().getStartingChips()));
+
+        // Game starts with mandatory bets - the small and big blinds.
+        smallBlind(room);
+        bigBlind(room);
         roomRepository.create(room);
     }
 
@@ -137,8 +141,8 @@ public class GameService extends BaseService {
     public void check(String roomId, String playerToken) {
         Room r = getRoomWithCurrentPlayerToken(roomId, playerToken);
         performAction(r, (room, game, player) -> {
-            if (game.getCurrentBetSize() != 0) {
-                throw new GameException("Current bet size is nonzero");
+            if (game.getCurrentBetSize() > player.getStakedChips()) {
+                throw new GameException("Cannot check");
             }
         });
     }
@@ -150,7 +154,7 @@ public class GameService extends BaseService {
                 throw new GameException("Current bet size is zero");
             }
 
-            if (betSize - game.getCurrentBetSize() <= 0 || betSize <= 2 * game.getRules().getBigBlind()) {
+            if (betSize - game.getCurrentBetSize() <= 0 || betSize < 2 * game.getRules().getBigBlind()) {
                 throw new GameException("The bet size is too low");
             }
 
@@ -166,12 +170,10 @@ public class GameService extends BaseService {
             game.addToStake(betAddition);
             player.addToStake(betAddition);
             game.setCurrentBetSize(betSize);
-            game.updateLastToPlay(room.getPlayers().size());
         });
     }
 
-    public void smallBlind(String roomId, String roomToken) {
-        Room r = auth.getRoomByIdWithOwnerAuthorization(roomId, roomToken);
+    public void smallBlind(Room r) {
         performAction(r, (room, game, player) -> {
             int sb = game.getRules().getSmallBlind();
 
@@ -184,11 +186,11 @@ public class GameService extends BaseService {
             player.addToStake(sb);
             game.addToStake(sb);
             game.setCurrentBetSize(sb);
+            game.decrementActionsTakenThisRound();
         });
     }
 
-    public void bigBlind(String roomId, String roomToken) {
-        Room r = auth.getRoomByIdWithOwnerAuthorization(roomId, roomToken);
+    public void bigBlind(Room r) {
         performAction(r, (room, game, player) -> {
             int bb = game.getRules().getBigBlind();
 
@@ -201,6 +203,7 @@ public class GameService extends BaseService {
             player.addToStake(bb);
             game.addToStake(bb);
             game.setCurrentBetSize(bb);
+            game.decrementActionsTakenThisRound();
         });
     }
 
@@ -235,8 +238,9 @@ public class GameService extends BaseService {
                 endHandWithWinner(winner, room);
             }
         }
-        // Second case - all players matched the highest bet
-        else if (areAllPlayersMatchingBetSize(players, game.getCurrentBetSize())) {
+        // Second case - all players matched the highest bet, and everybody played at least once
+        else if (areAllPlayersMatchingBetSize(players, game.getCurrentBetSize())
+                && game.getActionsTakenThisRound() + 1 >= players.size()) {
             game.nextStage();
             game.setCurrentBetSize(0);
             game.setCurrentTurnIndex(game.firstToPlayIndex(players.size()));
@@ -263,6 +267,7 @@ public class GameService extends BaseService {
             if (p.getId().equals(winner.getId())) {
                 p.setChips(winner.getChips() + game.getStakedChips());
             }
+            p.setActive(true);
         });
         game.setStage(GameStage.PRE_FLOP);
         game.setCurrentBetSize(0);
@@ -271,6 +276,8 @@ public class GameService extends BaseService {
 
         room.setPlayers(players);
         room.setGame(game);
+        smallBlind(room);
+        bigBlind(room);
     }
 
     private int activePlayersCount(List<Player> players) {
