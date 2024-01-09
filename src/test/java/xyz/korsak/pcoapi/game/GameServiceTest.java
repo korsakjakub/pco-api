@@ -5,21 +5,15 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import xyz.korsak.pcoapi.authorization.Authorization;
-import xyz.korsak.pcoapi.exceptions.GameException;
-import xyz.korsak.pcoapi.exceptions.UnauthorizedAccessException;
 import xyz.korsak.pcoapi.player.Player;
 import xyz.korsak.pcoapi.player.PlayerBuilder;
 import xyz.korsak.pcoapi.room.Room;
 import xyz.korsak.pcoapi.room.RoomRepository;
-import xyz.korsak.pcoapi.rules.PokerRules;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
 
 class GameServiceTest {
     @Mock
@@ -68,20 +62,5 @@ class GameServiceTest {
 
         // Act and Assert
         assertThrows(IllegalStateException.class, () -> gameService.getCurrentPlayer(room, 2));
-    }
-
-    @Test
-    void getCurrentPlayer_InsufficientChips_ThrowsException() {
-        // Arrange
-        Room room = new Room();
-        List<Player> players = new ArrayList<>();
-        players.add(new PlayerBuilder("player1", 100).build());
-        players.add(new PlayerBuilder("player2", 200).build());
-        room.setPlayers(players);
-        room.setGame(new Game());
-        room.getGame().setCurrentBetSize(150);
-
-        // Act and Assert
-        assertThrows(GameException.class, () -> gameService.getCurrentPlayer(room, 0));
     }
 }

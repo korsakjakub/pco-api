@@ -170,35 +170,25 @@ public class GameService extends BaseService {
     }
 
     public void smallBlind(Room r) {
-        performAction(r, (room, game, player) -> {
-            int sb = game.getRules().getSmallBlind();
-
-            int newPlayerBalance = player.getChips() - sb;
-            if (newPlayerBalance < 0) {
-                throw new GameException("Insufficient amount of chips for the player with ID: " + player.getId());
-            }
-
-            player.setChips(newPlayerBalance);
-            player.addToStake(sb);
-            game.addToStake(sb);
-            game.setCurrentBetSize(sb);
-            game.decrementActionsTakenThisRound();
-        });
+        blind(r, true);
+    }
+    public void bigBlind(Room r) {
+        blind(r, false);
     }
 
-    public void bigBlind(Room r) {
+    public void blind(Room r, boolean isSmall) {
         performAction(r, (room, game, player) -> {
-            int bb = game.getRules().getBigBlind();
+            int b = isSmall ? game.getRules().getSmallBlind() : game.getRules().getBigBlind();
 
-            int newPlayerBalance = player.getChips() - bb;
+            int newPlayerBalance = player.getChips() - b;
             if (newPlayerBalance < 0) {
                 throw new GameException("Insufficient amount of chips for the player with ID: " + player.getId());
             }
 
             player.setChips(newPlayerBalance);
-            player.addToStake(bb);
-            game.addToStake(bb);
-            game.setCurrentBetSize(bb);
+            player.addToStake(b);
+            game.addToStake(b);
+            game.setCurrentBetSize(b);
             game.decrementActionsTakenThisRound();
         });
     }
