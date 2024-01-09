@@ -75,11 +75,7 @@ public class GameService extends BaseService {
         if (currentTurnIndex < 0 || currentTurnIndex >= room.getPlayers().size()) {
             throw new IllegalStateException("Invalid turn index");
         }
-        Player player = room.getPlayers().get(currentTurnIndex);
-        if (player.getChips() < room.getGame().getCurrentBetSize()) {
-            throw new GameException("Insufficient amount of chips for the player with ID: " + player.getId());
-        }
-        return player;
+        return room.getPlayers().get(currentTurnIndex);
     }
 
     public Room getRoomWithCurrentPlayerToken(String roomId, String playerToken) {
