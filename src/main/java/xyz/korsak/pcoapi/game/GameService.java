@@ -122,6 +122,10 @@ public class GameService extends BaseService {
                 throw new GameException("Current bet size is nonzero");
             }
 
+            if (betSize < game.getRules().getBigBlind()) {
+                throw new GameException("Cannot bet lower than a big blind");
+            }
+
             int newPlayerBalance = player.getChips() - betSize;
             if (newPlayerBalance < 0) {
                 throw new GameException("Insufficient amount of chips for the player with ID: " + player.getId());
