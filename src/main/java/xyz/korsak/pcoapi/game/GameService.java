@@ -1,5 +1,6 @@
 package xyz.korsak.pcoapi.game;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import xyz.korsak.pcoapi.BaseService;
@@ -17,6 +18,7 @@ import xyz.korsak.pcoapi.rules.PokerRules;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Service
 public class GameService extends BaseService {
     private final Authorization auth;
@@ -53,7 +55,7 @@ public class GameService extends BaseService {
     public void start(String roomId, String roomToken) {
         Room room = auth.getRoomByIdWithOwnerAuthorization(roomId, roomToken);
 
-        room.setGame(new Game(GameState.IN_PROGRESS, 1));
+        room.setGame(new Game(GameState.IN_PROGRESS, 1, room.getPlayers().size()));
 
         room.getPlayers().forEach(player -> player.setChips(room.getGame().getRules().getStartingChips()));
 
@@ -233,12 +235,12 @@ public class GameService extends BaseService {
                 && game.getActionsTakenThisRound() + 1 >= players.size()) {
             game.nextStage();
             game.setCurrentBetSize(0);
-            game.setCurrentTurnIndex(game.firstToPlayIndex(players.size()));
+            game.setCurrentTurnIndex(game.getSmallBlindIndex());
             game.setActionsTakenThisRound(0);
             players.forEach(p -> p.setStakedChips(0));
         } // The round doesn't end
         else {
-            game.nextTurnIndex(players.size());
+            game.nextTurnIndex();
             game.incrementActionsTakenThisRound();
         }
         players.forEach(
@@ -262,7 +264,8 @@ public class GameService extends BaseService {
         game.setStage(GameStage.PRE_FLOP);
         game.setCurrentBetSize(0);
         game.setStakedChips(0);
-        game.setCurrentTurnIndex(game.firstToPlayIndex(players.size()));
+        game.incrementDealerIndex();
+        game.setCurrentTurnIndex(game.getSmallBlindIndex());
 
         room.setPlayers(players);
         room.setGame(game);

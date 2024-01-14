@@ -82,7 +82,9 @@ public class GameThreePlayersIntegrationTest {
                 "\"currentTurnIndex\": 1," +
                 "\"dealerIndex\": 0," +
                 "\"smallBlindIndex\": 1," +
-                "\"bigBlindIndex\": 2" +
+                "\"bigBlindIndex\": 2," +
+                "\"actionsTakenThisRound\": 0," +
+                "\"numberOfPlayers\": 3" +
                 "}," +
                 "\"queueId\": \"qid-test\"" +
                 "}";

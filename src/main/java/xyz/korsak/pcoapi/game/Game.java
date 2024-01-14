@@ -19,6 +19,7 @@ public class Game {
     private int smallBlindIndex;
     private int bigBlindIndex;
     private int actionsTakenThisRound;
+    private int numberOfPlayers;
 
     public void addToStake(int bet) {
         stakedChips += bet;
@@ -35,19 +36,31 @@ public class Game {
         this.smallBlindIndex = 1;
         this.bigBlindIndex = 2;
         this.actionsTakenThisRound = 0;
+        this.numberOfPlayers = 1;
     }
 
-    public Game(GameState gameState, int currentTurnIndex) {
+    public Game(GameState gameState, int currentTurnIndex, int numberOfPlayers) {
         this.rules = new PokerRules();
         this.state = gameState;
         this.stage = GameStage.PRE_FLOP;
         this.currentTurnIndex = currentTurnIndex;
+        this.numberOfPlayers = numberOfPlayers;
         this.stakedChips = 0;
         this.currentBetSize = 0;
         this.dealerIndex = 0;
         this.smallBlindIndex = 1;
-        this.bigBlindIndex = 2;
+        this.bigBlindIndex = 2 % this.numberOfPlayers;
         this.actionsTakenThisRound = 0;
+    }
+
+    public void setDealerIndex(int newIndex) {
+        this.dealerIndex = newIndex % this.numberOfPlayers;
+        this.smallBlindIndex = (newIndex + 1) % this.numberOfPlayers;
+        this.bigBlindIndex = (newIndex + 2) % this.numberOfPlayers;
+    }
+
+    public void incrementDealerIndex() {
+        this.setDealerIndex(dealerIndex + 1);
     }
 
     public void nextStage() {
@@ -57,12 +70,8 @@ public class Game {
         this.stage = stages[nextStageOrdinal];
     }
 
-    public void nextTurnIndex(int numberOfPlayers) {
-        this.currentTurnIndex = (currentTurnIndex + 1) % numberOfPlayers;
-    }
-
-    public int firstToPlayIndex(int numberOfPlayers) {
-        return (this.dealerIndex + 1) % numberOfPlayers;
+    public void nextTurnIndex() {
+        this.currentTurnIndex = (this.currentTurnIndex + 1) % this.numberOfPlayers;
     }
 
     public void incrementActionsTakenThisRound() {
