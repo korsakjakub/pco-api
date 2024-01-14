@@ -36,7 +36,7 @@ public class Game {
         this.smallBlindIndex = 1;
         this.bigBlindIndex = 2;
         this.actionsTakenThisRound = 0;
-        this.numberOfPlayers = 1;
+        this.numberOfPlayers = 2;
     }
 
     public Game(GameState gameState, int currentTurnIndex, int numberOfPlayers) {

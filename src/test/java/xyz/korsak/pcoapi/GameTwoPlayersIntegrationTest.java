@@ -108,9 +108,9 @@ public class GameTwoPlayersIntegrationTest {
         p2 = room.getPlayers().get(1);
 
         Assertions.assertEquals(GameStage.PRE_FLOP, room.getGame().getStage());
-        Assertions.assertEquals("[Fold, Check, Bet]", p1.getActions().toString());
-        Assertions.assertEquals(980, p1.getChips());
-        Assertions.assertEquals(990, p2.getChips());
+        Assertions.assertEquals("[Fold, Call, Raise]", p1.getActions().toString());
+        Assertions.assertEquals(990, p1.getChips());
+        Assertions.assertEquals(980, p2.getChips());
         Assertions.assertEquals(30, room.getGame().getStakedChips());
         Assertions.assertEquals(20, room.getGame().getCurrentBetSize());
     }
@@ -187,5 +187,35 @@ public class GameTwoPlayersIntegrationTest {
         Assertions.assertEquals(0, room.getGame().getCurrentBetSize());
         Assertions.assertEquals(0, p1.getStakedChips());
         Assertions.assertEquals(0, p2.getStakedChips());
+    }
+
+
+    @Test
+    public void testBetFoldCallIsDealerChanged() throws Exception {
+        Player p2 = room.getPlayers().get(1);
+        String roomId = room.getId();
+
+        Assertions.assertEquals(GameStage.PRE_FLOP, room.getGame().getStage());
+        Assertions.assertEquals("[Fold, Check, Bet]", p2.getActions().toString());
+        Assertions.assertEquals("Bet", Utils.bet(mockMvc, roomId, p2.getToken(), 100));
+
+        room = Utils.getRoom(mockMvc, roomId);
+        Player p1 = room.getPlayers().get(0);
+
+        Assertions.assertEquals("[Fold, Call, Raise]", p1.getActions().toString());
+        Assertions.assertEquals("Folded", Utils.fold(mockMvc, roomId, p1.getToken()));
+
+        room = Utils.getRoom(mockMvc, roomId);
+        p1 = room.getPlayers().get(0);
+        p2 = room.getPlayers().get(1);
+
+        Assertions.assertEquals(GameStage.PRE_FLOP, room.getGame().getStage());
+        Assertions.assertEquals("[Fold, Call, Raise]", p1.getActions().toString());
+        Assertions.assertEquals(990, p1.getChips());
+        Assertions.assertEquals(980, p2.getChips());
+        Assertions.assertEquals(30, room.getGame().getStakedChips());
+        Assertions.assertEquals(20, room.getGame().getCurrentBetSize());
+
+        Assertions.assertEquals("Called", Utils.call(mockMvc, roomId, p1.getToken()));
     }
 }
