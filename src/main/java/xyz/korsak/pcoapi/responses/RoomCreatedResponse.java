@@ -13,7 +13,6 @@ import lombok.ToString;
 @ToString
 public class RoomCreatedResponse {
     private String id;
-    private String name;
     private String queueId;
     private String token;
 }

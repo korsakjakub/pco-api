@@ -35,10 +35,10 @@ public class RoomService extends BaseService {
         this.roomRepository = roomRepository;
     }
 
-    public Room createRoom(String name) {
+    public Room createRoom() {
         String id = generateRandomString("rid");
         String token = generateRandomString("rtk");
-        Room room = new Room(id, name, new ArrayList<>(), token);
+        Room room = new Room(id, new ArrayList<>(), token);
         roomRepository.create(room);
         return room;
     }

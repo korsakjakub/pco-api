@@ -5,5 +5,12 @@ public enum GameStage {
     FLOP,
     TURN,
     RIVER,
-    SHOWDOWN
+    SHOWDOWN;
+
+    public GameStage next() {
+        int currentStageOrdinal = this.ordinal();
+        GameStage[] stages = GameStage.values();
+        int nextStageOrdinal = (currentStageOrdinal + 1) % stages.length;
+        return stages[nextStageOrdinal];
+    }
 }

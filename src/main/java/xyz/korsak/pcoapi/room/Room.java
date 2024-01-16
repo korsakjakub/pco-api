@@ -11,10 +11,10 @@ import java.util.List;
 @ToString
 @Setter
 @Getter
+@Builder(toBuilder = true)
 public class Room {
 
     private String id;
-    private String name;
     private List<Player> players;
     private String token;
     private Game game;
@@ -24,9 +24,8 @@ public class Room {
         this.players = players;
     }
 
-    public Room(String id, String name, List<Player> players, String token) {
+    public Room(String id, List<Player> players, String token) {
         this.id = id;
-        this.name = name;
         this.players = players;
         this.token = token;
         this.game = new Game();

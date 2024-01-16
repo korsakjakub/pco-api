@@ -37,7 +37,6 @@ public class GameTwoPlayersIntegrationTest {
         String key = "room:rid-test";
         String json = "{" +
                 "\"id\": \"rid-test\"," +
-                "\"name\": null," +
                 "\"players\": [" +
                 "{" +
                 "\"id\": \"pid-player1\"," +
