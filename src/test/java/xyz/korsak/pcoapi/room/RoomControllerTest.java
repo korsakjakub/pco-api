@@ -17,7 +17,7 @@ class RoomControllerTest {
     void getRoomByToken_ReturnsRoom_WhenTokenIsValid() {
         // Arrange
         String token = "abc123";
-        Room expectedRoom = new Room("123", new ArrayList<>(), "456");
+        Room expectedRoom = new Room.RoomBuilder("123", new ArrayList<>(), "456").build();
 
         RoomService roomService = mock(RoomService.class);
         when(roomService.getRoomByToken(eq(token))).thenReturn(expectedRoom);
@@ -30,7 +30,7 @@ class RoomControllerTest {
         // Assert
         verify(roomService, times(1)).getRoomByToken(eq(token));
         verifyNoMoreInteractions(roomService);
-        assertEquals(expectedRoom.getId(), response.getId());
+        assertEquals(expectedRoom.id(), response.id());
     }
 
     @Test

@@ -26,13 +26,13 @@ public class GetGameResponse {
     private String bigBlindPlayerId;
 
     public GetGameResponse(Game g, List<Player> p) {
-        this.state = g.getState();
-        this.stage = g.getStage();
-        this.stakedChips = g.getStakedChips();
-        this.currentBetSize = g.getCurrentBetSize();
-        this.currentTurnPlayerId = p.get(g.getCurrentTurnIndex() % p.size()).getId();
-        this.dealerPlayerId = p.get(g.getDealerIndex() % p.size()).getId();
-        this.smallBlindPlayerId = p.get(g.getSmallBlindIndex() % p.size()).getId();
-        this.bigBlindPlayerId = p.get(g.getBigBlindIndex() % p.size()).getId();
+        this.state = g.state();
+        this.stage = g.stage();
+        this.stakedChips = g.stakedChips();
+        this.currentBetSize = g.currentBetSize();
+        this.currentTurnPlayerId = p.get(g.currentTurnIndex() % p.size()).getId();
+        this.dealerPlayerId = p.get(g.dealerIndex() % p.size()).getId();
+        this.smallBlindPlayerId = p.get(g.smallBlindIndex() % p.size()).getId();
+        this.bigBlindPlayerId = p.get(g.bigBlindIndex() % p.size()).getId();
     }
 }

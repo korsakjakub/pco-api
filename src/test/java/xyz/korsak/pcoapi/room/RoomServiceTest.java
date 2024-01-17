@@ -37,7 +37,7 @@ public class RoomServiceTest {
     public void testGetRoomByToken() {
         // Arrange
         String roomToken = "456";
-        Room expectedRoom = new Room("123", new ArrayList<>(), roomToken);
+        Room expectedRoom = new Room.RoomBuilder("123", new ArrayList<>(), roomToken).build();
         when(roomRepository.findByToken(roomToken)).thenReturn(expectedRoom);
 
         // Act
@@ -52,7 +52,7 @@ public class RoomServiceTest {
     public void testAddPlayerToRoom() {
         // Arrange
         String roomId = "123";
-        Room room = new Room(roomId, new ArrayList<>(), "456");
+        Room room = new Room.RoomBuilder(roomId, new ArrayList<>(), "456").build();
         String playerName = "John Doe";
         String playerId = "789";
         String playerToken = "xyz";
@@ -68,8 +68,8 @@ public class RoomServiceTest {
         Assertions.assertNotNull(addedPlayer);
         Assertions.assertNotNull(addedPlayer.getToken());
         Assertions.assertEquals(addedPlayer.getName(), playerName);
-        Assertions.assertEquals(1, room.getPlayers().size());
-        Assertions.assertEquals(playerName, room.getPlayers().get(0).getName());
+        Assertions.assertEquals(1, room.players().size());
+        Assertions.assertEquals(playerName, room.players().get(0).getName());
         verify(roomRepository, Mockito.times(1)).create(room);
     }
 
@@ -112,7 +112,7 @@ public class RoomServiceTest {
         List<Player> players = new ArrayList<>();
         Player player = new PlayerBuilder(playerId, "Player 1", 100, 0, playerToken).build();
         players.add(player);
-        Room room = new Room(roomId, players, roomToken);
+        Room room = new Room.RoomBuilder(roomId, players, roomToken).build();
 
         // Mock the roomRepository.findById() method
         when(roomRepository.findById(roomId)).thenReturn(room);
@@ -153,7 +153,7 @@ public class RoomServiceTest {
         // Create a sample room with players
         List<Player> players = new ArrayList<>();
         players.add(new PlayerBuilder("player2", "Player 2", 100, 0, "token2").build());
-        Room room = new Room(roomId, players, roomToken);
+        Room room = new Room.RoomBuilder(roomId, players, roomToken).build();
 
         // Mock the roomRepository.findById() method
         when(roomRepository.findById(roomId)).thenReturn(room);
@@ -169,12 +169,12 @@ public class RoomServiceTest {
         Room r = roomService.createRoom();
 
         // Act
-        when(roomRepository.findById(r.getId())).thenReturn(new Room(r.getId(), null, r.getToken()));
-        when(authorization.authorizeRoomOwner(r.getId(), r.getToken())).thenReturn(true);
-        roomService.deleteRoom(r.getId(), r.getToken());
+        when(roomRepository.findById(r.id())).thenReturn(new Room.RoomBuilder(r.id(), null, r.token()).build());
+        when(authorization.authorizeRoomOwner(r.id(), r.token())).thenReturn(true);
+        roomService.deleteRoom(r.id(), r.token());
 
         // Assert
-        verify(roomRepository, Mockito.times(1)).delete(r.getId());
+        verify(roomRepository, Mockito.times(1)).delete(r.id());
     }
 
     @Test
@@ -198,7 +198,7 @@ public class RoomServiceTest {
         String playerId = "invalidPlayerId";
         String token = "token";
 
-        Room room = new Room(roomId, new ArrayList<>(), "roomToken");
+        Room room = new Room.RoomBuilder(roomId, new ArrayList<>(), "roomToken").build();
 
         when(roomRepository.findById(roomId)).thenReturn(room);
         when(authorization.getPlayerWithAuthorization(roomId, playerId, token)).thenThrow(new UnauthorizedAccessException());
@@ -215,9 +215,9 @@ public class RoomServiceTest {
         String playerId = "playerId";
         String token = "invalidToken";
 
-        Room room = new Room(roomId, new ArrayList<>(), "roomToken");
+        Room room = new Room.RoomBuilder(roomId, new ArrayList<>(), "roomToken").build();
         Player player = new PlayerBuilder(playerId, "Player", 100, 0, "playerToken").build();
-        room.getPlayers().add(player);
+        room.players().add(player);
 
         when(roomRepository.findById(roomId)).thenReturn(room);
         when(authorization.getPlayerWithAuthorization(roomId, playerId, token)).thenThrow(new UnauthorizedAccessException());

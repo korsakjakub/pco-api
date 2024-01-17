@@ -31,16 +31,16 @@ public class QueueAndRoomIntegrationTest {
 
         Room room = Utils.getRoom(mockMvc, r.getToken());
 
-        IdTokenResponse idTokenPlayer1 = Utils.createPlayer(mockMvc, room.getQueueId(), "Player 1");
+        IdTokenResponse idTokenPlayer1 = Utils.createPlayer(mockMvc, room.queueId(), "Player 1");
 
         Assertions.assertNotNull(idTokenPlayer1.getId());
         Assertions.assertNotNull(idTokenPlayer1.getToken());
 
-        IdTokenResponse idTokenPlayer2 = Utils.createPlayer(mockMvc, room.getQueueId(), "Player 2");
+        IdTokenResponse idTokenPlayer2 = Utils.createPlayer(mockMvc, room.queueId(), "Player 2");
         Assertions.assertNotNull(idTokenPlayer2.getId());
         Assertions.assertNotNull(idTokenPlayer2.getToken());
 
-        GetPlayersResponse updatedQueueResponse = Utils.getPlayersInQueue(mockMvc, room.getQueueId());
+        GetPlayersResponse updatedQueueResponse = Utils.getPlayersInQueue(mockMvc, room.queueId());
 
         Assertions.assertNotNull(updatedQueueResponse);
         Assertions.assertEquals(2, updatedQueueResponse.getPlayers().size());
@@ -60,7 +60,7 @@ public class QueueAndRoomIntegrationTest {
         Assertions.assertNotNull(updatedRoomResponse2);
         Assertions.assertEquals(1, updatedRoomResponse2.getPlayers().size());
 
-        GetPlayersResponse updatedQueueResponse2 = Utils.getPlayersInQueue(mockMvc, room.getQueueId());
+        GetPlayersResponse updatedQueueResponse2 = Utils.getPlayersInQueue(mockMvc, room.queueId());
         Assertions.assertNotNull(updatedQueueResponse2);
         Assertions.assertEquals(1, updatedQueueResponse2.getPlayers().size());
 

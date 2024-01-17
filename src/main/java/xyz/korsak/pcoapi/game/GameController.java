@@ -72,8 +72,8 @@ public class GameController extends BaseController {
         if (room == null) {
             throw new NotFoundException("Room not found with ID: " + roomId);
         }
-        Game game = room.getGame();
-        return logResponse(ResponseEntity.ok(game.getRules()));
+        Game game = room.game();
+        return logResponse(ResponseEntity.ok(game.rules()));
     }
 
     @GetMapping("/state")
@@ -82,8 +82,8 @@ public class GameController extends BaseController {
         if (room == null) {
             throw new NotFoundException("Room not found with ID: " + roomId);
         }
-        Game game = room.getGame();
-        IdResponse r = new IdResponse(game.getState().toString());
+        Game game = room.game();
+        IdResponse r = new IdResponse(game.state().toString());
         return logResponse(ResponseEntity.ok(r));
     }
 
@@ -93,9 +93,9 @@ public class GameController extends BaseController {
         if (room == null) {
             throw new NotFoundException("Room not found with ID: " + roomId);
         }
-        Game game = room.getGame();
+        Game game = room.game();
 
-        return logResponse(ResponseEntity.ok(game.getStage().toString()));
+        return logResponse(ResponseEntity.ok(game.stage().toString()));
     }
 
     public IdResponse currentPlayer(String roomId) {
@@ -103,11 +103,11 @@ public class GameController extends BaseController {
         if (room == null) {
             throw new NotFoundException("Room not found with ID: " + roomId);
         }
-        Game game = room.getGame();
+        Game game = room.game();
         if (game == null) {
             throw new NotFoundException("There is no game for room with ID: " + roomId);
         }
-        Player currentPlayer = gameService.getCurrentPlayer(room, game.getCurrentTurnIndex());
+        Player currentPlayer = gameService.getCurrentPlayer(room, game.currentTurnIndex());
         return new IdResponse(currentPlayer.getId());
     }
 

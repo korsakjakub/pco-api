@@ -38,7 +38,7 @@ public class RoomService extends BaseService {
     public Room createRoom() {
         String id = generateRandomString("rid");
         String token = generateRandomString("rtk");
-        Room room = new Room(id, new ArrayList<>(), token);
+        Room room = new Room.RoomBuilder(id, new ArrayList<>(), token).build();
         roomRepository.create(room);
         return room;
     }
@@ -61,7 +61,7 @@ public class RoomService extends BaseService {
 
     public Player addPlayerToRoom(String roomId, Player player, String roomToken) {
         Room room = auth.getRoomByIdWithOwnerAuthorization(roomId, roomToken);
-        room.getPlayers().add(player);
+        room.players().add(player);
         roomRepository.create(room);
         return player;
     }
@@ -71,7 +71,7 @@ public class RoomService extends BaseService {
         String token = generateRandomString("ptk");
         String id = generateRandomString("pid");
         Player player = new PlayerBuilder(id, playerName, token).build();
-        room.getPlayers().add(player);
+        room.players().add(player);
         roomRepository.create(room);
         return player;
     }
@@ -81,7 +81,7 @@ public class RoomService extends BaseService {
         if (room == null) {
             throw new UnauthorizedAccessException();
         }
-        return new GetPlayersResponse(room.getPlayers());
+        return new GetPlayersResponse(room.players());
     }
 
     public Player getPlayerInRoom(String roomId, String playerId, String playerToken)
@@ -95,7 +95,7 @@ public class RoomService extends BaseService {
             throw new UnauthorizedAccessException();
         }
         final Player player = auth.getPlayerWithAuthorization(roomId, playerId, token);
-        final List<Player> newPlayers = room.getPlayers().stream().filter(p -> !Objects.equals(p.getId(), player.getId())).toList();
+        final List<Player> newPlayers = room.players().stream().filter(p -> !Objects.equals(p.getId(), player.getId())).toList();
 
         final Room updatedRoom = room.toBuilder().players(newPlayers).build();
         roomRepository.create(updatedRoom);

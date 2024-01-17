@@ -89,101 +89,101 @@ public class GameTwoPlayersIntegrationTest {
 
     @Test
     public void testBetFold() throws Exception {
-        Player p2 = room.getPlayers().get(1);
-        String roomId = room.getId();
+        Player p2 = room.players().get(1);
+        String roomId = room.id();
 
-        Assertions.assertEquals(GameStage.PRE_FLOP, room.getGame().getStage());
+        Assertions.assertEquals(GameStage.PRE_FLOP, room.game().stage());
         Assertions.assertEquals("[Fold, Check, Bet]", p2.getActions().toString());
         Assertions.assertEquals("Bet", Utils.bet(mockMvc, roomId, p2.getToken(), 100));
 
         room = Utils.getRoom(mockMvc, roomId);
-        Player p1 = room.getPlayers().get(0);
+        Player p1 = room.players().get(0);
 
         Assertions.assertEquals("[Fold, Call, Raise]", p1.getActions().toString());
         Assertions.assertEquals("Folded", Utils.fold(mockMvc, roomId, p1.getToken()));
 
         room = Utils.getRoom(mockMvc, roomId);
-        p1 = room.getPlayers().get(0);
-        p2 = room.getPlayers().get(1);
+        p1 = room.players().get(0);
+        p2 = room.players().get(1);
 
-        Assertions.assertEquals(GameStage.PRE_FLOP, room.getGame().getStage());
+        Assertions.assertEquals(GameStage.PRE_FLOP, room.game().stage());
         Assertions.assertEquals("[Fold, Call, Raise]", p1.getActions().toString());
         Assertions.assertEquals(990, p1.getChips());
         Assertions.assertEquals(980, p2.getChips());
-        Assertions.assertEquals(30, room.getGame().getStakedChips());
-        Assertions.assertEquals(20, room.getGame().getCurrentBetSize());
+        Assertions.assertEquals(30, room.game().stakedChips());
+        Assertions.assertEquals(20, room.game().currentBetSize());
     }
 
     @Test
     public void testBetRaiseCall() throws Exception {
-        Player p2 = room.getPlayers().get(1);
-        String roomId = room.getId();
+        Player p2 = room.players().get(1);
+        String roomId = room.id();
 
-        Assertions.assertEquals(GameStage.PRE_FLOP, room.getGame().getStage());
+        Assertions.assertEquals(GameStage.PRE_FLOP, room.game().stage());
         Assertions.assertEquals("[Fold, Check, Bet]", p2.getActions().toString());
         Assertions.assertEquals("Bet", Utils.bet(mockMvc, roomId, p2.getToken(), 100));
 
         room = Utils.getRoom(mockMvc, roomId);
-        Player p1 = room.getPlayers().get(0);
+        Player p1 = room.players().get(0);
 
         Assertions.assertEquals("[Fold, Call, Raise]", p1.getActions().toString());
         Assertions.assertEquals("Raised", Utils.raise(mockMvc, roomId, p1.getToken(), 200));
 
         room = Utils.getRoom(mockMvc, roomId);
-        p2 = room.getPlayers().get(1);
+        p2 = room.players().get(1);
 
         Assertions.assertEquals("[Fold, Call, Raise]", p2.getActions().toString());
         Assertions.assertEquals("Called", Utils.call(mockMvc, roomId, p2.getToken()));
 
         room = Utils.getRoom(mockMvc, roomId);
-        p1 = room.getPlayers().get(0);
-        p2 = room.getPlayers().get(1);
+        p1 = room.players().get(0);
+        p2 = room.players().get(1);
 
-        Assertions.assertEquals(GameStage.FLOP, room.getGame().getStage());
+        Assertions.assertEquals(GameStage.FLOP, room.game().stage());
         Assertions.assertEquals("[Fold, Check, Bet]", p1.getActions().toString());
         Assertions.assertEquals("[Fold, Check, Bet]", p2.getActions().toString());
-        Assertions.assertEquals(400, room.getGame().getStakedChips());
-        Assertions.assertEquals(0, room.getGame().getCurrentBetSize());
+        Assertions.assertEquals(400, room.game().stakedChips());
+        Assertions.assertEquals(0, room.game().currentBetSize());
         Assertions.assertEquals(0, p1.getStakedChips());
         Assertions.assertEquals(0, p2.getStakedChips());
     }
 
     @Test
     public void testBetRaiseReRaise() throws Exception {
-        Player p2 = room.getPlayers().get(1);
-        String roomId = room.getId();
+        Player p2 = room.players().get(1);
+        String roomId = room.id();
 
-        Assertions.assertEquals(GameStage.PRE_FLOP, room.getGame().getStage());
+        Assertions.assertEquals(GameStage.PRE_FLOP, room.game().stage());
         Assertions.assertEquals("[Fold, Check, Bet]", p2.getActions().toString());
         Assertions.assertEquals("Bet", Utils.bet(mockMvc, roomId, p2.getToken(), 100));
 
         room = Utils.getRoom(mockMvc, roomId);
-        Player p1 = room.getPlayers().get(0);
+        Player p1 = room.players().get(0);
 
         Assertions.assertEquals("[Fold, Call, Raise]", p1.getActions().toString());
         Assertions.assertEquals("Raised", Utils.raise(mockMvc, roomId, p1.getToken(), 200));
 
         room = Utils.getRoom(mockMvc, roomId);
-        p2 = room.getPlayers().get(1);
+        p2 = room.players().get(1);
 
         Assertions.assertEquals("[Fold, Call, Raise]", p2.getActions().toString());
         Assertions.assertEquals("Raised", Utils.raise(mockMvc, roomId, p2.getToken(), 300));
 
         room = Utils.getRoom(mockMvc, roomId);
-        p1 = room.getPlayers().get(0);
+        p1 = room.players().get(0);
 
         Assertions.assertEquals("[Fold, Call, Raise]", p1.getActions().toString());
         Assertions.assertEquals("Called", Utils.call(mockMvc, roomId, p1.getToken()));
 
         room = Utils.getRoom(mockMvc, roomId);
-        p1 = room.getPlayers().get(0);
-        p2 = room.getPlayers().get(1);
+        p1 = room.players().get(0);
+        p2 = room.players().get(1);
 
-        Assertions.assertEquals(GameStage.FLOP, room.getGame().getStage());
+        Assertions.assertEquals(GameStage.FLOP, room.game().stage());
         Assertions.assertEquals("[Fold, Check, Bet]", p1.getActions().toString());
         Assertions.assertEquals("[Fold, Check, Bet]", p2.getActions().toString());
-        Assertions.assertEquals(600, room.getGame().getStakedChips());
-        Assertions.assertEquals(0, room.getGame().getCurrentBetSize());
+        Assertions.assertEquals(600, room.game().stakedChips());
+        Assertions.assertEquals(0, room.game().currentBetSize());
         Assertions.assertEquals(0, p1.getStakedChips());
         Assertions.assertEquals(0, p2.getStakedChips());
     }
@@ -191,29 +191,29 @@ public class GameTwoPlayersIntegrationTest {
 
     @Test
     public void testBetFoldCallIsDealerChanged() throws Exception {
-        Player p2 = room.getPlayers().get(1);
-        String roomId = room.getId();
+        Player p2 = room.players().get(1);
+        String roomId = room.id();
 
-        Assertions.assertEquals(GameStage.PRE_FLOP, room.getGame().getStage());
+        Assertions.assertEquals(GameStage.PRE_FLOP, room.game().stage());
         Assertions.assertEquals("[Fold, Check, Bet]", p2.getActions().toString());
         Assertions.assertEquals("Bet", Utils.bet(mockMvc, roomId, p2.getToken(), 100));
 
         room = Utils.getRoom(mockMvc, roomId);
-        Player p1 = room.getPlayers().get(0);
+        Player p1 = room.players().get(0);
 
         Assertions.assertEquals("[Fold, Call, Raise]", p1.getActions().toString());
         Assertions.assertEquals("Folded", Utils.fold(mockMvc, roomId, p1.getToken()));
 
         room = Utils.getRoom(mockMvc, roomId);
-        p1 = room.getPlayers().get(0);
-        p2 = room.getPlayers().get(1);
+        p1 = room.players().get(0);
+        p2 = room.players().get(1);
 
-        Assertions.assertEquals(GameStage.PRE_FLOP, room.getGame().getStage());
+        Assertions.assertEquals(GameStage.PRE_FLOP, room.game().stage());
         Assertions.assertEquals("[Fold, Call, Raise]", p1.getActions().toString());
         Assertions.assertEquals(990, p1.getChips());
         Assertions.assertEquals(980, p2.getChips());
-        Assertions.assertEquals(30, room.getGame().getStakedChips());
-        Assertions.assertEquals(20, room.getGame().getCurrentBetSize());
+        Assertions.assertEquals(30, room.game().stakedChips());
+        Assertions.assertEquals(20, room.game().currentBetSize());
 
         Assertions.assertEquals("Called", Utils.call(mockMvc, roomId, p1.getToken()));
     }
