@@ -9,7 +9,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-@Setter
 @Getter
 @Builder(toBuilder = true)
 public class Room {

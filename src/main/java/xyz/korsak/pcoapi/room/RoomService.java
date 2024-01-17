@@ -96,8 +96,9 @@ public class RoomService extends BaseService {
         }
         final Player player = auth.getPlayerWithAuthorization(roomId, playerId, token);
         final List<Player> newPlayers = room.getPlayers().stream().filter(p -> !Objects.equals(p.getId(), player.getId())).toList();
-        room.setPlayers(newPlayers);
-        roomRepository.create(room);
+
+        final Room updatedRoom = room.toBuilder().players(newPlayers).build();
+        roomRepository.create(updatedRoom);
     }
 
     public void updateRoom(Room room) {

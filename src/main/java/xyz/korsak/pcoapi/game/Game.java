@@ -4,7 +4,6 @@ import lombok.*;
 import xyz.korsak.pcoapi.rules.PokerRules;
 
 @Getter
-@Setter
 @AllArgsConstructor
 @Builder(toBuilder = true)
 public class Game {

@@ -42,9 +42,11 @@ public class RoomController extends BaseController {
             return ResponseEntity.unprocessableEntity().build();
         }
         Queue queue = queueService.createQueue(room.getId());
-        room.setQueueId(queue.getId());
-        roomService.updateRoom(room);
-        RoomCreatedResponse r = new RoomCreatedResponse(room.getId(), queue.getId(), room.getToken());
+
+        Room updatedRoom = room.toBuilder().queueId(queue.getId()).build();
+
+        roomService.updateRoom(updatedRoom);
+        RoomCreatedResponse r = new RoomCreatedResponse(updatedRoom.getId(), updatedRoom.getQueueId(), updatedRoom.getToken());
 
         return logResponse(ResponseEntity.status(HttpStatus.CREATED).body(r));
     }
