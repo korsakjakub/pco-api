@@ -56,14 +56,13 @@ public class GameService extends BaseService {
 
         room.players().forEach(player -> player.setChips(room.game().rules().getStartingChips()));
 
-        final Game updatedGame = new Game.GameBuilder(GameState.IN_PROGRESS, 0, room.players().size()).build();
-        Room updatedRoom = room.toBuilder()
-                .game(updatedGame).build();
+        final Game game = new Game.GameBuilder()
+                .state(GameState.IN_PROGRESS)
+                .currentTurnIndex(0)
+                .numberOfPlayers(room.players().size())
+                .stage(GameStage.SMALL_BLIND).build();
 
-        // Game starts with mandatory bets - the small and big blinds.
-        smallBlind(updatedRoom);
-        bigBlind(updatedRoom);
-        roomRepository.create(updatedRoom);
+        roomRepository.create(blind(blind(room.toBuilder().game(game).build())));
     }
 
     public void setRules(String roomId, String roomToken, PokerRules rules) {
@@ -102,37 +101,33 @@ public class GameService extends BaseService {
 
         endHandWithWinner(winner, builder, game, players);
 
-        roomRepository.create(
-                room.toBuilder()
+        roomRepository.create(room.toBuilder()
                         .game(builder.build())
                         .players(players)
-                        .build()
-        );
+                        .build());
     }
 
     public void fold(String roomId, String playerToken) {
         Room room = getRoomWithCurrentPlayerToken(roomId, playerToken);
-        final Room updatedRoom = performAction(room, (game, currentPlayer) -> {
+        roomRepository.create(performAction(room, (game, currentPlayer) -> {
             currentPlayer.setActive(false);
             return game.toBuilder();
-        }).build();
-        roomRepository.create(updatedRoom);
+        }).build());
     }
 
     public void call(String roomId, String playerToken) {
         Room room = getRoomWithCurrentPlayerToken(roomId, playerToken);
-        final Room updatedRoom = performAction(room, (game, currentPlayer) -> {
+        roomRepository.create(performAction(room, (game, currentPlayer) -> {
             int leftToCall = game.currentBetSize() - currentPlayer.getStakedChips();
             currentPlayer.setChips(currentPlayer.getChips() - leftToCall);
             currentPlayer.addToStake(leftToCall);
             return game.toBuilder().addToStake(leftToCall);
-        }).build();
-        roomRepository.create(updatedRoom);
+        }).build());
     }
 
     public void bet(String roomId, String playerToken, int betSize) {
         Room room = getRoomWithCurrentPlayerToken(roomId, playerToken);
-        final Room updatedRoom = performAction(room, (game, currentPlayer) -> {
+        roomRepository.create(performAction(room, (game, currentPlayer) -> {
             if (game.currentBetSize() != 0) {
                 throw new GameException("Current bet size is nonzero");
             }
@@ -150,24 +145,22 @@ public class GameService extends BaseService {
             currentPlayer.addToStake(betSize);
             return game.toBuilder().addToStake(betSize)
                     .currentBetSize(betSize);
-        }).build();
-        roomRepository.create(updatedRoom);
+        }).build());
     }
 
     public void check(String roomId, String playerToken) {
         Room room = getRoomWithCurrentPlayerToken(roomId, playerToken);
-        final Room updatedRoom = performAction(room, (game, currentPlayer) -> {
+        roomRepository.create(performAction(room, (game, currentPlayer) -> {
             if (game.currentBetSize() > currentPlayer.getStakedChips()) {
                 throw new GameException("Cannot check");
             }
             return game.toBuilder();
-        }).build();
-        roomRepository.create(updatedRoom);
+        }).build());
     }
 
     public void raise(String roomId, String playerToken, int betSize) {
         Room room = getRoomWithCurrentPlayerToken(roomId, playerToken);
-        final Room updatedRoom = performAction(room, (game, currentPlayer) -> {
+        roomRepository.create(performAction(room, (game, currentPlayer) -> {
             if (game.currentBetSize() == 0) {
                 throw new GameException("Current bet size is zero");
             }
@@ -188,33 +181,30 @@ public class GameService extends BaseService {
             currentPlayer.addToStake(betAddition);
             return game.toBuilder().addToStake(betAddition)
                     .currentBetSize(betSize);
-        }).build();
-        roomRepository.create(updatedRoom);
+        }).build());
     }
 
-    public void smallBlind(Room r) {
-        blind(r, true);
-    }
-    public void bigBlind(Room r) {
-        blind(r, false);
-    }
+    /***
+     * Blinds are played at the beginning of each hand. Therefore, they can be played:
+     * a) at the beginning of the game
+     * b) after a fold if only 1 player remains
+     * c) after showdown
+     */
+    public Room blind(Room room) {
+        return performAction(room, (game, currentPlayer) -> {
+            final int blind = game.stage().equals(GameStage.SMALL_BLIND) ? game.rules().getSmallBlind() : game.rules().getBigBlind();
 
-    public void blind(Room room, boolean isSmall) {
-        final Room updatedRoom = performAction(room, (game, currentPlayer) -> {
-            int b = isSmall ? game.rules().getSmallBlind() : game.rules().getBigBlind();
-
-            int newPlayerBalance = currentPlayer.getChips() - b;
+            int newPlayerBalance = currentPlayer.getChips() - blind;
             if (newPlayerBalance < 0) {
                 throw new GameException("Insufficient amount of chips for the player with ID: " + currentPlayer.getId());
             }
 
             currentPlayer.setChips(newPlayerBalance);
-            currentPlayer.addToStake(b);
-            return game.toBuilder().addToStake(b)
-                    .currentBetSize(b)
+            currentPlayer.addToStake(blind);
+            return game.toBuilder().addToStake(blind)
+                    .currentBetSize(blind)
                     .decrementActionsTakenThisRound();
         }).build();
-        roomRepository.create(updatedRoom);
     }
 
     @FunctionalInterface
@@ -258,10 +248,10 @@ public class GameService extends BaseService {
             builder.nextTurnIndex()
                     .incrementActionsTakenThisRound();
         }
+        Game updatedGame = builder.build(); // we need to build here so players can use updated fields
         players.forEach(
-                p -> p.setActions(PlayerActions.createActionsBasedOnBet(game.currentBetSize(), p.getStakedChips())));
-
-        return room.toBuilder().game(builder.build()).players(players);
+                p -> p.setActions(PlayerActions.createActionsBasedOnBet(updatedGame.currentBetSize(), p.getStakedChips())));
+        return room.toBuilder().game(updatedGame).players(players);
     }
 
     private void endHandWithWinner(Player winner, Game.GameBuilder builder, Game game, List<Player> players) {
@@ -275,9 +265,8 @@ public class GameService extends BaseService {
         builder.stage(GameStage.PRE_FLOP)
                 .stakedChips(0)
                 .currentBetSize(0)
-                .dealerIndex(game.dealerIndex() + 1)
-                .currentTurnIndex(game.smallBlindIndex())
-                .build();
+                .incrementDealerIndex()
+                .currentTurnIndex(game.smallBlindIndex());
     }
 
     private boolean areAllPlayersMatchingBetSize(List<Player> players, int betSize) {

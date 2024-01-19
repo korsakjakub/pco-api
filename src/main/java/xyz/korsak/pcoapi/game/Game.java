@@ -40,7 +40,7 @@ public record Game(PokerRules rules, GameState state, GameStage stage, int stake
             this.actionsTakenThisRound = 0;
         }
 
-        public GameBuilder dealerIndex(int index) {
+        public GameBuilder dealerAndBlindsIndices(int index) {
             if (this.numberOfPlayers == 0)
                 return this;
             return this.dealerIndex(index % this.numberOfPlayers)
@@ -53,11 +53,15 @@ public record Game(PokerRules rules, GameState state, GameStage stage, int stake
         }
 
         public GameBuilder incrementActionsTakenThisRound() {
-            return this.actionsTakenThisRound(this.actionsTakenThisRound++);
+            return this.actionsTakenThisRound(++this.actionsTakenThisRound);
         }
 
         public GameBuilder decrementActionsTakenThisRound() {
-            return this.actionsTakenThisRound(this.actionsTakenThisRound--);
+            return this.actionsTakenThisRound(--this.actionsTakenThisRound);
+        }
+
+        public GameBuilder incrementDealerIndex() {
+            return this.dealerAndBlindsIndices(++this.dealerIndex);
         }
 
         public GameBuilder addToStake(int bet) {
