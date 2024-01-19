@@ -203,6 +203,7 @@ public class GameService extends BaseService {
             currentPlayer.addToStake(blind);
             return game.toBuilder().addToStake(blind)
                     .currentBetSize(blind)
+                    .stage(game.stage().next())
                     .decrementActionsTakenThisRound();
         }).build();
     }
