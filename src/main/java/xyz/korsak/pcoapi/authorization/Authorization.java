@@ -17,7 +17,7 @@ public class Authorization {
     }
     public boolean authorizeRoomOwner(String roomId, String roomToken) {
         Room room = roomRepository.findById(roomId);
-        return room != null && room.getToken().equals(roomToken);
+        return room != null && room.token().equals(roomToken);
     }
 
     /*
@@ -29,10 +29,10 @@ public class Authorization {
         if (room == null) {
             throw new UnauthorizedAccessException();
         }
-        List<Player> players = room.getPlayers();
+        List<Player> players = room.players();
 
         Optional<Player> player = players.stream()
-                .filter(p -> (p.getToken().equals(token) || room.getToken().equals(token)) && p.getId().equals(playerId))
+                .filter(p -> (p.getToken().equals(token) || room.token().equals(token)) && p.getId().equals(playerId))
                 .findFirst();
 
         if (player.isEmpty()) {
@@ -43,7 +43,7 @@ public class Authorization {
 
     public Room getRoomByIdWithOwnerAuthorization(String id, String roomToken) throws UnauthorizedAccessException {
         Room room = roomRepository.findById(id);
-        if (room == null || !room.getToken().equals(roomToken)) {
+        if (room == null || !room.token().equals(roomToken)) {
             throw new UnauthorizedAccessException();
         }
         return room;
@@ -55,7 +55,7 @@ public class Authorization {
         if (room == null) {
             throw new UnauthorizedAccessException();
         }
-        for (Player p : room.getPlayers()) {
+        for (Player p : room.players()) {
             if (p.getId().equals(playerId) && p.getToken().equals(playerToken)) {
                 return false;
             }

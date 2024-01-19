@@ -19,8 +19,8 @@ public class RedisRoomRepository implements RoomRepository {
     @Override
     public void create(Room room) {
       try {
-        redisTemplate.opsForValue().set(ROOM_KEY_PREFIX + room.getId(), room);
-        redisTemplate.opsForValue().set(ROOM_KEY_PREFIX + room.getToken(), room);
+        redisTemplate.opsForValue().set(ROOM_KEY_PREFIX + room.id(), room);
+        redisTemplate.opsForValue().set(ROOM_KEY_PREFIX + room.token(), room);
       } catch (RedisConnectionFailureException | RedisSystemException ex) {
         throw new RedisUnavailableException("Redis is not available");
     }

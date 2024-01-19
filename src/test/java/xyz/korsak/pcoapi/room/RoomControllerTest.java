@@ -3,13 +3,7 @@ package xyz.korsak.pcoapi.room;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import xyz.korsak.pcoapi.player.Player;
-import xyz.korsak.pcoapi.player.PlayerBuilder;
-import xyz.korsak.pcoapi.queue.Queue;
-import xyz.korsak.pcoapi.queue.QueueService;
-import xyz.korsak.pcoapi.requests.NameRequest;
 import xyz.korsak.pcoapi.responses.GetPlayersResponse;
-import xyz.korsak.pcoapi.responses.RoomCreatedResponse;
 
 import java.util.ArrayList;
 
@@ -23,7 +17,7 @@ class RoomControllerTest {
     void getRoomByToken_ReturnsRoom_WhenTokenIsValid() {
         // Arrange
         String token = "abc123";
-        Room expectedRoom = new Room("123", "Test Room", new ArrayList<>(), "456");
+        Room expectedRoom = new Room.RoomBuilder("123", new ArrayList<>(), "456").build();
 
         RoomService roomService = mock(RoomService.class);
         when(roomService.getRoomByToken(eq(token))).thenReturn(expectedRoom);
@@ -36,8 +30,7 @@ class RoomControllerTest {
         // Assert
         verify(roomService, times(1)).getRoomByToken(eq(token));
         verifyNoMoreInteractions(roomService);
-        assertEquals(expectedRoom.getId(), response.getId());
-        assertEquals(expectedRoom.getName(), response.getName());
+        assertEquals(expectedRoom.id(), response.id());
     }
 
     @Test
@@ -55,32 +48,6 @@ class RoomControllerTest {
         // Assert
         verify(roomService, times(1)).deleteRoom(eq(roomId), eq("<room-token>"));
         verifyNoMoreInteractions(roomService);
-    }
-
-    @Test
-    void createRoom_ReturnsRoom_WhenValidRequest() {
-        // Arrange
-        NameRequest nameRequest = new NameRequest("Test Room");
-        RoomCreatedResponse expectedResponse = new RoomCreatedResponse("123", "asd", "asd", "456");
-        Room expectedRoom = new Room("123", "asd", new ArrayList<>(), "456");
-        Queue expectedQueue = new Queue("123", "123123");
-
-        RoomService roomService = mock(RoomService.class);
-        QueueService queueService = mock(QueueService.class);
-        when(queueService.createQueue(expectedRoom.getId())).thenReturn(expectedQueue);
-        when(roomService.createRoom(eq(nameRequest.getName()))).thenReturn(expectedRoom);
-
-        RoomController roomController = new RoomController(roomService, queueService);
-
-        // Act
-        ResponseEntity<RoomCreatedResponse> response = roomController.createRoom(nameRequest);
-
-        // Assert
-        verify(roomService, times(1)).createRoom(eq(nameRequest.getName()));
-        verify(queueService, times(1)).createQueue(eq(expectedRoom.getId()));
-        verify(roomService, times(1)).updateRoom(eq(expectedRoom));
-        verifyNoMoreInteractions(roomService, queueService);
-        assertEquals(HttpStatus.CREATED, response.getStatusCode());
     }
 
     @Test

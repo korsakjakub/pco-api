@@ -1,75 +1,71 @@
 package xyz.korsak.pcoapi.game;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import xyz.korsak.pcoapi.rules.PokerRules;
 
-@Getter
-@Setter
-@AllArgsConstructor
-public class Game {
-    private PokerRules rules;
-    private GameState state;
-    private GameStage stage;
-    private int stakedChips;
-    private int currentBetSize;
-    private int currentTurnIndex;
-    private int dealerIndex;
-    private int smallBlindIndex;
-    private int bigBlindIndex;
-    private int actionsTakenThisRound;
+@Builder(toBuilder = true)
+public record Game(PokerRules rules, GameState state, GameStage stage, int stakedChips, int currentBetSize,
+                   int currentTurnIndex, int dealerIndex, int smallBlindIndex, int bigBlindIndex,
+                   int actionsTakenThisRound, int numberOfPlayers) {
+    public static class GameBuilder {
+        private PokerRules rules;
+        private GameState state;
+        private GameStage stage;
+        private int stakedChips;
+        private int currentBetSize;
+        private int currentTurnIndex;
+        private int dealerIndex;
+        private int smallBlindIndex;
+        private int bigBlindIndex;
+        private int actionsTakenThisRound;
+        private int numberOfPlayers;
 
-    public void addToStake(int bet) {
-        stakedChips += bet;
-    }
+        public GameBuilder() {
+            this.rules = new PokerRules();
+            this.state = GameState.WAITING;
+            this.stage = GameStage.PRE_FLOP;
+        }
 
-    public Game() {
-        this.rules = new PokerRules();
-        this.state = GameState.WAITING;
-        this.stage = GameStage.PRE_FLOP;
-        this.stakedChips = 0;
-        this.currentBetSize = 0;
-        this.dealerIndex = 0;
-        this.currentTurnIndex = 1;
-        this.smallBlindIndex = 1;
-        this.bigBlindIndex = 2;
-        this.actionsTakenThisRound = 0;
-    }
+        public GameBuilder(GameState gameState, int currentTurnIndex, int numberOfPlayers) {
+            this.rules = new PokerRules();
+            this.state = gameState;
+            this.stage = GameStage.PRE_FLOP;
+            this.currentTurnIndex = currentTurnIndex;
+            this.numberOfPlayers = numberOfPlayers;
+            this.stakedChips = 0;
+            this.currentBetSize = 0;
+            this.dealerIndex = 0;
+            this.smallBlindIndex = 1;
+            this.bigBlindIndex = this.numberOfPlayers != 0 ? 2 % this.numberOfPlayers : 0;
+            this.actionsTakenThisRound = 0;
+        }
 
-    public Game(GameState gameState, int currentTurnIndex) {
-        this.rules = new PokerRules();
-        this.state = gameState;
-        this.stage = GameStage.PRE_FLOP;
-        this.currentTurnIndex = currentTurnIndex;
-        this.stakedChips = 0;
-        this.currentBetSize = 0;
-        this.dealerIndex = 0;
-        this.smallBlindIndex = 1;
-        this.bigBlindIndex = 2;
-        this.actionsTakenThisRound = 0;
-    }
+        public GameBuilder dealerAndBlindsIndices(int index) {
+            if (this.numberOfPlayers == 0)
+                return this;
+            return this.dealerIndex(index % this.numberOfPlayers)
+                    .smallBlindIndex((index + 1) % this.numberOfPlayers)
+                    .bigBlindIndex((index + 2) % this.numberOfPlayers);
+        }
 
-    public void nextStage() {
-        int currentStageOrdinal = this.stage.ordinal();
-        GameStage[] stages = GameStage.values();
-        int nextStageOrdinal = (currentStageOrdinal + 1) % stages.length;
-        this.stage = stages[nextStageOrdinal];
-    }
+        public GameBuilder nextTurnIndex() {
+            return this.currentTurnIndex((this.currentTurnIndex + 1) % this.numberOfPlayers);
+        }
 
-    public void nextTurnIndex(int numberOfPlayers) {
-        this.currentTurnIndex = (currentTurnIndex + 1) % numberOfPlayers;
-    }
+        public GameBuilder incrementActionsTakenThisRound() {
+            return this.actionsTakenThisRound(++this.actionsTakenThisRound);
+        }
 
-    public int firstToPlayIndex(int numberOfPlayers) {
-        return (this.dealerIndex + 1) % numberOfPlayers;
-    }
+        public GameBuilder decrementActionsTakenThisRound() {
+            return this.actionsTakenThisRound(--this.actionsTakenThisRound);
+        }
 
-    public void incrementActionsTakenThisRound() {
-        this.actionsTakenThisRound++;
-    }
+        public GameBuilder incrementDealerIndex() {
+            return this.dealerAndBlindsIndices(++this.dealerIndex);
+        }
 
-    public void decrementActionsTakenThisRound() {
-        this.actionsTakenThisRound--;
+        public GameBuilder addToStake(int bet) {
+            return this.stakedChips(this.stakedChips + bet);
+        }
     }
 }

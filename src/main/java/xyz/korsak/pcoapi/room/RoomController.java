@@ -36,15 +36,17 @@ public class RoomController extends BaseController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<RoomCreatedResponse> createRoom(@RequestBody NameRequest name) {
-        Room room = roomService.createRoom(name.getName());
+    public ResponseEntity<RoomCreatedResponse> createRoom() {
+        Room room = roomService.createRoom();
         if (room == null) {
             return ResponseEntity.unprocessableEntity().build();
         }
-        Queue queue = queueService.createQueue(room.getId());
-        room.setQueueId(queue.getId());
-        roomService.updateRoom(room);
-        RoomCreatedResponse r = new RoomCreatedResponse(room.getId(), room.getName(), queue.getId(), room.getToken());
+        Queue queue = queueService.createQueue(room.id());
+
+        Room updatedRoom = room.toBuilder().queueId(queue.getId()).build();
+
+        roomService.updateRoom(updatedRoom);
+        RoomCreatedResponse r = new RoomCreatedResponse(updatedRoom.id(), updatedRoom.queueId(), updatedRoom.token());
 
         return logResponse(ResponseEntity.status(HttpStatus.CREATED).body(r));
     }
@@ -55,11 +57,11 @@ public class RoomController extends BaseController {
                                                   @RequestHeader("Authorization") String authorizationHeader) {
         String roomToken = extractBearerToken(authorizationHeader);
         Room room = roomService.getRoomById(roomId);
-        if (room == null || !room.getToken().equals(roomToken)) {
+        if (room == null || !room.token().equals(roomToken)) {
             throw new UnauthorizedAccessException();
         }
 
-        Player player = queueService.removePlayerFromQueue(room.getQueueId(), playerId);
+        Player player = queueService.removePlayerFromQueue(room.queueId(), playerId);
         if (player == null) {
             throw new UnauthorizedAccessException();
         }
@@ -74,7 +76,7 @@ public class RoomController extends BaseController {
                                                      @RequestHeader("Authorization") String authorizationHeader) {
         String roomToken = extractBearerToken(authorizationHeader);
         Room room = roomService.getRoomById(roomId);
-        if (room == null || !room.getToken().equals(roomToken)) {
+        if (room == null || !room.token().equals(roomToken)) {
             throw new UnauthorizedAccessException();
         }
         Player player = roomService.createPlayerInRoom(roomId, roomToken, name.getName());
