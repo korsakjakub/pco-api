@@ -24,9 +24,5 @@ public record Room(String id, List<Player> players, String token, Game game, Str
             this.token = token;
             this.game = new Game.GameBuilder().build();
         }
-
-        public RoomBuilder(List<Player> players) {
-            this.players = players;
-        }
     }
 }

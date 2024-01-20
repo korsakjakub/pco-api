@@ -6,7 +6,7 @@ import xyz.korsak.pcoapi.rules.PokerRules;
 @Builder(toBuilder = true)
 public record Game(PokerRules rules, GameState state, GameStage stage, int stakedChips, int currentBetSize,
                    int currentTurnIndex, int dealerIndex, int smallBlindIndex, int bigBlindIndex,
-                   int actionsTakenThisRound, int numberOfPlayers) {
+                   int actionsTakenThisRound, int numberOfPlayers, int numberOfHandsCompleted) {
     public static class GameBuilder {
         private PokerRules rules;
         private GameState state;
@@ -19,25 +19,13 @@ public record Game(PokerRules rules, GameState state, GameStage stage, int stake
         private int bigBlindIndex;
         private int actionsTakenThisRound;
         private int numberOfPlayers;
+        private int numberOfHandsCompleted;
 
         public GameBuilder() {
             this.rules = new PokerRules();
             this.state = GameState.WAITING;
             this.stage = GameStage.PRE_FLOP;
-        }
-
-        public GameBuilder(GameState gameState, int currentTurnIndex, int numberOfPlayers) {
-            this.rules = new PokerRules();
-            this.state = gameState;
-            this.stage = GameStage.PRE_FLOP;
-            this.currentTurnIndex = currentTurnIndex;
-            this.numberOfPlayers = numberOfPlayers;
-            this.stakedChips = 0;
-            this.currentBetSize = 0;
-            this.dealerIndex = 0;
-            this.smallBlindIndex = 1;
-            this.bigBlindIndex = this.numberOfPlayers != 0 ? 2 % this.numberOfPlayers : 0;
-            this.actionsTakenThisRound = 0;
+            this.numberOfHandsCompleted = 0;
         }
 
         public GameBuilder dealerAndBlindsIndices(int index) {
@@ -48,20 +36,20 @@ public record Game(PokerRules rules, GameState state, GameStage stage, int stake
                     .bigBlindIndex((index + 2) % this.numberOfPlayers);
         }
 
-        public GameBuilder nextTurnIndex() {
-            return this.currentTurnIndex((this.currentTurnIndex + 1) % this.numberOfPlayers);
-        }
-
-        public GameBuilder incrementActionsTakenThisRound() {
+        public GameBuilder incActionsTakenThisRound() {
             return this.actionsTakenThisRound(++this.actionsTakenThisRound);
         }
 
-        public GameBuilder decrementActionsTakenThisRound() {
+        public GameBuilder decActionsTakenThisRound() {
             return this.actionsTakenThisRound(--this.actionsTakenThisRound);
         }
 
-        public GameBuilder incrementDealerIndex() {
+        public GameBuilder incDealerIndex() {
             return this.dealerAndBlindsIndices(++this.dealerIndex);
+        }
+
+        public GameBuilder incHandsCompleted() {
+            return this.numberOfHandsCompleted(++this.numberOfHandsCompleted);
         }
 
         public GameBuilder addToStake(int bet) {

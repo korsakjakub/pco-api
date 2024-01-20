@@ -166,5 +166,4 @@ public class GameController extends BaseController {
         notifyPlayers(roomId);
         return logResponse(ResponseEntity.ok(new IdResponse(playerIdRequest.getId())));
     }
-
 }

@@ -1,22 +1,7 @@
 package xyz.korsak.pcoapi.rules;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
-
-@Setter
-@Getter
-@AllArgsConstructor
-public class PokerRules {
-    private int startingChips;
-    private int ante;
-    private int smallBlind;
-    private int bigBlind;
-
+public record PokerRules(int startingChips, int ante, int smallBlind, int bigBlind) {
     public PokerRules() {
-        this.startingChips = 1000;
-        this.ante = 5;
-        this.smallBlind = 10;
-        this.bigBlind = 20;
+        this(1000, 5, 10, 20);
     }
 }

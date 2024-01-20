@@ -54,14 +54,22 @@ public class GameService extends BaseService {
     public void start(String roomId, String roomToken) {
         final Room room = auth.getRoomByIdWithOwnerAuthorization(roomId, roomToken);
 
-        room.players().forEach(player -> player.setChips(room.game().rules().getStartingChips()));
+        final Game game;
 
-        final Game game = new Game.GameBuilder()
-                .state(GameState.IN_PROGRESS)
-                .currentTurnIndex(0)
-                .numberOfPlayers(room.players().size())
-                .stage(GameStage.SMALL_BLIND).build();
-
+        if (room.game().numberOfHandsCompleted() == 0) {
+            room.players().forEach(player -> player.setChips(room.game().rules().startingChips()));
+            game = new Game.GameBuilder()
+                    .state(GameState.IN_PROGRESS)
+                    .currentTurnIndex(room.game().smallBlindIndex())
+                    .numberOfPlayers(room.players().size())
+                    .stage(GameStage.SMALL_BLIND).build();
+        } else {
+            game = room.game().toBuilder()
+                    .state(GameState.IN_PROGRESS)
+                    .currentTurnIndex(room.game().smallBlindIndex())
+                    .numberOfPlayers(room.players().size())
+                    .stage(GameStage.SMALL_BLIND).build();
+        }
         roomRepository.create(blind(blind(room.toBuilder().game(game).build())));
     }
 
@@ -132,7 +140,7 @@ public class GameService extends BaseService {
                 throw new GameException("Current bet size is nonzero");
             }
 
-            if (betSize < game.rules().getBigBlind()) {
+            if (betSize < game.rules().bigBlind()) {
                 throw new GameException("Cannot bet lower than a big blind");
             }
 
@@ -165,7 +173,7 @@ public class GameService extends BaseService {
                 throw new GameException("Current bet size is zero");
             }
 
-            if (betSize - game.currentBetSize() <= 0 || betSize < 2 * game.rules().getBigBlind()) {
+            if (betSize - game.currentBetSize() <= 0 || betSize < 2 * game.rules().bigBlind()) {
                 throw new GameException("The bet size is too low");
             }
 
@@ -192,7 +200,7 @@ public class GameService extends BaseService {
      */
     public Room blind(Room room) {
         return performAction(room, (game, currentPlayer) -> {
-            final int blind = game.stage().equals(GameStage.SMALL_BLIND) ? game.rules().getSmallBlind() : game.rules().getBigBlind();
+            final int blind = game.stage().equals(GameStage.SMALL_BLIND) ? game.rules().smallBlind() : game.rules().bigBlind();
 
             int newPlayerBalance = currentPlayer.getChips() - blind;
             if (newPlayerBalance < 0) {
@@ -204,7 +212,7 @@ public class GameService extends BaseService {
             return game.toBuilder().addToStake(blind)
                     .currentBetSize(blind)
                     .stage(game.stage().next())
-                    .decrementActionsTakenThisRound();
+                    .decActionsTakenThisRound();
         }).build();
     }
 
@@ -246,8 +254,8 @@ public class GameService extends BaseService {
             players.forEach(p -> p.setStakedChips(0));
         } // The round doesn't end
         else {
-            builder.nextTurnIndex()
-                    .incrementActionsTakenThisRound();
+            builder.currentTurnIndex(nextActivePlayer(players, game.currentTurnIndex()))
+                    .incActionsTakenThisRound();
         }
         Game updatedGame = builder.build(); // we need to build here so players can use updated fields
         players.forEach(
@@ -263,10 +271,12 @@ public class GameService extends BaseService {
             }
             p.setActive(true);
         });
-        builder.stage(GameStage.PRE_FLOP)
+        builder.state(GameState.WAITING)
+                .stage(GameStage.SMALL_BLIND)
                 .stakedChips(0)
                 .currentBetSize(0)
-                .incrementDealerIndex()
+                .incHandsCompleted()
+                .incDealerIndex()
                 .currentTurnIndex(game.smallBlindIndex());
     }
 
@@ -274,5 +284,13 @@ public class GameService extends BaseService {
         return players.stream()
                 .filter(Player::isActive)
                 .allMatch(player -> player.getStakedChips() == betSize);
+    }
+
+    private int nextActivePlayer(List<Player> players, int startIndex) {
+        int i = (startIndex + 1) % players.size();
+        while (!players.get(i).isActive()) {
+            i = (i + 1) % players.size();
+        }
+        return i;
     }
 }

@@ -182,7 +182,7 @@ public class GameTwoPlayersIntegrationTest {
         p1 = room.players().get(0);
         p2 = room.players().get(1);
 
-        Assertions.assertEquals(GameStage.PRE_FLOP, room.game().stage());
+        Assertions.assertEquals(GameStage.SMALL_BLIND, room.game().stage());
         Assertions.assertEquals("[Fold, Check, Bet]", p1.getActions().toString());
         Assertions.assertEquals(1000, p1.getChips());
         Assertions.assertEquals(1000, p2.getChips());

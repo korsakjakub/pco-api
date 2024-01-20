@@ -33,16 +33,17 @@ public abstract class BaseService {
             return;
         }
         emitters.get(roomId).forEach(emitter -> {
-            ExecutorService sseMvcExecutor = Executors.newSingleThreadExecutor();
-            sseMvcExecutor.execute(() -> {
-                try {
-                    SseEmitter.SseEventBuilder event = SseEmitter.event()
-                            .data(data);
-                    emitter.send(event);
-                } catch (Exception ex) {
-                    emitter.completeWithError(ex);
-                }
-            });
+            try (ExecutorService sseMvcExecutor = Executors.newSingleThreadExecutor()) {
+                sseMvcExecutor.execute(() -> {
+                    try {
+                        SseEmitter.SseEventBuilder event = SseEmitter.event()
+                                .data(data);
+                        emitter.send(event);
+                    } catch (Exception ex) {
+                        emitter.completeWithError(ex);
+                    }
+                });
+            }
         });
     }
 
