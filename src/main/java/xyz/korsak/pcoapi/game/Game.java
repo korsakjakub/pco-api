@@ -28,12 +28,13 @@ public record Game(PokerRules rules, GameState state, GameStage stage, int stake
             this.numberOfHandsCompleted = 0;
         }
 
-        public GameBuilder dealerAndBlindsIndices(int index) {
+        public GameBuilder dealerBlindsAndCurrentIndices(int index) {
             if (this.numberOfPlayers == 0)
                 return this;
             return this.dealerIndex(index % this.numberOfPlayers)
                     .smallBlindIndex((index + 1) % this.numberOfPlayers)
-                    .bigBlindIndex((index + 2) % this.numberOfPlayers);
+                    .bigBlindIndex((index + 2) % this.numberOfPlayers)
+                    .currentTurnIndex((index + 1) % this.numberOfPlayers);
         }
 
         public GameBuilder incActionsTakenThisRound() {
@@ -45,7 +46,7 @@ public record Game(PokerRules rules, GameState state, GameStage stage, int stake
         }
 
         public GameBuilder incDealerIndex() {
-            return this.dealerAndBlindsIndices(++this.dealerIndex);
+            return this.dealerBlindsAndCurrentIndices(++this.dealerIndex);
         }
 
         public GameBuilder incHandsCompleted() {

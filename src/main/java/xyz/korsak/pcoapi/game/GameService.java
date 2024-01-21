@@ -60,8 +60,8 @@ public class GameService extends BaseService {
             room.players().forEach(player -> player.setChips(room.game().rules().startingChips()));
             game = new Game.GameBuilder()
                     .state(GameState.IN_PROGRESS)
-                    .currentTurnIndex(room.game().smallBlindIndex())
                     .numberOfPlayers(room.players().size())
+                    .dealerBlindsAndCurrentIndices(0)
                     .stage(GameStage.SMALL_BLIND).build();
         } else {
             game = room.game().toBuilder()
@@ -276,8 +276,7 @@ public class GameService extends BaseService {
                 .stakedChips(0)
                 .currentBetSize(0)
                 .incHandsCompleted()
-                .incDealerIndex()
-                .currentTurnIndex(game.smallBlindIndex());
+                .incDealerIndex();
     }
 
     private boolean areAllPlayersMatchingBetSize(List<Player> players, int betSize) {
