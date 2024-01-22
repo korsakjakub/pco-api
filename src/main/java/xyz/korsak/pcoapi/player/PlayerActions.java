@@ -21,8 +21,10 @@ public class PlayerActions {
     }
 
     public static List<String> createActionsBasedOnBet(int betSize, int playerStake) {
-        if (betSize == playerStake) {
+        if (betSize == 0 && betSize == playerStake) {
             return Arrays.asList("Fold", "Check", "Bet");
+        } else if (betSize == playerStake) {
+            return Arrays.asList("Fold", "Check", "Raise");
         } else if (betSize > playerStake) {
             return Arrays.asList("Fold", "Call", "Raise");
         } else {
