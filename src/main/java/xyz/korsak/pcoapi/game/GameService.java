@@ -48,7 +48,11 @@ public class GameService extends BaseService {
             throw new NotFoundException("No players found");
         }
 
-        return new GetGameResponse(game, room.players());
+        return new GetGameResponse(game.state(), game.stage(), game.stakedChips(), game.currentBetSize(),
+                p.get(game.currentTurnIndex() % p.size()).getId(),
+                p.get(game.dealerIndex() % p.size()).getId(),
+                p.get(game.smallBlindIndex() % p.size()).getId(),
+                p.get(game.bigBlindIndex() % p.size()).getId());
     }
 
     public void start(String roomId, String roomToken) {

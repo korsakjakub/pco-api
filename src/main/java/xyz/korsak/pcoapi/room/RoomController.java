@@ -79,7 +79,7 @@ public class RoomController extends BaseController {
         if (room == null || !room.token().equals(roomToken)) {
             throw new UnauthorizedAccessException();
         }
-        Player player = roomService.createPlayerInRoom(roomId, roomToken, name.getName());
+        Player player = roomService.createPlayerInRoom(roomId, roomToken, name.name());
         return logResponse(ResponseEntity.status(HttpStatus.OK).body(player));
     }
 

@@ -26,36 +26,36 @@ public class QueueAndRoomIntegrationTest {
 
         RoomCreatedResponse r = Utils.createRoom(mockMvc, "My Room");
 
-        Assertions.assertNotNull(r.getId());
-        Assertions.assertNotNull(r.getToken());
+        Assertions.assertNotNull(r.id());
+        Assertions.assertNotNull(r.token());
 
-        Room room = Utils.getRoom(mockMvc, r.getToken());
+        Room room = Utils.getRoom(mockMvc, r.token());
 
         IdTokenResponse idTokenPlayer1 = Utils.createPlayer(mockMvc, room.queueId(), "Player 1");
 
-        Assertions.assertNotNull(idTokenPlayer1.getId());
-        Assertions.assertNotNull(idTokenPlayer1.getToken());
+        Assertions.assertNotNull(idTokenPlayer1.id());
+        Assertions.assertNotNull(idTokenPlayer1.token());
 
         IdTokenResponse idTokenPlayer2 = Utils.createPlayer(mockMvc, room.queueId(), "Player 2");
-        Assertions.assertNotNull(idTokenPlayer2.getId());
-        Assertions.assertNotNull(idTokenPlayer2.getToken());
+        Assertions.assertNotNull(idTokenPlayer2.id());
+        Assertions.assertNotNull(idTokenPlayer2.token());
 
         GetPlayersResponse updatedQueueResponse = Utils.getPlayersInQueue(mockMvc, room.queueId());
 
         Assertions.assertNotNull(updatedQueueResponse);
         Assertions.assertEquals(2, updatedQueueResponse.getPlayers().size());
 
-        GetPlayersResponse updatedRoomResponse = Utils.getPlayersInRoom(mockMvc, r.getId());
+        GetPlayersResponse updatedRoomResponse = Utils.getPlayersInRoom(mockMvc, r.id());
 
         Assertions.assertNotNull(updatedRoomResponse);
         Assertions.assertEquals(0, updatedRoomResponse.getPlayers().size());
 
-        Player movePlayerToRoomResponse = Utils.movePlayerToRoom(mockMvc, r.getId(), idTokenPlayer1.getId(), r.getToken());
+        Player movePlayerToRoomResponse = Utils.movePlayerToRoom(mockMvc, r.id(), idTokenPlayer1.id(), r.token());
 
         Assertions.assertNotNull(movePlayerToRoomResponse);
-        Assertions.assertEquals(movePlayerToRoomResponse.getId(), idTokenPlayer1.getId());
+        Assertions.assertEquals(movePlayerToRoomResponse.getId(), idTokenPlayer1.id());
 
-        GetPlayersResponse updatedRoomResponse2 = Utils.getPlayersInRoom(mockMvc, r.getId());
+        GetPlayersResponse updatedRoomResponse2 = Utils.getPlayersInRoom(mockMvc, r.id());
 
         Assertions.assertNotNull(updatedRoomResponse2);
         Assertions.assertEquals(1, updatedRoomResponse2.getPlayers().size());

@@ -30,7 +30,7 @@ public class PlayerController extends BaseController {
     @PostMapping("/create")
     public ResponseEntity<IdTokenResponse> createPlayer(@RequestParam String queueId,
                                                         @RequestBody NameRequest name) {
-        Player player = queueService.addPlayerToQueue(queueId, name.getName());
+        Player player = queueService.addPlayerToQueue(queueId, name.name());
         IdTokenResponse r = new IdTokenResponse(player.getId(), player.getToken());
         return logResponse(ResponseEntity.ok(r));
     }

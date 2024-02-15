@@ -128,7 +128,7 @@ public class GameController extends BaseController {
     public ResponseEntity<String> bet(@RequestParam String roomId,
                                       @RequestBody ChipsRequest request,
                                       @RequestHeader("Authorization") String authorizationHeader) {
-        gameService.bet(roomId, extractBearerToken(authorizationHeader), request.getChips());
+        gameService.bet(roomId, extractBearerToken(authorizationHeader), request.chips());
         notifyPlayers(roomId);
         return logResponse(ResponseEntity.ok("Bet"));
     }
@@ -137,7 +137,7 @@ public class GameController extends BaseController {
     public ResponseEntity<String> raise(@RequestParam String roomId,
                                         @RequestBody ChipsRequest request,
                                         @RequestHeader("Authorization") String authorizationHeader) {
-        gameService.raise(roomId,  extractBearerToken(authorizationHeader), request.getChips());
+        gameService.raise(roomId,  extractBearerToken(authorizationHeader), request.chips());
         notifyPlayers(roomId);
         return logResponse(ResponseEntity.ok("Raised"));
     }
@@ -162,8 +162,8 @@ public class GameController extends BaseController {
     public ResponseEntity<IdResponse> decideWinner(@RequestParam String roomId,
                                                @RequestBody IdRequest playerIdRequest,
                                                @RequestHeader("Authorization") String authorizationHeader) {
-        gameService.decideWinner(roomId, playerIdRequest.getId(), extractBearerToken(authorizationHeader));
+        gameService.decideWinner(roomId, playerIdRequest.id(), extractBearerToken(authorizationHeader));
         notifyPlayers(roomId);
-        return logResponse(ResponseEntity.ok(new IdResponse(playerIdRequest.getId())));
+        return logResponse(ResponseEntity.ok(new IdResponse(playerIdRequest.id())));
     }
 }
