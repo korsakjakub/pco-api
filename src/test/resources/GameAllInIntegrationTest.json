@@ -1,0 +1,65 @@
+{
+  "id": "rid-all-in-test",
+  "players": [
+      {
+        "id": "pid-p1",
+        "name": "p1",
+        "chips": 1000,
+        "stakedChips": 0,
+        "token": "ptk-p1",
+        "actions": [
+            "Fold",
+            "Call",
+            "Raise"
+        ],
+        "active": true
+      },
+      {
+        "id": "pid-p2",
+        "name": "p2",
+        "chips": 990,
+        "stakedChips": 10,
+        "token": "ptk-p2",
+        "actions": [
+            "Fold",
+            "Call",
+            "Raise"
+        ],
+        "active": true
+      },
+      {
+        "id": "pid-p3",
+        "name": "p3",
+        "chips": 980,
+        "stakedChips": 20,
+        "token": "ptk-p3",
+        "actions": [
+            "Fold",
+            "Check",
+            "Raise"
+        ],
+        "active": true
+      }
+  ],
+  "token": "rtk-all-in-test",
+  "game": {
+    "rules": {
+      "startingChips": 1000,
+      "ante": 5,
+      "smallBlind": 10,
+      "bigBlind": 20
+    },
+    "state": "IN_PROGRESS",
+    "stage": "PRE_FLOP",
+    "stakedChips": 30,
+    "currentBetSize": 20,
+    "currentTurnIndex": 0,
+    "dealerIndex": 0,
+    "smallBlindIndex": 1,
+    "bigBlindIndex": 2,
+    "actionsTakenThisRound": 0,
+    "numberOfPlayers": 3,
+    "numberOfHandsCompleted": 0
+  },
+  "queueId": "qid-all-in-test"
+}

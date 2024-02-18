@@ -15,6 +15,8 @@ import xyz.korsak.pcoapi.game.GameStage;
 import xyz.korsak.pcoapi.player.Player;
 import xyz.korsak.pcoapi.room.Room;
 
+import java.io.File;
+
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
@@ -35,49 +37,7 @@ public class GameTwoPlayersIntegrationTest {
     @BeforeEach
     public void setup() {
         String key = "room:rid-test";
-        String json = "{" +
-                "\"id\": \"rid-test\"," +
-                "\"players\": [" +
-                "{" +
-                "\"id\": \"pid-player1\"," +
-                "\"name\": \"jk\"," +
-                "\"chips\": 1000," +
-                "\"stakedChips\": 0," +
-                "\"token\": \"ptk-player1\"," +
-                "\"actions\": [\"Fold\", \"Check\", \"Bet\"]," +
-                "\"active\": true" +
-                "}," +
-                "{" +
-                "\"id\": \"pid-player2\"," +
-                "\"name\": \"ola\"," +
-                "\"chips\": 1000," +
-                "\"stakedChips\": 0," +
-                "\"token\": \"ptk-player2\"," +
-                "\"actions\": [\"Fold\", \"Check\", \"Bet\"]," +
-                "\"active\": true" +
-                "}" +
-                "]," +
-                "\"token\": \"rtk-test\"," +
-                "\"game\": {" +
-                "\"rules\": {" +
-                "\"startingChips\": 1000," +
-                "\"ante\": 5," +
-                "\"smallBlind\": 10," +
-                "\"bigBlind\": 20" +
-                "}," +
-                "\"state\": \"IN_PROGRESS\"," +
-                "\"stage\": \"PRE_FLOP\"," +
-                "\"stakedChips\": 0," +
-                "\"currentBetSize\": 0," +
-                "\"currentTurnIndex\": 1," +
-                "\"dealerIndex\": 0," +
-                "\"smallBlindIndex\": 1," +
-                "\"bigBlindIndex\": 2," +
-                "\"actionsTakenThisRound\": 0," +
-                "\"numberOfPlayers\": 2" +
-                "}," +
-                "\"queueId\": \"qid-test\"" +
-                "}";
+        File json = new File("src/test/resources/GameTwoPlayersIntegrationTest.json");
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             room = objectMapper.readValue(json, Room.class);
