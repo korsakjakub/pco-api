@@ -92,6 +92,9 @@ public class GameService extends BaseService {
 
     public Room getRoomWithCurrentPlayerToken(String roomId, String playerToken) {
         Room room = roomRepository.findById(roomId);
+        if (room == null) {
+            throw new NotFoundException("Room not found with ID: " + roomId);
+        }
         Game game = room.game();
         String playerId = getCurrentPlayer(room, game.currentTurnIndex()).getId();
 

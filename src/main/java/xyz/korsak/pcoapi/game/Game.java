@@ -3,6 +3,8 @@ package xyz.korsak.pcoapi.game;
 import lombok.*;
 import xyz.korsak.pcoapi.rules.PokerRules;
 
+import java.util.List;
+
 @Builder(toBuilder = true)
 public record Game(PokerRules rules, GameState state, GameStage stage, int stakedChips, int currentBetSize,
                    int currentTurnIndex, int dealerIndex, int smallBlindIndex, int bigBlindIndex,
@@ -11,7 +13,9 @@ public record Game(PokerRules rules, GameState state, GameStage stage, int stake
         private PokerRules rules;
         private GameState state;
         private GameStage stage;
+        // private List<Stake> stakedChips;
         private int stakedChips;
+
         private int currentBetSize;
         private int currentTurnIndex;
         private int dealerIndex;
