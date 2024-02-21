@@ -18,8 +18,8 @@
       {
         "id": "pid-p2",
         "name": "p2",
-        "chips": 590,
-        "handStartChips": 600,
+        "chips": 990,
+        "handStartChips": 1000,
         "stakedChips": 10,
         "token": "ptk-p2",
         "actions": [
