@@ -20,6 +20,7 @@ public class Player {
     private String token;
     private List<String> actions;
     private boolean active;
+    private int maxWin;
 
     public Player(PlayerBuilder pb) {
         this.id = pb.getId();
@@ -30,6 +31,7 @@ public class Player {
         this.token = pb.getToken();
         this.actions = pb.getActions();
         this.active = pb.isActive();
+        this.maxWin = pb.getMaxWin();
     }
 
     public void addToStake(int bet) {

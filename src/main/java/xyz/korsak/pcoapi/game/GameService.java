@@ -16,6 +16,7 @@ import xyz.korsak.pcoapi.room.RoomRepository;
 import xyz.korsak.pcoapi.rules.PokerRules;
 
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -133,10 +134,11 @@ public class GameService extends BaseService {
     public void call(String roomId, String playerToken) {
         Room room = getRoomWithCurrentPlayerToken(roomId, playerToken);
         roomRepository.create(performAction(room, (game, currentPlayer) -> {
-            int leftToCall = game.currentBetSize() - currentPlayer.getStakedChips();
-            currentPlayer.setChips(currentPlayer.getChips() - leftToCall);
-            currentPlayer.addToStake(leftToCall);
-            return game.toBuilder().addToStake(leftToCall);
+            final int leftToCall = game.currentBetSize() - currentPlayer.getStakedChips();
+            final int finalBetAmount = Math.min(leftToCall, currentPlayer.getChips());
+            currentPlayer.addToStake(finalBetAmount);
+            currentPlayer.setChips(Math.max(currentPlayer.getChips() - leftToCall, 0));
+            return game.toBuilder().addToStake(finalBetAmount);
         }).build());
     }
 
@@ -247,6 +249,12 @@ public class GameService extends BaseService {
         Game.GameBuilder builder = action.execute(game, currentPlayer);
 
         final List<Player> activePlayers = players.stream().filter(Player::isActive).toList();
+        players.forEach(p -> {
+            if (Objects.equals(p.getId(), currentPlayer.getId())) {
+                p.setMaxWin(p.getHandStartChips() * activePlayers.size());
+            }
+        });
+
         // First case - one player left
         if (activePlayers.size() == 1) {
             endHandWithWinner(activePlayers.getFirst(), builder, game, players);
@@ -271,25 +279,34 @@ public class GameService extends BaseService {
     }
 
     private void endHandWithWinner(Player winner, Game.GameBuilder builder, Game game, List<Player> players) {
+        final int winningAmount = Math.min(
+                winner.getChips() + game.stakedChips(),
+                winner.getMaxWin() // in case of all in
+        );
+
         players.forEach(p -> {
             p.setStakedChips(0);
             if (p.getId().equals(winner.getId())) {
-                p.setChips(winner.getChips() + game.stakedChips());
+                p.setChips(winningAmount);
             }
             p.setActive(true);
         });
+
         builder.state(GameState.WAITING)
-                .stage(GameStage.SMALL_BLIND)
-                .stakedChips(0)
+                .stakedChips(game.stakedChips() - (winningAmount - winner.getChips()))
                 .currentBetSize(0)
                 .incHandsCompleted()
                 .incDealerIndex();
+
+        if (game.stakedChips() - (winningAmount - winner.getChips()) == 0) {
+            builder.stage(GameStage.SMALL_BLIND);
+        }
     }
 
     private boolean areAllPlayersMatchingBetSize(List<Player> players, int betSize) {
         return players.stream()
                 .filter(Player::isActive)
-                .allMatch(player -> player.getStakedChips() == betSize);
+                .allMatch(player -> player.getStakedChips() == betSize || player.getChips() == 0);
     }
 
     private int nextActivePlayer(List<Player> players, int startIndex) {

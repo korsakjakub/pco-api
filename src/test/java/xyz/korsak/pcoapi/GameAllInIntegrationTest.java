@@ -61,7 +61,7 @@ public class GameAllInIntegrationTest {
         Player p2 = room.players().get(1);
 
         Assertions.assertEquals("[Fold, Call, Raise]", p2.getActions().toString());
-        Assertions.assertEquals("Raised", Utils.raise(mockMvc, roomId, p2.getToken(), 500));
+        Assertions.assertEquals("Raised", Utils.raise(mockMvc, roomId, p2.getToken(), 600));
 
         room = Utils.getRoom(mockMvc, roomId);
         Player p3 = room.players().get(2);
@@ -83,9 +83,19 @@ public class GameAllInIntegrationTest {
 
         room = Utils.getRoom(mockMvc, roomId);
         p1 = room.players().getFirst();
+        p2 = room.players().get(1);
 
         Assertions.assertEquals(GameStage.SHOWDOWN, room.game().stage());
         Assertions.assertEquals(1000, p1.getChips());
+        Assertions.assertEquals(new IdResponse(p2.getId()), Utils.decideWinner(mockMvc, roomId, p2.getId(), room.token()));
+
+        room = Utils.getRoom(mockMvc, roomId);
+        p1 = room.players().getFirst();
+        p2 = room.players().get(1);
+
+        Assertions.assertEquals(GameStage.SMALL_BLIND, room.game().stage());
+        Assertions.assertEquals(1000, p1.getChips());
+        Assertions.assertEquals(520, p2.getChips());
     }
 
 }
