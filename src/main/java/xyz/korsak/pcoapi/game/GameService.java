@@ -123,28 +123,45 @@ public class GameService extends BaseService {
                         .build());
     }
 
-    public void fold(String roomId, String playerToken) {
-        Room room = getRoomWithCurrentPlayerToken(roomId, playerToken);
-        roomRepository.create(performAction(room, (game, currentPlayer) -> {
-            currentPlayer.setActive(false);
-            return game.toBuilder();
-        }).build());
+    public void playFold(String roomId, String playerToken) {
+        roomRepository.create(fold(getRoomWithCurrentPlayerToken(roomId, playerToken)));
     }
 
-    public void call(String roomId, String playerToken) {
-        Room room = getRoomWithCurrentPlayerToken(roomId, playerToken);
-        roomRepository.create(performAction(room, (game, currentPlayer) -> {
+    public void playCall(String roomId, String playerToken) {
+        roomRepository.create(call(getRoomWithCurrentPlayerToken(roomId, playerToken)));
+    }
+
+    public void playBet(String roomId, String playerToken, int betSize) {
+        roomRepository.create(bet(getRoomWithCurrentPlayerToken(roomId, playerToken), betSize));
+    }
+
+    public void playCheck(String roomId, String playerToken) {
+        roomRepository.create(check(getRoomWithCurrentPlayerToken(roomId, playerToken)));
+    }
+
+    public void playRaise(String roomId, String playerToken, int betSize) {
+        roomRepository.create(raise(getRoomWithCurrentPlayerToken(roomId, playerToken), betSize));
+    }
+
+    public Room fold(Room room) {
+        return performAction(room, (game, currentPlayer) -> {
+            currentPlayer.setActive(false);
+            return game.toBuilder();
+        }).build();
+    }
+
+    public Room call(Room room) {
+        return performAction(room, (game, currentPlayer) -> {
             final int leftToCall = game.currentBetSize() - currentPlayer.getStakedChips();
             final int finalBetAmount = Math.min(leftToCall, currentPlayer.getChips());
             currentPlayer.addToStake(finalBetAmount);
             currentPlayer.setChips(Math.max(currentPlayer.getChips() - leftToCall, 0));
             return game.toBuilder().addToStake(finalBetAmount);
-        }).build());
+        }).build();
     }
 
-    public void bet(String roomId, String playerToken, int betSize) {
-        Room room = getRoomWithCurrentPlayerToken(roomId, playerToken);
-        roomRepository.create(performAction(room, (game, currentPlayer) -> {
+    public Room bet(Room room, int betSize) {
+        return performAction(room, (game, currentPlayer) -> {
             if (game.currentBetSize() != 0) {
                 throw new GameException("Current bet size is nonzero");
             }
@@ -162,22 +179,20 @@ public class GameService extends BaseService {
             currentPlayer.addToStake(betSize);
             return game.toBuilder().addToStake(betSize)
                     .currentBetSize(betSize);
-        }).build());
+        }).build();
     }
 
-    public void check(String roomId, String playerToken) {
-        Room room = getRoomWithCurrentPlayerToken(roomId, playerToken);
-        roomRepository.create(performAction(room, (game, currentPlayer) -> {
+    public Room check(Room room) {
+        return performAction(room, (game, currentPlayer) -> {
             if (game.currentBetSize() > currentPlayer.getStakedChips()) {
                 throw new GameException("Cannot check");
             }
             return game.toBuilder();
-        }).build());
+        }).build();
     }
 
-    public void raise(String roomId, String playerToken, int betSize) {
-        Room room = getRoomWithCurrentPlayerToken(roomId, playerToken);
-        roomRepository.create(performAction(room, (game, currentPlayer) -> {
+    public Room raise(Room room, int betSize) {
+        return performAction(room, (game, currentPlayer) -> {
             if (game.currentBetSize() == 0) {
                 throw new GameException("Current bet size is zero");
             }
@@ -198,7 +213,7 @@ public class GameService extends BaseService {
             currentPlayer.addToStake(betAddition);
             return game.toBuilder().addToStake(betAddition)
                     .currentBetSize(betSize);
-        }).build());
+        }).build();
     }
 
     /***

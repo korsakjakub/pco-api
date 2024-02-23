@@ -119,7 +119,7 @@ public class GameController extends BaseController {
     @PostMapping("/fold")
     public ResponseEntity<String> fold(@RequestParam String roomId,
                                        @RequestHeader("Authorization") String authorizationHeader) {
-        gameService.fold(roomId, extractBearerToken(authorizationHeader));
+        gameService.playFold(roomId, extractBearerToken(authorizationHeader));
         notifyPlayers(roomId);
         return logResponse(ResponseEntity.ok("Folded"));
     }
@@ -128,7 +128,7 @@ public class GameController extends BaseController {
     public ResponseEntity<String> bet(@RequestParam String roomId,
                                       @RequestBody ChipsRequest request,
                                       @RequestHeader("Authorization") String authorizationHeader) {
-        gameService.bet(roomId, extractBearerToken(authorizationHeader), request.chips());
+        gameService.playBet(roomId, extractBearerToken(authorizationHeader), request.chips());
         notifyPlayers(roomId);
         return logResponse(ResponseEntity.ok("Bet"));
     }
@@ -137,7 +137,7 @@ public class GameController extends BaseController {
     public ResponseEntity<String> raise(@RequestParam String roomId,
                                         @RequestBody ChipsRequest request,
                                         @RequestHeader("Authorization") String authorizationHeader) {
-        gameService.raise(roomId,  extractBearerToken(authorizationHeader), request.chips());
+        gameService.playRaise(roomId,  extractBearerToken(authorizationHeader), request.chips());
         notifyPlayers(roomId);
         return logResponse(ResponseEntity.ok("Raised"));
     }
@@ -145,7 +145,7 @@ public class GameController extends BaseController {
     @PostMapping("/call")
     public ResponseEntity<String> call(@RequestParam String roomId,
                                        @RequestHeader("Authorization") String authorizationHeader) {
-        gameService.call(roomId, extractBearerToken(authorizationHeader));
+        gameService.playCall(roomId, extractBearerToken(authorizationHeader));
         notifyPlayers(roomId);
         return logResponse(ResponseEntity.ok("Called"));
     }
@@ -153,7 +153,7 @@ public class GameController extends BaseController {
     @PostMapping("/check")
     public ResponseEntity<String> check(@RequestParam String roomId,
                                         @RequestHeader("Authorization") String authorizationHeader) {
-        gameService.check(roomId, extractBearerToken(authorizationHeader));
+        gameService.playCheck(roomId, extractBearerToken(authorizationHeader));
         notifyPlayers(roomId);
         return logResponse(ResponseEntity.ok("Checked"));
     }
