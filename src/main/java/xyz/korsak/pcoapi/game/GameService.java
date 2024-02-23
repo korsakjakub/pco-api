@@ -16,6 +16,7 @@ import xyz.korsak.pcoapi.room.RoomRepository;
 import xyz.korsak.pcoapi.rules.PokerRules;
 
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -92,6 +93,9 @@ public class GameService extends BaseService {
 
     public Room getRoomWithCurrentPlayerToken(String roomId, String playerToken) {
         Room room = roomRepository.findById(roomId);
+        if (room == null) {
+            throw new NotFoundException("Room not found with ID: " + roomId);
+        }
         Game game = room.game();
         String playerId = getCurrentPlayer(room, game.currentTurnIndex()).getId();
 
@@ -119,27 +123,45 @@ public class GameService extends BaseService {
                         .build());
     }
 
-    public void fold(String roomId, String playerToken) {
-        Room room = getRoomWithCurrentPlayerToken(roomId, playerToken);
-        roomRepository.create(performAction(room, (game, currentPlayer) -> {
+    public void playFold(String roomId, String playerToken) {
+        roomRepository.create(fold(getRoomWithCurrentPlayerToken(roomId, playerToken)));
+    }
+
+    public void playCall(String roomId, String playerToken) {
+        roomRepository.create(call(getRoomWithCurrentPlayerToken(roomId, playerToken)));
+    }
+
+    public void playBet(String roomId, String playerToken, int betSize) {
+        roomRepository.create(bet(getRoomWithCurrentPlayerToken(roomId, playerToken), betSize));
+    }
+
+    public void playCheck(String roomId, String playerToken) {
+        roomRepository.create(check(getRoomWithCurrentPlayerToken(roomId, playerToken)));
+    }
+
+    public void playRaise(String roomId, String playerToken, int betSize) {
+        roomRepository.create(raise(getRoomWithCurrentPlayerToken(roomId, playerToken), betSize));
+    }
+
+    public Room fold(Room room) {
+        return performAction(room, (game, currentPlayer) -> {
             currentPlayer.setActive(false);
             return game.toBuilder();
-        }).build());
+        }).build();
     }
 
-    public void call(String roomId, String playerToken) {
-        Room room = getRoomWithCurrentPlayerToken(roomId, playerToken);
-        roomRepository.create(performAction(room, (game, currentPlayer) -> {
-            int leftToCall = game.currentBetSize() - currentPlayer.getStakedChips();
-            currentPlayer.setChips(currentPlayer.getChips() - leftToCall);
-            currentPlayer.addToStake(leftToCall);
-            return game.toBuilder().addToStake(leftToCall);
-        }).build());
+    public Room call(Room room) {
+        return performAction(room, (game, currentPlayer) -> {
+            final int leftToCall = game.currentBetSize() - currentPlayer.getStakedChips();
+            final int finalBetAmount = Math.min(leftToCall, currentPlayer.getChips());
+            currentPlayer.addToStake(finalBetAmount);
+            currentPlayer.setChips(Math.max(currentPlayer.getChips() - leftToCall, 0));
+            return game.toBuilder().addToStake(finalBetAmount);
+        }).build();
     }
 
-    public void bet(String roomId, String playerToken, int betSize) {
-        Room room = getRoomWithCurrentPlayerToken(roomId, playerToken);
-        roomRepository.create(performAction(room, (game, currentPlayer) -> {
+    public Room bet(Room room, int betSize) {
+        return performAction(room, (game, currentPlayer) -> {
             if (game.currentBetSize() != 0) {
                 throw new GameException("Current bet size is nonzero");
             }
@@ -157,22 +179,20 @@ public class GameService extends BaseService {
             currentPlayer.addToStake(betSize);
             return game.toBuilder().addToStake(betSize)
                     .currentBetSize(betSize);
-        }).build());
+        }).build();
     }
 
-    public void check(String roomId, String playerToken) {
-        Room room = getRoomWithCurrentPlayerToken(roomId, playerToken);
-        roomRepository.create(performAction(room, (game, currentPlayer) -> {
+    public Room check(Room room) {
+        return performAction(room, (game, currentPlayer) -> {
             if (game.currentBetSize() > currentPlayer.getStakedChips()) {
                 throw new GameException("Cannot check");
             }
             return game.toBuilder();
-        }).build());
+        }).build();
     }
 
-    public void raise(String roomId, String playerToken, int betSize) {
-        Room room = getRoomWithCurrentPlayerToken(roomId, playerToken);
-        roomRepository.create(performAction(room, (game, currentPlayer) -> {
+    public Room raise(Room room, int betSize) {
+        return performAction(room, (game, currentPlayer) -> {
             if (game.currentBetSize() == 0) {
                 throw new GameException("Current bet size is zero");
             }
@@ -193,7 +213,7 @@ public class GameService extends BaseService {
             currentPlayer.addToStake(betAddition);
             return game.toBuilder().addToStake(betAddition)
                     .currentBetSize(betSize);
-        }).build());
+        }).build();
     }
 
     /***
@@ -244,6 +264,12 @@ public class GameService extends BaseService {
         Game.GameBuilder builder = action.execute(game, currentPlayer);
 
         final List<Player> activePlayers = players.stream().filter(Player::isActive).toList();
+        players.forEach(p -> {
+            if (Objects.equals(p.getId(), currentPlayer.getId())) {
+                p.setMaxWin(p.getHandStartChips() * activePlayers.size());
+            }
+        });
+
         // First case - one player left
         if (activePlayers.size() == 1) {
             endHandWithWinner(activePlayers.getFirst(), builder, game, players);
@@ -268,25 +294,36 @@ public class GameService extends BaseService {
     }
 
     private void endHandWithWinner(Player winner, Game.GameBuilder builder, Game game, List<Player> players) {
+        final int finalWinnerChips = Math.min(
+                winner.getChips() + game.stakedChips(),
+                winner.getMaxWin() // in case of all in
+        );
+
+        final int finalGameStake = game.stakedChips() - (finalWinnerChips - winner.getChips());
+
         players.forEach(p -> {
             p.setStakedChips(0);
             if (p.getId().equals(winner.getId())) {
-                p.setChips(winner.getChips() + game.stakedChips());
+                p.setChips(finalWinnerChips);
             }
             p.setActive(true);
         });
+
         builder.state(GameState.WAITING)
-                .stage(GameStage.SMALL_BLIND)
-                .stakedChips(0)
+                .stakedChips(finalGameStake)
                 .currentBetSize(0)
                 .incHandsCompleted()
                 .incDealerIndex();
+
+        if (finalGameStake == 0) {
+            builder.stage(GameStage.SMALL_BLIND);
+        }
     }
 
     private boolean areAllPlayersMatchingBetSize(List<Player> players, int betSize) {
         return players.stream()
                 .filter(Player::isActive)
-                .allMatch(player -> player.getStakedChips() == betSize);
+                .allMatch(player -> player.getStakedChips() == betSize || player.getChips() == 0);
     }
 
     private int nextActivePlayer(List<Player> players, int startIndex) {

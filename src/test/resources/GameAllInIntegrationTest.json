@@ -1,10 +1,11 @@
 {
-  "id": "rid-all-in-test",
+  "id": "rid-test",
   "players": [
       {
         "id": "pid-p1",
         "name": "p1",
-        "chips": 1000,
+        "chips": 500,
+        "handStartChips": 500,
         "stakedChips": 0,
         "token": "ptk-p1",
         "actions": [
@@ -17,7 +18,8 @@
       {
         "id": "pid-p2",
         "name": "p2",
-        "chips": 990,
+        "chips": 590,
+        "handStartChips": 600,
         "stakedChips": 10,
         "token": "ptk-p2",
         "actions": [
@@ -31,6 +33,7 @@
         "id": "pid-p3",
         "name": "p3",
         "chips": 980,
+        "handStartChips": 1000,
         "stakedChips": 20,
         "token": "ptk-p3",
         "actions": [
@@ -50,7 +53,7 @@
       "bigBlind": 20
     },
     "state": "IN_PROGRESS",
-    "stage": "PRE_FLOP",
+    "stage": "RIVER",
     "stakedChips": 30,
     "currentBetSize": 20,
     "currentTurnIndex": 0,
