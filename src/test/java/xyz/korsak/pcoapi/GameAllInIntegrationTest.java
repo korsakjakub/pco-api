@@ -95,7 +95,56 @@ public class GameAllInIntegrationTest {
 
         Assertions.assertEquals(GameStage.SMALL_BLIND, room.game().stage());
         Assertions.assertEquals(1000, p1.getChips());
-        Assertions.assertEquals(520, p2.getChips());
+        Assertions.assertEquals(120, p2.getChips());
     }
 
+    @Test
+    public void testTwoAllInPlayers() throws Exception {
+        Player p1 = room.players().getFirst();
+        String roomId = room.id();
+
+        Assertions.assertEquals(GameStage.RIVER, room.game().stage());
+        Assertions.assertEquals("[Fold, Call, Raise]", p1.getActions().toString());
+        Assertions.assertEquals("Called", Utils.call(mockMvc, roomId, p1.getToken()));
+
+        room = Utils.getRoom(mockMvc, roomId);
+        Player p2 = room.players().get(1);
+
+        Assertions.assertEquals("[Fold, Call, Raise]", p2.getActions().toString());
+        Assertions.assertEquals("Raised", Utils.raise(mockMvc, roomId, p2.getToken(), 600));
+
+        room = Utils.getRoom(mockMvc, roomId);
+        Player p3 = room.players().get(2);
+
+        Assertions.assertEquals("[Fold, Call, Raise]", p3.getActions().toString());
+        Assertions.assertEquals("Called", Utils.call(mockMvc, roomId, p3.getToken()));
+
+        room = Utils.getRoom(mockMvc, roomId);
+        p1 = room.players().getFirst();
+
+        Assertions.assertEquals("[Fold, Call, Raise]", p1.getActions().toString());
+        Assertions.assertEquals("Called", Utils.call(mockMvc, roomId, p1.getToken()));
+
+        room = Utils.getRoom(mockMvc, roomId);
+        p1 = room.players().getFirst();
+
+        Assertions.assertEquals(GameStage.SHOWDOWN, room.game().stage());
+        Assertions.assertEquals(new IdResponse(p1.getId()), Utils.decideWinner(mockMvc, roomId, p1.getId(), room.token()));
+
+        room = Utils.getRoom(mockMvc, roomId);
+        p2 = room.players().get(1);
+
+        Assertions.assertEquals(GameStage.SHOWDOWN, room.game().stage());
+        Assertions.assertEquals(new IdResponse(p2.getId()), Utils.decideWinner(mockMvc, roomId, p2.getId(), room.token()));
+
+        room = Utils.getRoom(mockMvc, roomId);
+        p1 = room.players().getFirst();
+        p2 = room.players().get(1);
+        p3 = room.players().get(2);
+
+        Assertions.assertEquals(GameStage.SMALL_BLIND, room.game().stage());
+        Assertions.assertEquals(1500, p1.getChips());
+        Assertions.assertEquals(200, p2.getChips());
+        Assertions.assertEquals(400, p3.getChips());
+    }
 }
