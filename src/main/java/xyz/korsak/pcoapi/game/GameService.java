@@ -279,26 +279,28 @@ public class GameService extends BaseService {
     }
 
     private void endHandWithWinner(Player winner, Game.GameBuilder builder, Game game, List<Player> players) {
-        final int winningAmount = Math.min(
+        final int finalWinnerChips = Math.min(
                 winner.getChips() + game.stakedChips(),
                 winner.getMaxWin() // in case of all in
         );
 
+        final int finalGameStake = game.stakedChips() - (finalWinnerChips - winner.getChips());
+
         players.forEach(p -> {
             p.setStakedChips(0);
             if (p.getId().equals(winner.getId())) {
-                p.setChips(winningAmount);
+                p.setChips(finalWinnerChips);
             }
             p.setActive(true);
         });
 
         builder.state(GameState.WAITING)
-                .stakedChips(game.stakedChips() - (winningAmount - winner.getChips()))
+                .stakedChips(finalGameStake)
                 .currentBetSize(0)
                 .incHandsCompleted()
                 .incDealerIndex();
 
-        if (game.stakedChips() - (winningAmount - winner.getChips()) == 0) {
+        if (finalGameStake == 0) {
             builder.stage(GameStage.SMALL_BLIND);
         }
     }
