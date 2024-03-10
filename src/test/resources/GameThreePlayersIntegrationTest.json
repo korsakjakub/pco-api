@@ -7,6 +7,7 @@
       "chips": 1000,
       "handStartChips": 1000,
       "stakedChips": 0,
+      "investedChips": 0,
       "token": "ptk-player1",
       "actions": ["Fold", "Check", "Bet"],
       "active": true
@@ -17,6 +18,7 @@
       "chips": 1000,
       "handStartChips": 1000,
       "stakedChips": 0,
+      "investedChips": 0,
       "token": "ptk-player2",
       "actions": ["Fold", "Check", "Bet"],
       "active": true
@@ -27,6 +29,7 @@
       "chips": 1000,
       "handStartChips": 1000,
       "stakedChips": 0,
+      "investedChips": 0,
       "token": "ptk-player3",
       "actions": ["Fold", "Check", "Bet"],
       "active": true

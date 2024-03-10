@@ -83,9 +83,13 @@ public class GameAllInIntegrationTest {
 
         room = Utils.getRoom(mockMvc, roomId);
         p1 = room.players().getFirst();
+        p2 = room.players().get(1);
+        p3 = room.players().get(2);
 
-        Assertions.assertEquals(GameStage.SHOWDOWN, room.game().stage());
-        Assertions.assertEquals(1000, p1.getChips());
+        Assertions.assertEquals(GameStage.SMALL_BLIND, room.game().stage());
+        Assertions.assertEquals(1020, p1.getChips());
+        Assertions.assertEquals(500, p2.getChips());
+        Assertions.assertEquals(980, p3.getChips());
     }
 
 }

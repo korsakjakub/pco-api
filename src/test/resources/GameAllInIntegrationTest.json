@@ -5,7 +5,7 @@
         "id": "pid-p1",
         "name": "p1",
         "chips": 500,
-        "handStartChips": 500,
+        "investedChips": 0,
         "stakedChips": 0,
         "token": "ptk-p1",
         "actions": [
@@ -19,7 +19,7 @@
         "id": "pid-p2",
         "name": "p2",
         "chips": 990,
-        "handStartChips": 1000,
+        "investedChips": 10,
         "stakedChips": 10,
         "token": "ptk-p2",
         "actions": [
@@ -33,7 +33,7 @@
         "id": "pid-p3",
         "name": "p3",
         "chips": 980,
-        "handStartChips": 1000,
+        "investedChips": 20,
         "stakedChips": 20,
         "token": "ptk-p3",
         "actions": [
