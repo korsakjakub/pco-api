@@ -5,8 +5,8 @@
       "id": "pid-player1",
       "name": "jk",
       "chips": 1000,
-      "handStartChips": 1000,
       "stakedChips": 0,
+      "investedChips": 0,
       "token": "ptk-player1",
       "actions": ["Fold", "Check", "Bet"],
       "active": true
@@ -15,8 +15,8 @@
       "id": "pid-player2",
       "name": "ola",
       "chips": 1000,
-      "handStartChips": 1000,
       "stakedChips": 0,
+      "investedChips": 0,
       "token": "ptk-player2",
       "actions": ["Fold", "Check", "Bet"],
       "active": true
@@ -25,8 +25,8 @@
       "id": "pid-player3",
       "name": "eleonora",
       "chips": 1000,
-      "handStartChips": 1000,
       "stakedChips": 0,
+      "investedChips": 0,
       "token": "ptk-player3",
       "actions": ["Fold", "Check", "Bet"],
       "active": true

@@ -15,8 +15,7 @@ import xyz.korsak.pcoapi.room.Room;
 import xyz.korsak.pcoapi.room.RoomRepository;
 import xyz.korsak.pcoapi.rules.PokerRules;
 
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -115,7 +114,7 @@ public class GameService extends BaseService {
         Game.GameBuilder builder = game.toBuilder();
         List<Player> players = room.players();
 
-        endHandWithWinner(winner, builder, game, players);
+        endHandWithWinner(winner, builder, players);
 
         roomRepository.create(room.toBuilder()
                         .game(builder.build())
@@ -156,6 +155,7 @@ public class GameService extends BaseService {
             final int finalBetAmount = Math.min(leftToCall, currentPlayer.getChips());
             currentPlayer.addToStake(finalBetAmount);
             currentPlayer.setChips(Math.max(currentPlayer.getChips() - leftToCall, 0));
+            currentPlayer.setInvestedChips(currentPlayer.getInvestedChips() + leftToCall);
             return game.toBuilder().addToStake(finalBetAmount);
         }).build();
     }
@@ -177,6 +177,7 @@ public class GameService extends BaseService {
 
             currentPlayer.setChips(newPlayerBalance);
             currentPlayer.addToStake(betSize);
+            currentPlayer.setInvestedChips(currentPlayer.getInvestedChips() + betSize);
             return game.toBuilder().addToStake(betSize)
                     .currentBetSize(betSize);
         }).build();
@@ -211,6 +212,7 @@ public class GameService extends BaseService {
 
             currentPlayer.setChips(newPlayerBalance);
             currentPlayer.addToStake(betAddition);
+            currentPlayer.setInvestedChips(currentPlayer.getInvestedChips() + betAddition);
             return game.toBuilder().addToStake(betAddition)
                     .currentBetSize(betSize);
         }).build();
@@ -233,6 +235,7 @@ public class GameService extends BaseService {
 
             currentPlayer.setChips(newPlayerBalance);
             currentPlayer.addToStake(blind);
+            currentPlayer.setInvestedChips(currentPlayer.getInvestedChips() + blind);
             return game.toBuilder().addToStake(blind)
                     .currentBetSize(blind)
                     .stage(game.stage().next())
@@ -264,15 +267,10 @@ public class GameService extends BaseService {
         Game.GameBuilder builder = action.execute(game, currentPlayer);
 
         final List<Player> activePlayers = players.stream().filter(Player::isActive).toList();
-        players.forEach(p -> {
-            if (Objects.equals(p.getId(), currentPlayer.getId())) {
-                p.setMaxWin(p.getHandStartChips() * activePlayers.size());
-            }
-        });
 
         // First case - one player left
         if (activePlayers.size() == 1) {
-            endHandWithWinner(activePlayers.getFirst(), builder, game, players);
+            endHandWithWinner(activePlayers.getFirst(), builder, players);
         }
         // Second case - all players matched the highest bet, and everybody played at least once
         else if (areAllPlayersMatchingBetSize(players, game.currentBetSize())
@@ -293,31 +291,48 @@ public class GameService extends BaseService {
         return room.toBuilder().game(updatedGame).players(players);
     }
 
-    private void endHandWithWinner(Player winner, Game.GameBuilder builder, Game game, List<Player> players) {
-        final int finalWinnerChips = Math.min(
-                winner.getChips() + game.stakedChips(),
-                winner.getMaxWin() // in case of all in
-        );
+    /***
+     * Distributes the pot to the winners.
+     * Start from the smallest common stack.
+     * @return a map of player IDs and their winnings
+     */
+    public static Map<String, Integer> distributeWinnings(List<Player> players, List<Player> winners) {
+        var resultStakes = new HashMap<String, Integer>();
+        players.forEach(p -> resultStakes.put(p.getId(), 0));
 
-        final int finalGameStake = game.stakedChips() - (finalWinnerChips - winner.getChips());
+        List<Player> playersToDistribute = new ArrayList<>(players);
+        while (playersToDistribute.size() > 1) {
+            final int stackPerPlayer = playersToDistribute.stream().mapToInt(Player::getInvestedChips).min().orElseThrow();
+            final int stackToDistribute =  stackPerPlayer * playersToDistribute.size();
+
+            playersToDistribute.forEach(p -> p.setInvestedChips(p.getInvestedChips() - stackPerPlayer));
+
+            List<Player> winnersToDistribute = playersToDistribute.stream().filter(p -> winners.stream().map(Player::getId).toList().contains(p.getId())).toList();
+
+            winnersToDistribute.forEach(w -> resultStakes.put(w.getId(), resultStakes.get(w.getId()) + stackToDistribute / winnersToDistribute.size()));
+            playersToDistribute = playersToDistribute.stream().filter(p -> p.getInvestedChips() > 0).toList();
+        }
+        if (playersToDistribute.size() == 1) {
+            resultStakes.put(playersToDistribute.getFirst().getId(), resultStakes.get(playersToDistribute.getFirst().getId()) + playersToDistribute.getFirst().getInvestedChips());
+        }
+        return resultStakes;
+    }
+
+    private void endHandWithWinner(Player winner, Game.GameBuilder builder, List<Player> players) {
+        var winnings = distributeWinnings(players, List.of(winner));
 
         players.forEach(p -> {
             p.setStakedChips(0);
-            if (p.getId().equals(winner.getId())) {
-                p.setChips(finalWinnerChips);
-            }
+            p.setChips(p.getChips() + winnings.get(p.getId()));
             p.setActive(true);
         });
 
         builder.state(GameState.WAITING)
-                .stakedChips(finalGameStake)
+                .stakedChips(0)
+                .stage(GameStage.SMALL_BLIND)
                 .currentBetSize(0)
                 .incHandsCompleted()
                 .incDealerIndex();
-
-        if (finalGameStake == 0) {
-            builder.stage(GameStage.SMALL_BLIND);
-        }
     }
 
     private boolean areAllPlayersMatchingBetSize(List<Player> players, int betSize) {
