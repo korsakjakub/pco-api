@@ -20,7 +20,6 @@ public class PlayerBuilder {
     private String token;
     private List<String> actions;
     private boolean active;
-    private int maxWin;
 
     public PlayerBuilder(String name) {
         this.id = UUID.randomUUID().toString();
