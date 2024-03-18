@@ -23,7 +23,6 @@ public class GameController extends BaseController {
     private final RoomService roomService;
 
 
-
     public GameController(GameService gameService, RoomService roomService) {
         this.gameService = gameService;
         this.roomService = roomService;
@@ -137,7 +136,7 @@ public class GameController extends BaseController {
     public ResponseEntity<String> raise(@RequestParam String roomId,
                                         @RequestBody ChipsRequest request,
                                         @RequestHeader("Authorization") String authorizationHeader) {
-        gameService.playRaise(roomId,  extractBearerToken(authorizationHeader), request.chips());
+        gameService.playRaise(roomId, extractBearerToken(authorizationHeader), request.chips());
         notifyPlayers(roomId);
         return logResponse(ResponseEntity.ok("Raised"));
     }
@@ -160,8 +159,8 @@ public class GameController extends BaseController {
 
     @PostMapping("/decide-winner")
     public ResponseEntity<IdResponse> decideWinner(@RequestParam String roomId,
-                                               @RequestBody IdRequest playerIdRequest,
-                                               @RequestHeader("Authorization") String authorizationHeader) {
+                                                   @RequestBody IdRequest playerIdRequest,
+                                                   @RequestHeader("Authorization") String authorizationHeader) {
         gameService.decideWinner(roomId, playerIdRequest.id(), extractBearerToken(authorizationHeader));
         notifyPlayers(roomId);
         return logResponse(ResponseEntity.ok(new IdResponse(playerIdRequest.id())));

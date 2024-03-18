@@ -72,7 +72,7 @@ public class Utils {
     public static RoomCreatedResponse createRoom(MockMvc mockMvc, String name) throws Exception {
         MvcResult createResult = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/room/create")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\": \""+ name + "\"}"))
+                        .content("{\"name\": \"" + name + "\"}"))
                 .andExpect(status().isCreated())
                 .andReturn();
 
@@ -130,7 +130,7 @@ public class Utils {
         MvcResult decideWinnerResult = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/game/decide-winner?roomId=" + roomId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + roomToken)
-                        .content("{\"id\": \""+ playerId + "\"}"))
+                        .content("{\"id\": \"" + playerId + "\"}"))
                 .andExpect(status().isOk())
                 .andReturn();
 

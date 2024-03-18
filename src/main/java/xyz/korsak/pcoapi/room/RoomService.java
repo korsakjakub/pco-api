@@ -20,6 +20,11 @@ public class RoomService extends BaseService {
     private final RoomRepository roomRepository;
     private final Authorization auth;
 
+    public RoomService(Authorization authorization, RoomRepository roomRepository) {
+        this.auth = authorization;
+        this.roomRepository = roomRepository;
+    }
+
     public void pushData(String roomId) {
         notifySubscribers(getPlayersInRoom(roomId), roomId);
     }
@@ -28,11 +33,6 @@ public class RoomService extends BaseService {
         SseEmitter emitter = newEmitter(roomId);
         pushData(roomId);
         return emitter;
-    }
-
-    public RoomService(Authorization authorization, RoomRepository roomRepository) {
-        this.auth = authorization;
-        this.roomRepository = roomRepository;
     }
 
     public Room createRoom() {

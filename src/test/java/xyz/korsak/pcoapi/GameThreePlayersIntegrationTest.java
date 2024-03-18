@@ -22,11 +22,9 @@ import java.io.File;
 @AutoConfigureMockMvc
 public class GameThreePlayersIntegrationTest {
 
+    private final RedisTemplate<String, Room> redisTemplate;
     @Autowired
     private MockMvc mockMvc;
-
-    private final RedisTemplate<String, Room> redisTemplate;
-
     private Room room;
 
     @Autowired

@@ -15,7 +15,7 @@ import xyz.korsak.pcoapi.responses.GetPlayersResponse;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 public class RoomServiceTest {

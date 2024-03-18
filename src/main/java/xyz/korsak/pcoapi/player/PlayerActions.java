@@ -12,6 +12,7 @@ public class PlayerActions {
         this.actions = createDefaultActions();
 
     }
+
     private PlayerActions(List<String> actions) {
         this.actions = actions;
     }

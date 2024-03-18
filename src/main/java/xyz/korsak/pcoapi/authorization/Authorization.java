@@ -12,9 +12,11 @@ import java.util.Optional;
 @Component
 public class Authorization {
     private final RoomRepository roomRepository;
+
     public Authorization(RoomRepository roomRepository) {
         this.roomRepository = roomRepository;
     }
+
     public boolean authorizeRoomOwner(String roomId, String roomToken) {
         Room room = roomRepository.findById(roomId);
         return room != null && room.token().equals(roomToken);

@@ -15,7 +15,10 @@ import xyz.korsak.pcoapi.room.Room;
 import xyz.korsak.pcoapi.room.RoomRepository;
 import xyz.korsak.pcoapi.rules.PokerRules;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -23,13 +26,40 @@ public class GameService extends BaseService {
     private final Authorization auth;
     private final RoomRepository roomRepository;
 
-    public void pushData(String roomId) {
-        notifySubscribers(getGameResponse(roomId), roomId);
-    }
-
     public GameService(Authorization authorization, RoomRepository roomRepository) {
         this.auth = authorization;
         this.roomRepository = roomRepository;
+    }
+
+    /***
+     * Distributes the pot to the winners.
+     * Start from the smallest common stack.
+     * @return a map of player IDs and their winnings
+     */
+    public static Map<String, Integer> distributeWinnings(List<Player> players, List<Player> winners) {
+        var resultStakes = new HashMap<String, Integer>();
+        players.forEach(p -> resultStakes.put(p.getId(), 0));
+
+        List<Player> playersToDistribute = new ArrayList<>(players);
+        while (playersToDistribute.size() > 1) {
+            final int stackPerPlayer = playersToDistribute.stream().mapToInt(Player::getInvestedChips).min().orElseThrow();
+            final int stackToDistribute = stackPerPlayer * playersToDistribute.size();
+
+            playersToDistribute.forEach(p -> p.setInvestedChips(p.getInvestedChips() - stackPerPlayer));
+
+            List<Player> winnersToDistribute = playersToDistribute.stream().filter(p -> winners.stream().map(Player::getId).toList().contains(p.getId())).toList();
+
+            winnersToDistribute.forEach(w -> resultStakes.put(w.getId(), resultStakes.get(w.getId()) + stackToDistribute / winnersToDistribute.size()));
+            playersToDistribute = playersToDistribute.stream().filter(p -> p.getInvestedChips() > 0).toList();
+        }
+        if (playersToDistribute.size() == 1) {
+            resultStakes.put(playersToDistribute.getFirst().getId(), resultStakes.get(playersToDistribute.getFirst().getId()) + playersToDistribute.getFirst().getInvestedChips());
+        }
+        return resultStakes;
+    }
+
+    public void pushData(String roomId) {
+        notifySubscribers(getGameResponse(roomId), roomId);
     }
 
     public SseEmitter streamGame(String roomId) {
@@ -117,9 +147,9 @@ public class GameService extends BaseService {
         endHandWithWinner(winner, builder, players);
 
         roomRepository.create(room.toBuilder()
-                        .game(builder.build())
-                        .players(players)
-                        .build());
+                .game(builder.build())
+                .players(players)
+                .build());
     }
 
     public void playFold(String roomId, String playerToken) {
@@ -243,11 +273,6 @@ public class GameService extends BaseService {
         }).build();
     }
 
-    @FunctionalInterface
-    private interface Action {
-        Game.GameBuilder execute(Game game, Player currentPlayer);
-    }
-
     /***
      * There are two scenarios in which a betting round with blinds can end:
      * - One player is left -> he is the winner
@@ -291,33 +316,6 @@ public class GameService extends BaseService {
         return room.toBuilder().game(updatedGame).players(players);
     }
 
-    /***
-     * Distributes the pot to the winners.
-     * Start from the smallest common stack.
-     * @return a map of player IDs and their winnings
-     */
-    public static Map<String, Integer> distributeWinnings(List<Player> players, List<Player> winners) {
-        var resultStakes = new HashMap<String, Integer>();
-        players.forEach(p -> resultStakes.put(p.getId(), 0));
-
-        List<Player> playersToDistribute = new ArrayList<>(players);
-        while (playersToDistribute.size() > 1) {
-            final int stackPerPlayer = playersToDistribute.stream().mapToInt(Player::getInvestedChips).min().orElseThrow();
-            final int stackToDistribute =  stackPerPlayer * playersToDistribute.size();
-
-            playersToDistribute.forEach(p -> p.setInvestedChips(p.getInvestedChips() - stackPerPlayer));
-
-            List<Player> winnersToDistribute = playersToDistribute.stream().filter(p -> winners.stream().map(Player::getId).toList().contains(p.getId())).toList();
-
-            winnersToDistribute.forEach(w -> resultStakes.put(w.getId(), resultStakes.get(w.getId()) + stackToDistribute / winnersToDistribute.size()));
-            playersToDistribute = playersToDistribute.stream().filter(p -> p.getInvestedChips() > 0).toList();
-        }
-        if (playersToDistribute.size() == 1) {
-            resultStakes.put(playersToDistribute.getFirst().getId(), resultStakes.get(playersToDistribute.getFirst().getId()) + playersToDistribute.getFirst().getInvestedChips());
-        }
-        return resultStakes;
-    }
-
     private void endHandWithWinner(Player winner, Game.GameBuilder builder, List<Player> players) {
         var winnings = distributeWinnings(players, List.of(winner));
 
@@ -347,5 +345,10 @@ public class GameService extends BaseService {
             i = (i + 1) % players.size();
         }
         return i;
+    }
+
+    @FunctionalInterface
+    private interface Action {
+        Game.GameBuilder execute(Game game, Player currentPlayer);
     }
 }

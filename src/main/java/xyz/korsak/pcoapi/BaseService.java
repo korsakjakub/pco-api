@@ -17,7 +17,7 @@ public abstract class BaseService {
     protected final Map<String, List<SseEmitter>> emitters = new HashMap<>();
 
     protected SseEmitter newEmitter(String roomId) {
-        SseEmitter emitter = new SseEmitter(1000*60*60L);
+        SseEmitter emitter = new SseEmitter(1000 * 60 * 60L);
         List<SseEmitter> roomEmitters = emitters.computeIfAbsent(roomId, k -> new CopyOnWriteArrayList<>());
 
         roomEmitters.add(emitter);
@@ -27,6 +27,7 @@ public abstract class BaseService {
         emitter.onCompletion(() -> roomEmitters.remove(emitter));
         return emitter;
     }
+
     protected void notifySubscribers(Object data, String roomId) {
         if (!emitters.containsKey(roomId)) {
             log.warn("emitters has no key with this id : " + roomId);

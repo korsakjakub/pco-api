@@ -15,13 +15,14 @@ import java.util.ArrayList;
 public class QueueService extends BaseService {
     private final QueueRepository queueRepository;
 
+    public QueueService(QueueRepository queueRepository) {
+        this.queueRepository = queueRepository;
+    }
+
     public SseEmitter streamPlayersInQueue(String queueId) {
         SseEmitter emitter = newEmitter(queueId);
         notifySubscribers(getPlayersInQueue(queueId), queueId);
         return emitter;
-    }
-    public QueueService(QueueRepository queueRepository) {
-        this.queueRepository = queueRepository;
     }
 
     public Queue createQueue(String roomId) {

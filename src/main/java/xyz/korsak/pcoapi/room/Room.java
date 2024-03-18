@@ -1,6 +1,6 @@
 package xyz.korsak.pcoapi.room;
 
-import lombok.*;
+import lombok.Builder;
 import xyz.korsak.pcoapi.game.Game;
 import xyz.korsak.pcoapi.player.Player;
 

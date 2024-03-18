@@ -4,22 +4,22 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import xyz.korsak.pcoapi.BaseController;
 import xyz.korsak.pcoapi.responses.GetPlayersResponse;
 import xyz.korsak.pcoapi.responses.IdResponse;
-import xyz.korsak.pcoapi.BaseController;
 
 @RestController
 @RequestMapping(path = "api/v1/queue")
 public class QueueController extends BaseController {
     QueueService queueService;
 
+    public QueueController(QueueService queueService) {
+        this.queueService = queueService;
+    }
+
     @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter streamPlayersInQueue(@RequestParam("queueId") String queueId) {
         return queueService.streamPlayersInQueue(queueId);
-    }
-
-    public QueueController(QueueService queueService) {
-        this.queueService = queueService;
     }
 
     @GetMapping("/{queueId}/players")

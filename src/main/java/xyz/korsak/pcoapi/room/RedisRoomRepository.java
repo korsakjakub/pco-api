@@ -1,10 +1,10 @@
 package xyz.korsak.pcoapi.room;
 
+import org.springframework.data.redis.RedisConnectionFailureException;
+import org.springframework.data.redis.RedisSystemException;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 import xyz.korsak.pcoapi.exceptions.RedisUnavailableException;
-import org.springframework.data.redis.RedisConnectionFailureException;
-import org.springframework.data.redis.RedisSystemException;
 
 @Repository
 public class RedisRoomRepository implements RoomRepository {
@@ -18,12 +18,12 @@ public class RedisRoomRepository implements RoomRepository {
 
     @Override
     public void create(Room room) {
-      try {
-        redisTemplate.opsForValue().set(ROOM_KEY_PREFIX + room.id(), room);
-        redisTemplate.opsForValue().set(ROOM_KEY_PREFIX + room.token(), room);
-      } catch (RedisConnectionFailureException | RedisSystemException ex) {
-        throw new RedisUnavailableException("Redis is not available");
-    }
+        try {
+            redisTemplate.opsForValue().set(ROOM_KEY_PREFIX + room.id(), room);
+            redisTemplate.opsForValue().set(ROOM_KEY_PREFIX + room.token(), room);
+        } catch (RedisConnectionFailureException | RedisSystemException ex) {
+            throw new RedisUnavailableException("Redis is not available");
+        }
     }
 
     @Override
