@@ -7,7 +7,6 @@ import xyz.korsak.pcoapi.BaseService;
 import xyz.korsak.pcoapi.authorization.Authorization;
 import xyz.korsak.pcoapi.exceptions.UnauthorizedAccessException;
 import xyz.korsak.pcoapi.player.Player;
-import xyz.korsak.pcoapi.player.PlayerBuilder;
 import xyz.korsak.pcoapi.responses.GetPlayersResponse;
 
 import java.util.ArrayList;
@@ -59,18 +58,17 @@ public class RoomService extends BaseService {
         }
     }
 
-    public Player addPlayerToRoom(String roomId, Player player, String roomToken) {
+    public void addPlayerToRoom(String roomId, Player player, String roomToken) {
         Room room = auth.getRoomByIdWithOwnerAuthorization(roomId, roomToken);
         room.players().add(player);
         roomRepository.create(room);
-        return player;
     }
 
     public Player createPlayerInRoom(String roomId, String roomToken, String playerName) {
         Room room = auth.getRoomByIdWithOwnerAuthorization(roomId, roomToken);
         String token = generateRandomString("ptk");
         String id = generateRandomString("pid");
-        Player player = new PlayerBuilder(id, playerName, token).build();
+        Player player = new Player(id, playerName, token);
         room.players().add(player);
         roomRepository.create(room);
         return player;

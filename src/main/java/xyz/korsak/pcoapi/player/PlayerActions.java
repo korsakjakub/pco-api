@@ -8,12 +8,12 @@ public class PlayerActions {
 
     private final List<String> actions;
 
-    private PlayerActions() {
+    public PlayerActions() {
         this.actions = createDefaultActions();
 
     }
 
-    private PlayerActions(List<String> actions) {
+    public PlayerActions(List<String> actions) {
         this.actions = actions;
     }
 
@@ -21,19 +21,24 @@ public class PlayerActions {
         return Arrays.asList("Fold", "Check", "Bet");
     }
 
-    public static List<String> createActionsBasedOnBet(int betSize, int playerStake) {
+    public static PlayerActions createActionsBasedOnBet(int betSize, int playerStake) {
         if (betSize == 0 && betSize == playerStake) {
-            return Arrays.asList("Fold", "Check", "Bet");
+            return new PlayerActions(Arrays.asList("Fold", "Check", "Bet"));
         } else if (betSize == playerStake) {
-            return Arrays.asList("Fold", "Check", "Raise");
+            return new PlayerActions(Arrays.asList("Fold", "Check", "Raise"));
         } else if (betSize > playerStake) {
-            return Arrays.asList("Fold", "Call", "Raise");
+            return new PlayerActions(Arrays.asList("Fold", "Call", "Raise"));
         } else {
-            return Collections.emptyList();
+            return new PlayerActions();
         }
     }
 
     public List<String> getActions() {
         return Collections.unmodifiableList(actions);
+    }
+
+    @Override
+    public String toString() {
+        return actions.toString();
     }
 }

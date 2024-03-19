@@ -8,11 +8,11 @@
       "investedChips": 0,
       "stakedChips": 0,
       "token": "ptk-p1",
-      "actions": [
+      "actions": {"actions": [
         "Fold",
         "Call",
         "Raise"
-      ],
+      ]},
       "active": true
     },
     {
@@ -22,11 +22,11 @@
       "investedChips": 10,
       "stakedChips": 10,
       "token": "ptk-p2",
-      "actions": [
+      "actions": {"actions": [
         "Fold",
         "Call",
         "Raise"
-      ],
+      ]},
       "active": true
     },
     {
@@ -36,11 +36,11 @@
       "investedChips": 20,
       "stakedChips": 20,
       "token": "ptk-p3",
-      "actions": [
+      "actions": {"actions": [
         "Fold",
         "Check",
         "Raise"
-      ],
+      ]},
       "active": true
     }
   ],

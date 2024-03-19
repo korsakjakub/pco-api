@@ -5,7 +5,6 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import xyz.korsak.pcoapi.BaseService;
 import xyz.korsak.pcoapi.exceptions.NotFoundException;
 import xyz.korsak.pcoapi.player.Player;
-import xyz.korsak.pcoapi.player.PlayerBuilder;
 import xyz.korsak.pcoapi.responses.GetPlayersResponse;
 import xyz.korsak.pcoapi.responses.IdResponse;
 
@@ -40,7 +39,7 @@ public class QueueService extends BaseService {
 
         String token = generateRandomString("ptk");
         String id = generateRandomString("pid");
-        Player player = new PlayerBuilder(id, name, token).build();
+        Player player = new Player(id, name, token);
         queue.getPlayers().add(player);
         queueRepository.create(queue);
         notifySubscribers(getPlayersInQueue(queueId), queueId);
