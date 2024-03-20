@@ -13,7 +13,7 @@
         "Check",
         "Bet"
       ]},
-      "active": true
+      "state": "Active"
     },
     {
       "id": "pid-player2",
@@ -27,7 +27,7 @@
         "Check",
         "Bet"
       ]},
-      "active": true
+      "state": "Active"
     }
   ],
   "token": "rtk-test",

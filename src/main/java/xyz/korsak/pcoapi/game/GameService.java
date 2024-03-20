@@ -10,6 +10,7 @@ import xyz.korsak.pcoapi.exceptions.NotFoundException;
 import xyz.korsak.pcoapi.exceptions.UnauthorizedAccessException;
 import xyz.korsak.pcoapi.player.Player;
 import xyz.korsak.pcoapi.player.PlayerActions;
+import xyz.korsak.pcoapi.player.PlayerState;
 import xyz.korsak.pcoapi.responses.GetGameResponse;
 import xyz.korsak.pcoapi.room.Room;
 import xyz.korsak.pcoapi.room.RoomRepository;
@@ -174,7 +175,7 @@ public class GameService extends BaseService {
 
     public Room fold(Room room) {
         return performAction(room, (game, currentPlayer) -> {
-            currentPlayer.setActive(false);
+            currentPlayer.setState(PlayerState.Folded);
             return game.toBuilder();
         }).build();
     }
@@ -273,13 +274,6 @@ public class GameService extends BaseService {
         }).build();
     }
 
-    /***
-     * There are two scenarios in which a betting round with blinds can end:
-     * - One player is left -> he is the winner
-     * - All players matched the highest bet (game.getCurrentBetSize())
-     * NOTE: If we play without blinds, another rule has to be implemented - if currentBetSize starts with 0,
-     * then automatically the round ends after first player's action.
-     */
     private Room.RoomBuilder performAction(Room room, Action action) {
         final Game game = room.game();
 
@@ -291,13 +285,23 @@ public class GameService extends BaseService {
         List<Player> players = room.players();
         Game.GameBuilder builder = action.execute(game, currentPlayer);
 
-        final List<Player> activePlayers = players.stream().filter(Player::isActive).toList();
-
-        // First case - one player left
-        if (activePlayers.size() == 1) {
-            endHandWithWinner(activePlayers.getFirst(), builder, players);
+        if (currentPlayer.getChips() == 0) {
+            currentPlayer.setState(PlayerState.AllIn);
         }
-        // Second case - all players matched the highest bet, and everybody played at least once
+
+        final List<Player> allInPlayers = players.stream().filter(player -> player.getState().equals(PlayerState.AllIn)).toList();
+        final List<Player> activePlayers = players.stream().filter(player -> player.getState().equals(PlayerState.Active)).toList();
+
+        if (activePlayers.size() <= 1) {
+            if (!allInPlayers.isEmpty()) {
+                // Cards up
+                builder.stage(GameStage.SHOWDOWN);
+            } else {
+                // One player left, others folded
+                endHandWithWinner(activePlayers.getFirst(), builder, players);
+            }
+        }
+        // All players matched the highest bet, and everybody played at least once
         else if (areAllPlayersMatchingBetSize(players, game.currentBetSize())
                 && game.actionsTakenThisRound() + 1 >= players.size()) {
             builder.stage(game.stage().next())
@@ -322,7 +326,7 @@ public class GameService extends BaseService {
         players.forEach(p -> {
             p.setStakedChips(0);
             p.setChips(p.getChips() + winnings.get(p.getId()));
-            p.setActive(true);
+            p.setState(PlayerState.Active);
         });
 
         builder.state(GameState.WAITING)
@@ -333,15 +337,15 @@ public class GameService extends BaseService {
                 .incDealerIndex();
     }
 
-    private boolean areAllPlayersMatchingBetSize(List<Player> players, int betSize) {
+    private static boolean areAllPlayersMatchingBetSize(List<Player> players, int betSize) {
         return players.stream()
-                .filter(Player::isActive)
+                .filter(player -> player.getState().equals(PlayerState.Active))
                 .allMatch(player -> player.getStakedChips() == betSize || player.getChips() == 0);
     }
 
-    private int nextActivePlayer(List<Player> players, int startIndex) {
+    private static int nextActivePlayer(List<Player> players, int startIndex) {
         int i = (startIndex + 1) % players.size();
-        while (!players.get(i).isActive()) {
+        while (!players.get(i).getState().equals(PlayerState.Active)) {
             i = (i + 1) % players.size();
         }
         return i;

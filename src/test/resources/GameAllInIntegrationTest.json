@@ -13,7 +13,7 @@
         "Call",
         "Raise"
       ]},
-      "active": true
+      "state": "Active"
     },
     {
       "id": "pid-p2",
@@ -27,7 +27,7 @@
         "Call",
         "Raise"
       ]},
-      "active": true
+      "state": "Active"
     },
     {
       "id": "pid-p3",
@@ -41,7 +41,7 @@
         "Check",
         "Raise"
       ]},
-      "active": true
+      "state": "Active"
     }
   ],
   "token": "rtk-all-in-test",
