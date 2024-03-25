@@ -17,6 +17,8 @@ import xyz.korsak.pcoapi.room.Room;
 
 import java.io.File;
 
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
@@ -113,5 +115,60 @@ public class GameThreePlayersIntegrationTest {
         Assertions.assertEquals(0, p1.getStakedChips());
         Assertions.assertEquals(0, p2.getStakedChips());
         Assertions.assertEquals(0, p3.getStakedChips());
+    }
+
+    @Test
+    public void testFullRoundWithFold() throws Exception {
+        Player p2 = room.players().get(1);
+        String roomId = room.id();
+
+        Assertions.assertEquals(GameStage.PRE_FLOP, room.game().stage());
+        Assertions.assertEquals("[Fold, Check, Bet]", p2.getActions().toString());
+        Assertions.assertEquals("Bet", Utils.bet(mockMvc, roomId, p2.getToken(), 100));
+
+        room = Utils.getRoom(mockMvc, roomId);
+        Player p3 = room.players().get(2);
+
+        Assertions.assertEquals("[Fold, Call, Raise]", p3.getActions().toString());
+        Assertions.assertEquals("Raised", Utils.raise(mockMvc, roomId, p3.getToken(), 200));
+
+        room = Utils.getRoom(mockMvc, roomId);
+        Player p1 = room.players().getFirst();
+
+        Assertions.assertEquals("[Fold, Call, Raise]", p1.getActions().toString());
+        Assertions.assertEquals("Folded", Utils.fold(mockMvc, roomId, p1.getToken()));
+
+        room = Utils.getRoom(mockMvc, roomId);
+        p2 = room.players().get(1);
+
+        Assertions.assertEquals("[Fold, Call, Raise]", p2.getActions().toString());
+        Assertions.assertEquals("Called", Utils.call(mockMvc, roomId, p2.getToken()));
+
+        room = Utils.getRoom(mockMvc, roomId);
+        p2 = room.players().get(1);
+        p3 = room.players().get(2);
+
+        Assertions.assertEquals(GameStage.FLOP, room.game().stage());
+        Assertions.assertEquals("[Fold, Check, Bet]", p2.getActions().toString());
+
+        Utils.bet(mockMvc, roomId, p3.getToken(), 100, status().isUnauthorized());
+        Utils.bet(mockMvc, roomId, p2.getToken(), -100, status().isIAmATeapot());
+        Assertions.assertEquals("Bet", Utils.bet(mockMvc, roomId, p2.getToken(), 100));
+
+        room = Utils.getRoom(mockMvc, roomId);
+        p3 = room.players().get(2);
+        Assertions.assertEquals("Folded", Utils.fold(mockMvc, roomId, p3.getToken()));
+
+        room = Utils.getRoom(mockMvc, roomId);
+        p1 = room.players().getFirst();
+        p2 = room.players().get(1);
+        p3 = room.players().get(2);
+        Assertions.assertEquals(GameStage.SMALL_BLIND, room.game().stage());
+        Assertions.assertEquals("[Fold, Check, Bet]", p1.getActions().toString());
+        Assertions.assertEquals("[Fold, Check, Bet]", p2.getActions().toString());
+        Assertions.assertEquals("[Fold, Check, Bet]", p3.getActions().toString());
+        Assertions.assertEquals(1000, p1.getChips());
+        Assertions.assertEquals(1200, p2.getChips());
+        Assertions.assertEquals(800, p3.getChips());
     }
 }

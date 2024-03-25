@@ -5,6 +5,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import xyz.korsak.pcoapi.player.Player;
 import xyz.korsak.pcoapi.responses.GetPlayersResponse;
@@ -67,6 +68,15 @@ public class Utils {
                 .andReturn();
 
         return createResult.getResponse().getContentAsString();
+    }
+
+    public static void bet(MockMvc mockMvc, String roomId, String playerToken, int chips, ResultMatcher result) throws Exception {
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/game/bet?roomId=" + roomId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + playerToken)
+                        .content("{\"chips\": \"" + chips + "\"}"))
+                .andExpect(result)
+                .andReturn();
     }
 
     public static RoomCreatedResponse createRoom(MockMvc mockMvc, String name) throws Exception {
