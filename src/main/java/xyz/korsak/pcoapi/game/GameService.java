@@ -145,6 +145,10 @@ public class GameService extends BaseService {
         Game.GameBuilder builder = game.toBuilder();
         List<Player> players = room.players();
 
+        if (winner.getState().equals(PlayerState.Folded)) {
+            throw new GameException("The winner cannot be a player who folded");
+        }
+
         endHandWithWinner(winner, builder, players);
 
         roomRepository.create(room.toBuilder()
@@ -304,9 +308,10 @@ public class GameService extends BaseService {
         // All players matched the highest bet, and everybody played at least once
         else if (areAllPlayersMatchingBetSize(players, game.currentBetSize())
                 && game.actionsTakenThisRound() + 1 >= players.size()) {
+            int currentTurnIndex = nextActivePlayer(players, game.smallBlindIndex() - 1);
             builder.stage(game.stage().next())
                     .currentBetSize(0)
-                    .currentTurnIndex(game.smallBlindIndex())
+                    .currentTurnIndex(currentTurnIndex)
                     .actionsTakenThisRound(0);
             players.forEach(p -> p.setStakedChips(0));
         } // The round doesn't end

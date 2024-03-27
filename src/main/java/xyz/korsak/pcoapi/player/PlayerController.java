@@ -36,7 +36,7 @@ public class PlayerController extends BaseController {
     }
 
     @GetMapping("/{playerId}")
-    public ResponseEntity<Player> getPlayer(@RequestParam String roomId,
+    public ResponseEntity<PlayerDTO> getPlayer(@RequestParam String roomId,
                                             @PathVariable String playerId,
                                             @RequestHeader("Authorization") String authorizationHeader) {
         String playerToken = extractBearerToken(authorizationHeader);
@@ -44,6 +44,6 @@ public class PlayerController extends BaseController {
         if (player == null) {
             throw new UnauthorizedAccessException();
         }
-        return logResponse(ResponseEntity.ok(player));
+        return logResponse(ResponseEntity.ok(new PlayerDTO(player)));
     }
 }
