@@ -87,6 +87,18 @@ public class RoomService extends BaseService {
         return auth.getPlayerWithAuthorization(roomId, playerId, playerToken);
     }
 
+    public void updatePlayerChips(String roomId, String playerId, String roomToken, int chips) {
+        Room room = auth.getRoomByIdWithOwnerAuthorization(roomId, roomToken);
+
+        room.players().forEach(player -> {
+            if (Objects.equals(player.getId(), playerId)) {
+                player.setChips(chips);
+            }
+        });
+
+        roomRepository.create(room);
+    }
+
     public void deletePlayerInRoom(String roomId, String playerId, String token) throws UnauthorizedAccessException {
         Room room = roomRepository.findById(roomId);
         if (room == null) {

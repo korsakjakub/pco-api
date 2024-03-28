@@ -7,7 +7,9 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import xyz.korsak.pcoapi.BaseController;
 import xyz.korsak.pcoapi.exceptions.UnauthorizedAccessException;
 import xyz.korsak.pcoapi.queue.QueueService;
+import xyz.korsak.pcoapi.requests.ChipsRequest;
 import xyz.korsak.pcoapi.requests.NameRequest;
+import xyz.korsak.pcoapi.responses.IdResponse;
 import xyz.korsak.pcoapi.responses.IdTokenResponse;
 import xyz.korsak.pcoapi.room.RoomService;
 
@@ -46,4 +48,17 @@ public class PlayerController extends BaseController {
         }
         return logResponse(ResponseEntity.ok(new PlayerDTO(player)));
     }
+
+    @PutMapping("/{playerId}/chips")
+    public ResponseEntity<IdResponse> updatePlayerChips(@RequestParam String roomId,
+                                                        @PathVariable String playerId,
+                                                        @RequestHeader("Authorization") String authorizationHeader,
+                                                        @RequestBody ChipsRequest chipsRequest) {
+        String roomToken = extractBearerToken(authorizationHeader);
+        roomService.updatePlayerChips(roomId, playerId, roomToken, chipsRequest.chips());
+
+        roomService.pushData(roomId);
+        return logResponse(ResponseEntity.ok(new IdResponse(playerId)));
+    }
+
 }
