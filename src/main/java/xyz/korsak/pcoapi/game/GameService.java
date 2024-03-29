@@ -307,7 +307,7 @@ public class GameService extends BaseService {
         }
         // All players matched the highest bet, and everybody played at least once
         else if (areAllPlayersMatchingBetSize(players, game.currentBetSize())
-                && game.actionsTakenThisRound() + 1 >= players.size()) {
+                && game.actionsTakenThisRound() + 1 >= activePlayers.size()) {
             int currentTurnIndex = nextActivePlayer(players, game.smallBlindIndex() - 1);
             builder.stage(game.stage().next())
                     .currentBetSize(0)
