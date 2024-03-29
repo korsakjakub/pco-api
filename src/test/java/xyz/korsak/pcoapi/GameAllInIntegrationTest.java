@@ -59,7 +59,7 @@ public class GameAllInIntegrationTest {
         Player p2 = room.players().get(1);
 
         Assertions.assertEquals("[Fold, Call, Raise]", p2.getActions().toString());
-        Assertions.assertEquals("Raised", Utils.raise(mockMvc, roomId, p2.getToken(), 500));
+        Assertions.assertEquals("Raised", Utils.raise(mockMvc, roomId, p2.getToken(), 490));
 
         room = Utils.getRoom(mockMvc, roomId);
         Player p3 = room.players().get(2);

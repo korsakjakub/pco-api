@@ -98,7 +98,7 @@ public class GameTwoPlayersIntegrationTest {
         p2 = room.players().get(1);
 
         Assertions.assertEquals("[Fold, Call, Raise]", p2.getActions().toString());
-        Assertions.assertEquals("Raised", Utils.raise(mockMvc, roomId, p2.getToken(), 300));
+        Assertions.assertEquals("Raised", Utils.raise(mockMvc, roomId, p2.getToken(), 200));
 
         room = Utils.getRoom(mockMvc, roomId);
         p1 = room.players().get(0);

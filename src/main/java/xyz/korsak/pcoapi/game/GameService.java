@@ -227,17 +227,18 @@ public class GameService extends BaseService {
         }).build();
     }
 
-    public Room raise(Room room, int betSize) {
+    public Room raise(Room room, int betAddition) {
         return performAction(room, (game, currentPlayer) -> {
             if (game.currentBetSize() == 0) {
                 throw new GameException("Current bet size is zero");
             }
+            final int betSize = betAddition + currentPlayer.getStakedChips();
 
             if (betSize - game.currentBetSize() <= 0 || betSize < 2 * game.rules().bigBlind()) {
                 throw new GameException("The bet size is too low");
             }
 
-            final int betAddition = betSize - currentPlayer.getStakedChips();
+            // final int betAddition = betSize - currentPlayer.getStakedChips();
 
             final int newPlayerBalance = currentPlayer.getChips() - betAddition;
 
