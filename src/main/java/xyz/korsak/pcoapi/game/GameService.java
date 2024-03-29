@@ -99,9 +99,17 @@ public class GameService extends BaseService {
                     .dealerBlindsAndCurrentIndices(0)
                     .stage(GameStage.SMALL_BLIND).build();
         } else {
+            room.players().forEach(player -> {
+                if (player.getChips() == 0) {
+                    player.setState(PlayerState.Folded);
+                } else {
+                    player.setState(PlayerState.Active);
+                }
+            });
+
             game = room.game().toBuilder()
                     .state(GameState.IN_PROGRESS)
-                    .currentTurnIndex(room.game().smallBlindIndex())
+                    .currentTurnIndex(nextActivePlayer(room.players(), room.game().smallBlindIndex() - 1))
                     .numberOfPlayers(room.players().size())
                     .stage(GameStage.SMALL_BLIND).build();
         }
