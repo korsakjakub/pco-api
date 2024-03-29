@@ -17,7 +17,7 @@ public class Authorization {
         this.roomRepository = roomRepository;
     }
 
-    public boolean authorizeRoomOwner(String roomId, String roomToken) {
+    public boolean authorizeOwner(String roomId, String roomToken) {
         Room room = roomRepository.findById(roomId);
         return room != null && room.token().equals(roomToken);
     }

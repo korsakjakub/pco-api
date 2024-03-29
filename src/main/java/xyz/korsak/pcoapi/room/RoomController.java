@@ -61,7 +61,7 @@ public class RoomController extends BaseController {
             throw new UnauthorizedAccessException();
         }
 
-        Player player = queueService.removePlayerFromQueue(room.queueId(), playerId);
+        Player player = queueService.removePlayerFromQueue(room.queueId(), playerId, roomToken);
         if (player == null) {
             throw new UnauthorizedAccessException();
         }
@@ -99,6 +99,7 @@ public class RoomController extends BaseController {
         } catch (UnauthorizedAccessException ex) {
             throw new UnauthorizedAccessException();
         }
+        roomService.pushData(roomId);
         return logResponse(ResponseEntity.ok("Deleted the player with Id: " + playerId));
     }
 }

@@ -33,6 +33,7 @@ public class PlayerController extends BaseController {
     public ResponseEntity<IdTokenResponse> createPlayer(@RequestParam String queueId,
                                                         @RequestBody NameRequest name) {
         Player player = queueService.addPlayerToQueue(queueId, name.name());
+        queueService.pushData(queueId);
         IdTokenResponse r = new IdTokenResponse(player.getId(), player.getToken());
         return logResponse(ResponseEntity.ok(r));
     }

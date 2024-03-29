@@ -5,7 +5,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import xyz.korsak.pcoapi.BaseService;
 import xyz.korsak.pcoapi.authorization.Authorization;
+import xyz.korsak.pcoapi.exceptions.GameException;
 import xyz.korsak.pcoapi.exceptions.UnauthorizedAccessException;
+import xyz.korsak.pcoapi.game.GameState;
 import xyz.korsak.pcoapi.player.Player;
 import xyz.korsak.pcoapi.responses.GetPlayersResponse;
 
@@ -51,7 +53,7 @@ public class RoomService extends BaseService {
     }
 
     public void deleteRoom(String id, String roomToken) {
-        if (auth.authorizeRoomOwner(id, roomToken)) {
+        if (auth.authorizeOwner(id, roomToken)) {
             roomRepository.delete(id);
         } else {
             throw new UnauthorizedAccessException();
@@ -104,6 +106,13 @@ public class RoomService extends BaseService {
         if (room == null) {
             throw new UnauthorizedAccessException();
         }
+        if (room.game() == null) {
+            throw new UnauthorizedAccessException();
+        }
+        if (room.game().state().equals(GameState.IN_PROGRESS)) {
+            throw new GameException("Cannot remove player from room while game is in progress");
+        }
+
         final Player player = auth.getPlayerWithAuthorization(roomId, playerId, token);
         final List<Player> newPlayers = room.players().stream().filter(p -> !Objects.equals(p.getId(), player.getId())).toList();
 

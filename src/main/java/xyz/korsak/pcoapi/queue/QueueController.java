@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import xyz.korsak.pcoapi.BaseController;
+import xyz.korsak.pcoapi.exceptions.UnauthorizedAccessException;
 import xyz.korsak.pcoapi.responses.GetPlayersResponse;
 import xyz.korsak.pcoapi.responses.IdResponse;
 
@@ -32,5 +33,15 @@ public class QueueController extends BaseController {
     public ResponseEntity<IdResponse> getRoomId(@PathVariable String queueId) {
         IdResponse roomId = queueService.getRoomId(queueId);
         return logResponse(ResponseEntity.ok(roomId));
+    }
+
+    @DeleteMapping("/{queueId}/players/{playerId}")
+    public ResponseEntity<String> deletePlayerInQueue(@PathVariable String queueId,
+                                                     @PathVariable String playerId,
+                                                     @RequestHeader("Authorization") String authorizationHeader) {
+        String playerToken = extractBearerToken(authorizationHeader);
+        queueService.removePlayerFromQueue(queueId, playerId, playerToken);
+        queueService.pushData(queueId);
+        return logResponse(ResponseEntity.ok("Deleted the player with Id: " + playerId));
     }
 }

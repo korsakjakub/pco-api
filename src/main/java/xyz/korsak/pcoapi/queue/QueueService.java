@@ -3,7 +3,9 @@ package xyz.korsak.pcoapi.queue;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import xyz.korsak.pcoapi.BaseService;
+import xyz.korsak.pcoapi.authorization.Authorization;
 import xyz.korsak.pcoapi.exceptions.NotFoundException;
+import xyz.korsak.pcoapi.exceptions.UnauthorizedAccessException;
 import xyz.korsak.pcoapi.player.Player;
 import xyz.korsak.pcoapi.responses.GetPlayersResponse;
 import xyz.korsak.pcoapi.responses.IdResponse;
@@ -13,9 +15,15 @@ import java.util.ArrayList;
 @Service
 public class QueueService extends BaseService {
     private final QueueRepository queueRepository;
+    private final Authorization auth;
 
-    public QueueService(QueueRepository queueRepository) {
+    public QueueService(QueueRepository queueRepository, Authorization authorization) {
         this.queueRepository = queueRepository;
+        this.auth = authorization;
+    }
+
+    public void pushData(String queueId) {
+        notifySubscribers(getPlayersInQueue(queueId), queueId);
     }
 
     public SseEmitter streamPlayersInQueue(String queueId) {
@@ -42,7 +50,6 @@ public class QueueService extends BaseService {
         Player player = new Player(id, name, token);
         queue.getPlayers().add(player);
         queueRepository.create(queue);
-        notifySubscribers(getPlayersInQueue(queueId), queueId);
         return player;
     }
 
@@ -54,10 +61,15 @@ public class QueueService extends BaseService {
         return new GetPlayersResponse(queue.getPlayers());
     }
 
-    public Player removePlayerFromQueue(String queueId, String playerId) {
-        Player removedPlayer = queueRepository.removePlayer(queueId, playerId);
-        notifySubscribers(getPlayersInQueue(queueId), queueId);
-        return removedPlayer;
+    public Player removePlayerFromQueue(String queueId, String playerId, String token) {
+        Queue queue = queueRepository.findById(queueId);
+        if (queue == null) {
+            throw new UnauthorizedAccessException();
+        }
+        if (!auth.authorizeOwner(queue.getRoomId(), token)) {
+            throw new UnauthorizedAccessException();
+        }
+        return queueRepository.removePlayer(queueId, playerId);
     }
 
     public IdResponse getRoomId(String queueId) {
