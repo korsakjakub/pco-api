@@ -43,13 +43,15 @@ public class GameService extends BaseService {
 
         List<Player> playersToDistribute = new ArrayList<>(players);
         while (playersToDistribute.size() > 1) {
+            List<Player> winnersToDistribute = playersToDistribute.stream().filter(p -> winners.stream().map(Player::getId).toList().contains(p.getId())).toList();
+            if (winnersToDistribute.isEmpty()) {
+                break;
+            }
+
             final int stackPerPlayer = playersToDistribute.stream().mapToInt(Player::getInvestedChips).min().orElseThrow();
             final int stackToDistribute = stackPerPlayer * playersToDistribute.size();
 
             playersToDistribute.forEach(p -> p.setInvestedChips(p.getInvestedChips() - stackPerPlayer));
-
-            List<Player> winnersToDistribute = playersToDistribute.stream().filter(p -> winners.stream().map(Player::getId).toList().contains(p.getId())).toList();
-
             winnersToDistribute.forEach(w -> resultStakes.put(w.getId(), resultStakes.get(w.getId()) + stackToDistribute / winnersToDistribute.size()));
             playersToDistribute = playersToDistribute.stream().filter(p -> p.getInvestedChips() > 0).toList();
         }
@@ -337,18 +339,22 @@ public class GameService extends BaseService {
     private void endHandWithWinner(Player winner, Game.GameBuilder builder, List<Player> players) {
         var winnings = distributeWinnings(players, List.of(winner));
 
+        final int playersLeftToDistribute = players.stream().filter(p -> p.getInvestedChips() > 0).toList().size();
+
         players.forEach(p -> {
             p.setStakedChips(0);
             p.setChips(p.getChips() + winnings.get(p.getId()));
             p.setState(PlayerState.Active);
         });
 
-        builder.state(GameState.WAITING)
-                .stakedChips(0)
-                .stage(GameStage.SMALL_BLIND)
-                .currentBetSize(0)
-                .incHandsCompleted()
-                .incDealerIndex();
+        if (playersLeftToDistribute == 0) {
+            builder.state(GameState.WAITING)
+                    .stakedChips(0)
+                    .stage(GameStage.SMALL_BLIND)
+                    .currentBetSize(0)
+                    .incHandsCompleted()
+                    .incDealerIndex();
+        }
     }
 
     private static boolean areAllPlayersMatchingBetSize(List<Player> players, int betSize) {
