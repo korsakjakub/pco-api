@@ -1,0 +1,58 @@
+{
+  "id": "rid-test",
+  "players": [
+      {
+        "id": "pid-bbPZ1azrlv",
+        "name": "pA",
+        "chips": 980,
+        "stakedChips": 20,
+        "investedChips": 20,
+        "token": "ptk-WulWCnW8AL",
+        "actions": {
+          "actions": [
+            "Fold",
+            "Check",
+            "Raise"
+          ]
+        },
+        "state": "Active"
+      },
+      {
+        "id": "pid-dzIkaKdioN",
+        "name": "pB",
+        "chips": 980,
+        "stakedChips": 20,
+        "investedChips": 20,
+        "token": "ptk-Bxl7bXzhuV",
+        "actions": {
+          "actions": [
+            "Fold",
+            "Check",
+            "Raise"
+          ]
+        },
+        "state": "Active"
+      }
+  ],
+  "token": "rtk-ggTFvUNNQp",
+  "game": {
+    "rules": {
+      "startingChips": 1000,
+      "ante": 5,
+      "smallBlind": 10,
+      "bigBlind": 20
+    },
+    "state": "IN_PROGRESS",
+    "stage": "PRE_FLOP",
+    "stakedChips": 40,
+    "currentBetSize": 20,
+    "currentTurnIndex": 0,
+    "dealerIndex": 0,
+    "smallBlindIndex": 1,
+    "bigBlindIndex": 0,
+    "actionsTakenThisRound": 1,
+    "numberOfPlayers": 2,
+    "numberOfHandsCompleted": 0
+  },
+  "queueId": "qid-RyRfBIMjGK"
+}

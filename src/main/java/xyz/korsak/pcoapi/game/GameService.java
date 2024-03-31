@@ -299,14 +299,15 @@ public class GameService extends BaseService {
 
         final Player currentPlayer = getCurrentPlayer(room, game.currentTurnIndex());
         List<Player> players = room.players();
+
         Game.GameBuilder builder = action.execute(game, currentPlayer);
+
+        final List<Player> activePlayers = players.stream().filter(player -> player.getState().equals(PlayerState.Active)).toList();
+        final List<Player> allInPlayers = players.stream().filter(player -> player.getState().equals(PlayerState.AllIn)).toList();
 
         if (currentPlayer.getChips() == 0) {
             currentPlayer.setState(PlayerState.AllIn);
         }
-
-        final List<Player> allInPlayers = players.stream().filter(player -> player.getState().equals(PlayerState.AllIn)).toList();
-        final List<Player> activePlayers = players.stream().filter(player -> player.getState().equals(PlayerState.Active)).toList();
 
         if (activePlayers.size() <= 1) {
             if (!allInPlayers.isEmpty()) {
@@ -318,7 +319,7 @@ public class GameService extends BaseService {
             }
         }
         // All players matched the highest bet, and everybody played at least once
-        else if (areAllPlayersMatchingBetSize(players, game.currentBetSize())
+        else if (areAllPlayersMatchingBetSize(players, builder.getCurrentBetSize())
                 && game.actionsTakenThisRound() + 1 >= activePlayers.size()) {
             int currentTurnIndex = nextActivePlayer(players, game.smallBlindIndex() - 1);
             builder.stage(game.stage().next())
@@ -360,7 +361,7 @@ public class GameService extends BaseService {
 
     private static boolean areAllPlayersMatchingBetSize(List<Player> players, int betSize) {
         return players.stream()
-                .filter(player -> player.getState().equals(PlayerState.Active))
+                .filter(player -> player.getState().equals(PlayerState.Active) || player.getState().equals(PlayerState.AllIn))
                 .allMatch(player -> player.getStakedChips() == betSize || player.getChips() == 0);
     }
 

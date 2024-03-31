@@ -1,6 +1,7 @@
 package xyz.korsak.pcoapi.game;
 
 import lombok.Builder;
+import lombok.Getter;
 import xyz.korsak.pcoapi.rules.PokerRules;
 
 @Builder(toBuilder = true)
@@ -13,6 +14,7 @@ public record Game(PokerRules rules, GameState state, GameStage stage, int stake
         private GameStage stage;
         private int stakedChips;
 
+        @Getter
         private int currentBetSize;
         private int currentTurnIndex;
         private int dealerIndex;
@@ -58,5 +60,6 @@ public record Game(PokerRules rules, GameState state, GameStage stage, int stake
         public GameBuilder addToStake(int bet) {
             return this.stakedChips(this.stakedChips + bet);
         }
+
     }
 }
