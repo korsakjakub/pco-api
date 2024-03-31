@@ -57,6 +57,7 @@ public class GameService extends BaseService {
         }
         if (playersToDistribute.size() == 1) {
             resultStakes.put(playersToDistribute.getFirst().getId(), resultStakes.get(playersToDistribute.getFirst().getId()) + playersToDistribute.getFirst().getInvestedChips());
+            playersToDistribute.forEach(p -> p.setInvestedChips(0));
         }
         return resultStakes;
     }
