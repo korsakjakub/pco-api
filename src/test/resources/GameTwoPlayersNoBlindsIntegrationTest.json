@@ -1,0 +1,53 @@
+{
+  "id": "rid-test",
+  "players": [
+    {
+      "id": "pid-player1",
+      "name": "jk",
+      "chips": 1000,
+      "stakedChips": 0,
+      "investedChips": 0,
+      "token": "ptk-player1",
+      "actions": {"actions": [
+        "Fold",
+        "Check",
+        "Bet"
+      ]},
+      "state": "Active"
+    },
+    {
+      "id": "pid-player2",
+      "name": "ola",
+      "chips": 1000,
+      "stakedChips": 0,
+      "investedChips": 0,
+      "token": "ptk-player2",
+      "actions": {"actions": [
+        "Fold",
+        "Check",
+        "Bet"
+      ]},
+      "state": "Active"
+    }
+  ],
+  "token": "rtk-test",
+  "game": {
+    "rules": {
+      "startingChips": 1000,
+      "ante": 5,
+      "smallBlind": 10,
+      "bigBlind": 20
+    },
+    "state": "IN_PROGRESS",
+    "stage": "PRE_FLOP",
+    "stakedChips": 0,
+    "currentBetSize": 0,
+    "currentTurnIndex": 1,
+    "dealerIndex": 0,
+    "smallBlindIndex": 1,
+    "bigBlindIndex": 2,
+    "actionsTakenThisRound": 0,
+    "numberOfPlayers": 2
+  },
+  "queueId": "qid-test"
+}

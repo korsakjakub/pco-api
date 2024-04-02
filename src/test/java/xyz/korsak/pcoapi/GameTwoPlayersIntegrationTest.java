@@ -12,6 +12,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import xyz.korsak.pcoapi.game.GameStage;
+import xyz.korsak.pcoapi.game.GameState;
 import xyz.korsak.pcoapi.player.Player;
 import xyz.korsak.pcoapi.room.Room;
 
@@ -46,107 +47,35 @@ public class GameTwoPlayersIntegrationTest {
     }
 
     @Test
-    public void testBetRaiseCall() throws Exception {
-        Player p2 = room.players().get(1);
+    public void testCallFoldNewRoundCall() throws Exception {
         String roomId = room.id();
+        String roomToken = room.token();
 
-        Assertions.assertEquals(GameStage.PRE_FLOP, room.game().stage());
-        Assertions.assertEquals("[Fold, Check, Bet]", p2.getActions().toString());
-        Assertions.assertEquals("Bet", Utils.bet(mockMvc, roomId, p2.getToken(), 100));
+        Player p1 = room.players().getFirst();
 
-        room = Utils.getRoom(mockMvc, roomId);
-        Player p1 = room.players().get(0);
-
-        Assertions.assertEquals("[Fold, Call, Raise]", p1.getActions().toString());
-        Assertions.assertEquals("Raised", Utils.raise(mockMvc, roomId, p1.getToken(), 200));
-
-        room = Utils.getRoom(mockMvc, roomId);
-        p2 = room.players().get(1);
-
-        Assertions.assertEquals("[Fold, Call, Raise]", p2.getActions().toString());
-        Assertions.assertEquals("Called", Utils.call(mockMvc, roomId, p2.getToken()));
-
-        room = Utils.getRoom(mockMvc, roomId);
-        p1 = room.players().get(0);
-        p2 = room.players().get(1);
-
-        Assertions.assertEquals(GameStage.FLOP, room.game().stage());
-        Assertions.assertEquals("[Fold, Check, Bet]", p1.getActions().toString());
-        Assertions.assertEquals("[Fold, Check, Bet]", p2.getActions().toString());
-        Assertions.assertEquals(400, room.game().stakedChips());
-        Assertions.assertEquals(0, room.game().currentBetSize());
-        Assertions.assertEquals(0, p1.getStakedChips());
-        Assertions.assertEquals(0, p2.getStakedChips());
-    }
-
-    @Test
-    public void testBetRaiseReRaise() throws Exception {
-        Player p2 = room.players().get(1);
-        String roomId = room.id();
-
-        Assertions.assertEquals(GameStage.PRE_FLOP, room.game().stage());
-        Assertions.assertEquals("[Fold, Check, Bet]", p2.getActions().toString());
-        Assertions.assertEquals("Bet", Utils.bet(mockMvc, roomId, p2.getToken(), 100));
-
-        room = Utils.getRoom(mockMvc, roomId);
-        Player p1 = room.players().get(0);
-
-        Assertions.assertEquals("[Fold, Call, Raise]", p1.getActions().toString());
-        Assertions.assertEquals("Raised", Utils.raise(mockMvc, roomId, p1.getToken(), 200));
-
-        room = Utils.getRoom(mockMvc, roomId);
-        p2 = room.players().get(1);
-
-        Assertions.assertEquals("[Fold, Call, Raise]", p2.getActions().toString());
-        Assertions.assertEquals("Raised", Utils.raise(mockMvc, roomId, p2.getToken(), 200));
-
-        room = Utils.getRoom(mockMvc, roomId);
-        p1 = room.players().get(0);
-
-        Assertions.assertEquals("[Fold, Call, Raise]", p1.getActions().toString());
-        Assertions.assertEquals("Called", Utils.call(mockMvc, roomId, p1.getToken()));
-
-        room = Utils.getRoom(mockMvc, roomId);
-        p1 = room.players().get(0);
-        p2 = room.players().get(1);
-
-        Assertions.assertEquals(GameStage.FLOP, room.game().stage());
-        Assertions.assertEquals("[Fold, Check, Bet]", p1.getActions().toString());
-        Assertions.assertEquals("[Fold, Check, Bet]", p2.getActions().toString());
-        Assertions.assertEquals(600, room.game().stakedChips());
-        Assertions.assertEquals(0, room.game().currentBetSize());
-        Assertions.assertEquals(0, p1.getStakedChips());
-        Assertions.assertEquals(0, p2.getStakedChips());
-    }
-
-
-    @Test
-    public void testBetFoldCallIsDealerChanged() throws Exception {
-        Player p2 = room.players().get(1);
-        String roomId = room.id();
-
-        Assertions.assertEquals(0, room.game().dealerIndex());
-        Assertions.assertEquals(GameStage.PRE_FLOP, room.game().stage());
-        Assertions.assertEquals("[Fold, Check, Bet]", p2.getActions().toString());
-        Assertions.assertEquals("Bet", Utils.bet(mockMvc, roomId, p2.getToken(), 100));
-
-        room = Utils.getRoom(mockMvc, roomId);
-        Player p1 = room.players().get(0);
-
-        Assertions.assertEquals("[Fold, Call, Raise]", p1.getActions().toString());
         Assertions.assertEquals("Folded", Utils.fold(mockMvc, roomId, p1.getToken()));
 
         room = Utils.getRoom(mockMvc, roomId);
-        p1 = room.players().get(0);
+        p1 = room.players().getFirst();
+        Player p2 = room.players().get(1);
+
+        Assertions.assertEquals(GameState.WAITING, room.game().state());
+        Assertions.assertEquals(GameStage.SMALL_BLIND, room.game().stage());
+        Assertions.assertEquals(1020, p2.getChips());
+        Assertions.assertEquals(980, p1.getChips());
+        Assertions.assertEquals("Game started successfully", Utils.startGame(mockMvc, roomId, roomToken));
+
+        room = Utils.getRoom(mockMvc, roomId);
+        Assertions.assertEquals(GameState.IN_PROGRESS, room.game().state());
+        Assertions.assertEquals(GameStage.PRE_FLOP, room.game().stage());
+
+        p1 = room.players().getFirst();
         p2 = room.players().get(1);
 
-        Assertions.assertEquals(GameStage.SMALL_BLIND, room.game().stage());
-        Assertions.assertEquals("[Fold, Check, Bet]", p1.getActions().toString());
-        Assertions.assertEquals(1000, p1.getChips());
-        Assertions.assertEquals(1000, p2.getChips());
-        Assertions.assertEquals(0, room.game().stakedChips());
-        Assertions.assertEquals(0, room.game().currentBetSize());
-        Assertions.assertEquals(1, room.game().dealerIndex());
+        Assertions.assertEquals("Called", Utils.call(mockMvc, roomId, p1.getToken()));
 
+        room = Utils.getRoom(mockMvc, roomId);
+
+        Assertions.assertEquals(GameStage.PRE_FLOP, room.game().stage());
     }
 }

@@ -190,6 +190,9 @@ public class GameService extends BaseService {
 
     public Room fold(Room room) {
         return performAction(room, (game, currentPlayer) -> {
+            if (!currentPlayer.getActions().getActions().contains("Fold")) {
+                throw new GameException("Cannot fold");
+            }
             currentPlayer.setState(PlayerState.Folded);
             return game.toBuilder();
         }).build();
@@ -197,6 +200,9 @@ public class GameService extends BaseService {
 
     public Room call(Room room) {
         return performAction(room, (game, currentPlayer) -> {
+            if (!currentPlayer.getActions().getActions().contains("Call")) {
+                throw new GameException("Cannot call");
+            }
             final int leftToCall = game.currentBetSize() - currentPlayer.getStakedChips();
             final int finalBetAmount = Math.min(leftToCall, currentPlayer.getChips());
             currentPlayer.addToStake(finalBetAmount);
@@ -208,6 +214,10 @@ public class GameService extends BaseService {
 
     public Room bet(Room room, int betSize) {
         return performAction(room, (game, currentPlayer) -> {
+            if (!currentPlayer.getActions().getActions().contains("Bet")) {
+                throw new GameException("Cannot bet");
+            }
+
             if (game.currentBetSize() != 0) {
                 throw new GameException("Current bet size is nonzero");
             }
@@ -231,6 +241,10 @@ public class GameService extends BaseService {
 
     public Room check(Room room) {
         return performAction(room, (game, currentPlayer) -> {
+            if (!currentPlayer.getActions().getActions().contains("Check")) {
+                throw new GameException("Cannot check");
+            }
+
             if (game.currentBetSize() > currentPlayer.getStakedChips()) {
                 throw new GameException("Cannot check");
             }
@@ -240,6 +254,10 @@ public class GameService extends BaseService {
 
     public Room raise(Room room, int betAddition) {
         return performAction(room, (game, currentPlayer) -> {
+            if (!currentPlayer.getActions().getActions().contains("Raise")) {
+                throw new GameException("Cannot raise");
+            }
+
             if (game.currentBetSize() == 0) {
                 throw new GameException("Current bet size is zero");
             }
@@ -354,6 +372,7 @@ public class GameService extends BaseService {
                     .stakedChips(0)
                     .stage(GameStage.SMALL_BLIND)
                     .currentBetSize(0)
+                    .actionsTakenThisRound(0)
                     .incHandsCompleted()
                     .incDealerIndex();
         }

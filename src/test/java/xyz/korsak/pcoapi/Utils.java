@@ -146,4 +146,14 @@ public class Utils {
 
         return new ObjectMapper().readValue(decideWinnerResult.getResponse().getContentAsString(), IdResponse.class);
     }
+
+    public static String startGame(MockMvc mockMvc, String roomId, String roomToken) throws Exception {
+        MvcResult startGameResult = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/game/start?roomId=" + roomId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + roomToken))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        return startGameResult.getResponse().getContentAsString();
+    }
 }
