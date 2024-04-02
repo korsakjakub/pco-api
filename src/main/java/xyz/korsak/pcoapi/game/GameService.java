@@ -108,6 +108,7 @@ public class GameService extends BaseService {
                 } else {
                     player.setState(PlayerState.Active);
                 }
+                player.setInvestedChips(0);
             });
 
             game = room.game().toBuilder()
@@ -207,7 +208,7 @@ public class GameService extends BaseService {
             final int finalBetAmount = Math.min(leftToCall, currentPlayer.getChips());
             currentPlayer.addToStake(finalBetAmount);
             currentPlayer.setChips(Math.max(currentPlayer.getChips() - leftToCall, 0));
-            currentPlayer.setInvestedChips(currentPlayer.getInvestedChips() + leftToCall);
+            currentPlayer.setInvestedChips(currentPlayer.getInvestedChips() + finalBetAmount);
             return game.toBuilder().addToStake(finalBetAmount);
         }).build();
     }
@@ -321,20 +322,20 @@ public class GameService extends BaseService {
         Game.GameBuilder builder = action.execute(game, currentPlayer);
 
         final List<Player> activePlayers = players.stream().filter(player -> player.getState().equals(PlayerState.Active)).toList();
-        final List<Player> allInPlayers = players.stream().filter(player -> player.getState().equals(PlayerState.AllIn)).toList();
+        final List<Player> foldedPlayers = players.stream().filter(player -> player.getState().equals(PlayerState.Folded)).toList();
 
         if (currentPlayer.getChips() == 0) {
             currentPlayer.setState(PlayerState.AllIn);
         }
 
-        if (activePlayers.size() <= 1) {
-            if (!allInPlayers.isEmpty()) {
-                // Cards up
-                builder.stage(GameStage.SHOWDOWN);
-            } else {
-                // One player left, others folded
-                endHandWithWinner(activePlayers.getFirst(), builder, players);
-            }
+        if (foldedPlayers.size() == players.size() - 1) {
+            // All players folded except one
+            Player winner = players.stream().filter(p -> p.getState().equals(PlayerState.Active) || p.getState().equals(PlayerState.AllIn)).findFirst().orElseThrow();
+            endHandWithWinner(winner, builder, players);
+        }
+        else if (activePlayers.size() == 1) {
+            // Cards up
+            builder.stage(GameStage.SHOWDOWN);
         }
         // All players matched the highest bet, and everybody played at least once
         else if (areAllPlayersMatchingBetSize(players, builder.getCurrentBetSize())

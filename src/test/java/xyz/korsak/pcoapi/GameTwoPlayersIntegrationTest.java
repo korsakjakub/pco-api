@@ -70,7 +70,6 @@ public class GameTwoPlayersIntegrationTest {
         Assertions.assertEquals(GameStage.PRE_FLOP, room.game().stage());
 
         p1 = room.players().getFirst();
-        p2 = room.players().get(1);
 
         Assertions.assertEquals("Called", Utils.call(mockMvc, roomId, p1.getToken()));
 
