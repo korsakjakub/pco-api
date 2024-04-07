@@ -333,7 +333,7 @@ public class GameService extends BaseService {
             Player winner = players.stream().filter(p -> p.getState().equals(PlayerState.Active) || p.getState().equals(PlayerState.AllIn)).findFirst().orElseThrow();
             endHandWithWinner(winner, builder, players);
         }
-        else if (activePlayers.size() == 1) {
+        else if (activePlayers.size() == 1 && areAllPlayersMatchingBetSize(players, builder.getCurrentBetSize())) {
             // Cards up
             builder.stage(GameStage.SHOWDOWN);
         }
