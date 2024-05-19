@@ -8,7 +8,7 @@ import xyz.korsak.pcoapi.BaseController;
 import xyz.korsak.pcoapi.exceptions.UnauthorizedAccessException;
 import xyz.korsak.pcoapi.queue.QueueService;
 import xyz.korsak.pcoapi.requests.ChipsRequest;
-import xyz.korsak.pcoapi.requests.NameRequest;
+import xyz.korsak.pcoapi.requests.NewPlayerRequest;
 import xyz.korsak.pcoapi.responses.IdResponse;
 import xyz.korsak.pcoapi.responses.IdTokenResponse;
 import xyz.korsak.pcoapi.room.RoomService;
@@ -31,8 +31,8 @@ public class PlayerController extends BaseController {
 
     @PostMapping("/create")
     public ResponseEntity<IdTokenResponse> createPlayer(@RequestParam String queueId,
-                                                        @RequestBody NameRequest name) {
-        Player player = queueService.addPlayerToQueue(queueId, name.name());
+                                                        @RequestBody NewPlayerRequest request) {
+        Player player = queueService.addPlayerToQueue(queueId, request.name(), request.avatar());
         queueService.pushData(queueId);
         IdTokenResponse r = new IdTokenResponse(player.getId(), player.getToken());
         return logResponse(ResponseEntity.ok(r));

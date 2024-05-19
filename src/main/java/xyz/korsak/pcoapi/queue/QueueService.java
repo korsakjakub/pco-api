@@ -7,6 +7,7 @@ import xyz.korsak.pcoapi.authorization.Authorization;
 import xyz.korsak.pcoapi.exceptions.NotFoundException;
 import xyz.korsak.pcoapi.exceptions.UnauthorizedAccessException;
 import xyz.korsak.pcoapi.player.Player;
+import xyz.korsak.pcoapi.player.PlayerAvatar;
 import xyz.korsak.pcoapi.responses.GetPlayersResponse;
 import xyz.korsak.pcoapi.responses.IdResponse;
 
@@ -39,7 +40,7 @@ public class QueueService extends BaseService {
         return queue;
     }
 
-    public Player addPlayerToQueue(String queueId, String name) {
+    public Player addPlayerToQueue(String queueId, String name, PlayerAvatar avatar) {
         Queue queue = queueRepository.findById(queueId);
         if (queue == null) {
             throw new NotFoundException(queueId);
@@ -47,7 +48,7 @@ public class QueueService extends BaseService {
 
         String token = generateRandomString("ptk");
         String id = generateRandomString("pid");
-        Player player = new Player(id, name, token);
+        Player player = new Player(id, name, token, avatar);
         queue.getPlayers().add(player);
         queueRepository.create(queue);
         return player;

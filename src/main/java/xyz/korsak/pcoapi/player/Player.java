@@ -20,8 +20,9 @@ public class Player {
     private String token;
     private PlayerActions actions;
     private PlayerState state;
+    private PlayerAvatar avatar;
 
-    public Player(String id, String name, String token) {
+    public Player(String id, String name, String token, PlayerAvatar avatar) {
         this.id = id;
         this.name = name;
         this.token = token;
@@ -30,6 +31,7 @@ public class Player {
         this.investedChips = 0;
         this.actions = new PlayerActions();
         this.state = PlayerState.Active;
+        this.avatar = avatar;
     }
 
     public void addToStake(int bet) {
