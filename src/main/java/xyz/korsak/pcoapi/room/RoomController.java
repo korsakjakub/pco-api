@@ -6,10 +6,9 @@ import org.springframework.web.bind.annotation.*;
 import xyz.korsak.pcoapi.BaseController;
 import xyz.korsak.pcoapi.exceptions.UnauthorizedAccessException;
 import xyz.korsak.pcoapi.player.Player;
-import xyz.korsak.pcoapi.player.PlayerAvatar;
 import xyz.korsak.pcoapi.queue.Queue;
 import xyz.korsak.pcoapi.queue.QueueService;
-import xyz.korsak.pcoapi.requests.NameRequest;
+import xyz.korsak.pcoapi.requests.NewPlayerRequest;
 import xyz.korsak.pcoapi.responses.GetPlayersResponse;
 import xyz.korsak.pcoapi.responses.RoomCreatedResponse;
 
@@ -73,15 +72,14 @@ public class RoomController extends BaseController {
 
     @PostMapping("/{roomId}/players")
     public ResponseEntity<Player> createPlayerInRoom(@PathVariable String roomId,
-                                                     @RequestBody NameRequest name,
-                                                     @RequestBody PlayerAvatar avatar,
+                                                     @RequestBody NewPlayerRequest request,
                                                      @RequestHeader("Authorization") String authorizationHeader) {
         String roomToken = extractBearerToken(authorizationHeader);
         Room room = roomService.getRoomById(roomId);
         if (room == null || !room.token().equals(roomToken)) {
             throw new UnauthorizedAccessException();
         }
-        Player player = roomService.createPlayerInRoom(roomId, roomToken, name.name(), avatar);
+        Player player = roomService.createPlayerInRoom(roomId, roomToken, request.name(), request.avatar());
         return logResponse(ResponseEntity.status(HttpStatus.OK).body(player));
     }
 
