@@ -10,6 +10,7 @@ import xyz.korsak.pcoapi.exceptions.UnauthorizedAccessException;
 import xyz.korsak.pcoapi.game.GameState;
 import xyz.korsak.pcoapi.player.Player;
 import xyz.korsak.pcoapi.player.PlayerAvatar;
+import xyz.korsak.pcoapi.player.PlayerState;
 import xyz.korsak.pcoapi.responses.GetPlayersResponse;
 
 import java.util.ArrayList;
@@ -123,5 +124,25 @@ public class RoomService extends BaseService {
 
     public void updateRoom(Room room) {
         roomRepository.create(room);
+    }
+
+    public void toggleSittingOut(String roomId, String playerId, String playerToken) {
+        Room room = roomRepository.findById(roomId);
+        if (room == null) {
+            throw new UnauthorizedAccessException();
+        }
+        Player player = auth.getPlayerWithAuthorization(roomId, playerId, playerToken);
+        final PlayerState currentState = player.getState();
+        final PlayerState finalState = currentState != PlayerState.SittingOut ? PlayerState.SittingOut : PlayerState.Folded;
+        player.setState(finalState);
+
+        final List<Player> newPlayers = room.players().stream().map(p -> {
+            if (Objects.equals(p.getId(), player.getId())) {
+                return player;
+            }
+            return p;
+        }).toList();
+        final Room updatedRoom = room.toBuilder().players(newPlayers).build();
+        roomRepository.create(updatedRoom);
     }
 }
