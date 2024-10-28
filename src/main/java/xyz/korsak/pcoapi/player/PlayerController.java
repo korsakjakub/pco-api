@@ -69,6 +69,7 @@ public class PlayerController extends BaseController {
         String playerToken = extractBearerToken(authorizationHeader);
         roomService.toggleSittingOut(roomId, playerId, playerToken);
 
+        roomService.pushData(roomId);
         return logResponse(ResponseEntity.ok(true));
     }
 
