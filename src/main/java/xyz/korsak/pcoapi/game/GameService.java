@@ -105,7 +105,7 @@ public class GameService extends BaseService {
             room.players().forEach(player -> {
                 if (player.getChips() == 0) {
                     player.setState(PlayerState.Folded);
-                } else {
+                } else if (!player.getState().equals(PlayerState.SittingOut)) {
                     player.setState(PlayerState.Active);
                 }
                 player.setInvestedChips(0);

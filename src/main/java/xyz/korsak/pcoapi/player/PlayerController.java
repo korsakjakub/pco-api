@@ -62,4 +62,15 @@ public class PlayerController extends BaseController {
         return logResponse(ResponseEntity.ok(new IdResponse(playerId)));
     }
 
+    @PostMapping("/{playerId}/sit-out")
+    public ResponseEntity<Boolean> toggleSittingOut(@RequestParam String roomId,
+                                                    @PathVariable String playerId,
+                                                    @RequestHeader("Authorization") String authorizationHeader) {
+        String playerToken = extractBearerToken(authorizationHeader);
+        roomService.toggleSittingOut(roomId, playerId, playerToken);
+
+        roomService.pushData(roomId);
+        return logResponse(ResponseEntity.ok(true));
+    }
+
 }
