@@ -365,7 +365,9 @@ public class GameService extends BaseService {
         players.forEach(p -> {
             p.setStakedChips(0);
             p.setChips(p.getChips() + winnings.get(p.getId()));
-            p.setState(PlayerState.Active);
+            if (p.getState() != PlayerState.SittingOut){
+                p.setState(PlayerState.Active);
+            }
         });
 
         if (playersLeftToDistribute == 0) {
