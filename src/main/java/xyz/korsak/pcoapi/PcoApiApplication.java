@@ -4,11 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.web.bind.annotation.RestController;
+
 import org.springframework.web.filter.CommonsRequestLoggingFilter;
 
 @SpringBootApplication
-@RestController
 @PropertySource("classpath:application-${spring.profiles.active}.properties")
 public class PcoApiApplication {
     public static void main(String[] args) {
