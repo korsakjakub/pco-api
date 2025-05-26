@@ -43,20 +43,30 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(RedisUnavailableException.class)
     public ResponseEntity<ErrorObject> handleRedisUnavailableException(RedisUnavailableException ex, WebRequest request) {
         ErrorObject errorObject = new ErrorObject();
-        errorObject.setStatusCode(HttpStatus.I_AM_A_TEAPOT.value());
+        errorObject.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR.value());
         errorObject.setMessage(ex.getMessage());
         errorObject.setTimestamp(new Date());
 
-        return new ResponseEntity<>(errorObject, HttpStatus.I_AM_A_TEAPOT);
+        return new ResponseEntity<>(errorObject, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(GameException.class)
-    public ResponseEntity<ErrorObject> handleRedisUnavailableException(GameException ex, WebRequest request) {
+    public ResponseEntity<ErrorObject> handleGameException(GameException ex, WebRequest request) {
         ErrorObject errorObject = new ErrorObject();
-        errorObject.setStatusCode(HttpStatus.I_AM_A_TEAPOT.value());
+        errorObject.setStatusCode(HttpStatus.BAD_REQUEST.value());
         errorObject.setMessage(ex.getMessage());
         errorObject.setTimestamp(new Date());
 
-        return new ResponseEntity<>(errorObject, HttpStatus.I_AM_A_TEAPOT);
+        return new ResponseEntity<>(errorObject, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorObject> handleIllegalArgumentException(IllegalArgumentException ex, WebRequest request) {
+        ErrorObject errorObject = new ErrorObject();
+        errorObject.setStatusCode(HttpStatus.BAD_REQUEST.value());
+        errorObject.setMessage(ex.getMessage());
+        errorObject.setTimestamp(new Date());
+
+        return new ResponseEntity<>(errorObject, HttpStatus.BAD_REQUEST);
     }
 }

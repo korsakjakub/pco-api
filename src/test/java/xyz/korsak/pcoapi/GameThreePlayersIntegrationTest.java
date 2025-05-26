@@ -152,7 +152,7 @@ public class GameThreePlayersIntegrationTest {
         Assertions.assertEquals("[Fold, Check, Bet]", p2.getActions().toString());
 
         Utils.bet(mockMvc, roomId, p3.getToken(), 100, status().isUnauthorized());
-        Utils.bet(mockMvc, roomId, p2.getToken(), -100, status().isIAmATeapot());
+        Utils.bet(mockMvc, roomId, p2.getToken(), -100, status().isBadRequest());
         Assertions.assertEquals("Bet", Utils.bet(mockMvc, roomId, p2.getToken(), 100));
 
         room = Utils.getRoom(mockMvc, roomId);

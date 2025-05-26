@@ -14,6 +14,7 @@ import xyz.korsak.pcoapi.responses.IdResponse;
 import xyz.korsak.pcoapi.room.Room;
 import xyz.korsak.pcoapi.room.RoomService;
 import xyz.korsak.pcoapi.rules.PokerRules;
+import org.springframework.util.StringUtils;
 
 
 @RestController
@@ -28,6 +29,18 @@ public class GameController extends BaseController {
         this.roomService = roomService;
     }
 
+    private void validateRoomId(String roomId) {
+        if (!StringUtils.hasText(roomId)) {
+            throw new IllegalArgumentException("Room ID cannot be null or empty");
+        }
+    }
+
+    private void validateChips(int chips) {
+        if (chips <= 0) {
+            throw new IllegalArgumentException("Chips value must be positive");
+        }
+    }
+
     private void notifyPlayers(String roomId) {
         gameService.pushData(roomId);
         roomService.pushData(roomId);
@@ -35,6 +48,7 @@ public class GameController extends BaseController {
 
     @GetMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter streamGame(@RequestParam("roomId") String roomId) {
+        validateRoomId(roomId);
         SseEmitter emitter = gameService.streamGame(roomId);
         notifyPlayers(roomId);
         return emitter;
@@ -43,6 +57,7 @@ public class GameController extends BaseController {
     @PostMapping("/start")
     public ResponseEntity<String> startGame(@RequestParam("roomId") String roomId,
                                             @RequestHeader("Authorization") String authorization) {
+        validateRoomId(roomId);
         String roomToken = extractBearerToken(authorization);
         gameService.start(roomId, roomToken);
         notifyPlayers(roomId);
@@ -118,6 +133,7 @@ public class GameController extends BaseController {
     @PostMapping("/fold")
     public ResponseEntity<String> fold(@RequestParam String roomId,
                                        @RequestHeader("Authorization") String authorizationHeader) {
+        validateRoomId(roomId);
         gameService.playFold(roomId, extractBearerToken(authorizationHeader));
         notifyPlayers(roomId);
         return logResponse(ResponseEntity.ok("Folded"));
@@ -127,6 +143,8 @@ public class GameController extends BaseController {
     public ResponseEntity<String> bet(@RequestParam String roomId,
                                       @RequestBody ChipsRequest request,
                                       @RequestHeader("Authorization") String authorizationHeader) {
+        validateRoomId(roomId);
+        validateChips(request.chips());
         gameService.playBet(roomId, extractBearerToken(authorizationHeader), request.chips());
         notifyPlayers(roomId);
         return logResponse(ResponseEntity.ok("Bet"));
@@ -136,6 +154,8 @@ public class GameController extends BaseController {
     public ResponseEntity<String> raise(@RequestParam String roomId,
                                         @RequestBody ChipsRequest request,
                                         @RequestHeader("Authorization") String authorizationHeader) {
+        validateRoomId(roomId);
+        validateChips(request.chips());
         gameService.playRaise(roomId, extractBearerToken(authorizationHeader), request.chips());
         notifyPlayers(roomId);
         return logResponse(ResponseEntity.ok("Raised"));
